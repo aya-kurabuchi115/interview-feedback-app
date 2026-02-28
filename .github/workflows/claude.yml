@@ -1,0 +1,45 @@
+name: Claude Auto-Implement
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  implement:
+    if: github.event.label.name == 'auto-implement'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm ci
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          direct_prompt: |
+            GitHub Issue #${{ github.event.issue.number }} を実装してください。
+
+            タイトル: ${{ github.event.issue.title }}
+
+            本文:
+            ${{ github.event.issue.body }}
+
+            手順:
+            1. `issue-${{ github.event.issue.number }}` ブランチを作成
+            2. Issue の受け入れ基準をすべて満たすコードを実装
+            3. CLAUDE.md のルールに従う
+            4. コミットメッセージ: "feat: #${{ github.event.issue.number }} - [説明]"
+            5. `npm run build` でビルド確認
+            6. PR を作成（タイトル: Issue タイトル、本文に "closes #${{ github.event.issue.number }}" を含める）
+          allowed_tools: "Bash,Read,Write,Edit,Glob,Grep"
+          model: "sonnet"
