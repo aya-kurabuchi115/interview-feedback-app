@@ -108,7 +108,7 @@ export default function ProcessingPage({
           return;
         }
 
-        const status = data.status as InterviewStatus;
+        const status = (data as Record<string, unknown>).status as InterviewStatus;
         setCurrentStatus(status);
         setIsLoading(false);
 
