@@ -1,0 +1,47 @@
+name: Auto Label Next Issue
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  next-issue:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Label next issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // 実装順序の定義（依存関係を考慮）
+            const order = [10, 9, 1, 2, 3, 4, 5, 6, 8, 7];
+
+            // マージされた PR の本文から closes #N を探す
+            const body = context.payload.pull_request.body || '';
+            const match = body.match(/closes\s+#(\d+)/i);
+            if (!match) {
+              console.log('closes #N が見つからないためスキップ');
+              return;
+            }
+            const closedNumber = parseInt(match[1]);
+            console.log(`Issue #${closedNumber} が閉じられました`);
+
+            // 次の Issue を特定
+            const idx = order.indexOf(closedNumber);
+            if (idx === -1 || idx === order.length - 1) {
+              console.log('次の Issue はありません（最後 or 順序外）');
+              return;
+            }
+            const nextNumber = order[idx + 1];
+            console.log(`次の Issue: #${nextNumber}`);
+
+            // 次の Issue に auto-implement ラベルを付与
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: nextNumber,
+              labels: ['auto-implement']
+            });
+            console.log(`Issue #${nextNumber} に auto-implement ラベルを付与しました`);
