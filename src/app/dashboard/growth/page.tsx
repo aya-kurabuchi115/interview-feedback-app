@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, TrendingUp, Plus, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { EmptyState } from "@/components/ui/empty-state";
 import { redirect } from "next/navigation";
 import { StatsCard } from "@/components/stats-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -252,21 +253,24 @@ export default async function GrowthPage() {
           </Link>
         </div>
         <h1 className="text-2xl font-bold">成長記録</h1>
-        <div className="mt-8 rounded-lg border border-dashed p-12 text-center">
-          <p className="text-lg font-medium">まだ分析データがありません</p>
-          <p className="mt-2 text-muted-foreground">
-            面接を完了すると、ここにスコア推移や分析結果が表示されます。
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            あと1回面接を登録すると分析が始まります。
-          </p>
-          <Link
-            href="/interview/new"
-            className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            新しい面接を始める
-          </Link>
-        </div>
+        <EmptyState
+          icon={TrendingUp}
+          title="成長を記録していきましょう！"
+          description="面接を記録してフィードバックを受けると、ここにスコア推移や分析結果が表示されます。まず1回面接を登録してみましょう。"
+          primaryAction={{
+            label: "面接を記録する",
+            href: "/interview/new",
+            icon: Plus,
+          }}
+          secondaryActions={[
+            {
+              label: "AI模擬面接を試す",
+              href: "/mock-interview",
+              icon: MessageSquare,
+            },
+          ]}
+          className="mt-8"
+        />
       </div>
     );
   }

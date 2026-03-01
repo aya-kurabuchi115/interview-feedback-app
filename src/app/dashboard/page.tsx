@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Plus, ClipboardList, MessageSquare } from "lucide-react";
+import { Plus, ClipboardList, MessageSquare, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import type { Database, InterviewCategory } from "@/types/database";
@@ -202,25 +203,42 @@ export default async function DashboardPage({
       {/* 一覧 */}
       <div className="mt-6">
         {interviewsWithScore.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-12 text-center">
-            <ClipboardList className="mx-auto h-12 w-12 text-muted-foreground/50" />
-            <h2 className="mt-4 text-lg font-semibold">
-              {currentCategory !== "all" || tagParam
-                ? "条件に一致する面接がありません"
-                : "最初の面接を記録しましょう"}
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {currentCategory !== "all" || tagParam
-                ? "フィルタ条件を変更するか、新しい面接を記録してください。"
-                : "面接を登録して最初のフィードバックを受けましょう。"}
-            </p>
-            <Button className="mt-6" asChild>
-              <Link href="/interview/new">
-                <Plus className="mr-2 h-4 w-4" />
-                新規面接を記録
-              </Link>
-            </Button>
-          </div>
+          currentCategory !== "all" || tagParam ? (
+            <EmptyState
+              icon={ClipboardList}
+              title="条件に一致する面接がありません"
+              description="フィルタ条件を変更するか、新しい面接を記録してください。"
+              primaryAction={{
+                label: "新規面接を記録",
+                href: "/interview/new",
+                icon: Plus,
+              }}
+              variant="no-results"
+            />
+          ) : (
+            <EmptyState
+              icon={ClipboardList}
+              title="さっそく面接練習を始めましょう！"
+              description="面接を記録してAIフィードバックを受けると、ここにスコアや改善点が表示されます。"
+              primaryAction={{
+                label: "面接を記録する",
+                href: "/interview/new",
+                icon: Plus,
+              }}
+              secondaryActions={[
+                {
+                  label: "AI模擬面接を試す",
+                  href: "/mock-interview",
+                  icon: MessageSquare,
+                },
+                {
+                  label: "質問集を見る",
+                  href: "/question-bank",
+                  icon: BookOpen,
+                },
+              ]}
+            />
+          )
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {interviewsWithScore.map((interview) => (
