@@ -20,13 +20,15 @@ const sections = [
   { id: "pricing", label: "第4条 利用料金・支払い" },
   { id: "prohibited", label: "第5条 禁止事項" },
   { id: "disclaimer", label: "第6条 AIフィードバックの免責事項" },
-  { id: "data-ownership", label: "第7条 面接データの所有権" },
-  { id: "intellectual-property", label: "第8条 知的財産権" },
-  { id: "data-handling", label: "第9条 データの取り扱い" },
-  { id: "service-change", label: "第10条 サービスの変更・停止" },
-  { id: "cancellation", label: "第11条 解約・返金" },
-  { id: "liability", label: "第12条 損害賠償の制限" },
-  { id: "governing-law", label: "第13条 準拠法・管轄裁判所" },
+  { id: "ai-content-rights", label: "第7条 AI生成コンテンツの権利帰属" },
+  { id: "data-ownership", label: "第8条 面接データの所有権" },
+  { id: "intellectual-property", label: "第9条 知的財産権" },
+  { id: "data-handling", label: "第10条 データの取り扱い" },
+  { id: "account-deletion", label: "第11条 アカウント削除時のデータ取り扱い" },
+  { id: "service-change", label: "第12条 サービスの変更・停止" },
+  { id: "cancellation", label: "第13条 解約・返金" },
+  { id: "liability", label: "第14条 損害賠償の制限" },
+  { id: "governing-law", label: "第15条 準拠法・管轄裁判所" },
   { id: "supplementary", label: "附則" },
 ] as const;
 
@@ -38,6 +40,11 @@ export default function TermsOfServicePage() {
       <p className="mb-8 text-sm text-muted-foreground">
         制定日: 2026年3月1日 / 最終更新日: 2026年3月1日
       </p>
+
+      {/* 注記 */}
+      <div className="mb-8 rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200">
+        ※ 本規約は弁護士によるレビューを受けていません。正式な法的文書として使用する前に、専門家の確認を受けることを推奨します。
+      </div>
 
       {/* 目次 */}
       <nav className="mb-12 rounded-lg border bg-muted/40 p-6">
@@ -99,6 +106,18 @@ export default function TermsOfServicePage() {
           <h3 className="mt-4 text-base font-medium">2-3. 利用資格</h3>
           <p>
             本サービスは18歳以上の方を対象としています。18歳未満の方が利用する場合は、保護者の同意が必要です。
+          </p>
+
+          <h3 className="mt-4 text-base font-medium">2-4. 同意事項</h3>
+          <p>
+            アカウント登録時に、本規約および{" "}
+            <Link
+              href="/legal/privacy"
+              className="text-primary underline underline-offset-4"
+            >
+              プライバシーポリシー
+            </Link>{" "}
+            への同意が必要です。同意なくアカウントを作成することはできません。
           </p>
         </section>
 
@@ -173,6 +192,10 @@ export default function TermsOfServicePage() {
             </li>
             <li>他人のアカウントを無断で使用する行為</li>
             <li>
+              <span className="font-medium">秘密保持義務に違反する情報の投稿:</span>{" "}
+              就職活動中に知り得た企業の秘密情報、NDA（秘密保持契約）で保護された情報、採用選考の具体的な質問内容等、秘密保持義務の対象となる情報を本サービスにアップロードする行為
+            </li>
+            <li>
               本サービスの逆アセンブル、リバースエンジニアリング、逆コンパイルを行う行為
             </li>
             <li>
@@ -188,6 +211,10 @@ export default function TermsOfServicePage() {
           <p className="mt-3">
             禁止事項に該当する行為が確認された場合、事前の通知なくアカウントの利用停止または削除を行うことがあります。
           </p>
+          <div className="mt-4 rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200">
+            <span className="font-medium">ご注意:</span>{" "}
+            面接練習の音声やスクリプトをアップロードする際は、企業から開示された秘密情報や、秘密保持義務の対象となる情報が含まれていないことをご確認ください。秘密保持義務違反の責任はユーザーに帰属します。
+          </div>
         </section>
 
         {/* 第6条 AIフィードバックの免責事項 */}
@@ -200,7 +227,7 @@ export default function TermsOfServicePage() {
             <li>
               AI フィードバックは面接スキル向上のための{" "}
               <span className="font-medium">参考情報</span>{" "}
-              であり、面接の合否を保証するものではありません
+              であり、<span className="font-medium">面接の合否や採用結果を保証するものではありません</span>
             </li>
             <li>
               フィードバック内容は AI
@@ -217,12 +244,37 @@ export default function TermsOfServicePage() {
               AI
               フィードバックに基づく行動によって生じた結果について、本サービスは一切の責任を負いません
             </li>
+            <li>
+              AI が生成するフィードバックには誤りや偏りが含まれる可能性があります。フィードバック内容を鵜呑みにせず、あくまで参考としてご活用ください
+            </li>
           </ul>
         </section>
 
-        {/* 第7条 面接データの所有権 */}
+        {/* 第7条 AI生成コンテンツの権利帰属 */}
+        <section id="ai-content-rights">
+          <h2 className="text-xl font-semibold">第7条 AI生成コンテンツの権利帰属</h2>
+          <p>
+            本サービスが AI を用いて生成したフィードバック等のコンテンツについて、以下のとおり定めます。
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>
+              AI が生成したフィードバックは、ユーザーの面接スクリプトに基づき自動生成されたものであり、特定の著作者に帰属するものではありません
+            </li>
+            <li>
+              ユーザーは、AI が生成したフィードバックを個人の学習・就職活動の目的で自由に利用・保存・共有できます
+            </li>
+            <li>
+              AI が生成したフィードバックを商業目的で複製・再配布・販売することは禁止します
+            </li>
+            <li>
+              本サービスは、AI 生成コンテンツの正確性・独自性・適法性について保証しません
+            </li>
+          </ul>
+        </section>
+
+        {/* 第8条 面接データの所有権 */}
         <section id="data-ownership">
-          <h2 className="text-xl font-semibold">第7条 面接データの所有権</h2>
+          <h2 className="text-xl font-semibold">第8条 面接データの所有権</h2>
           <p>
             ユーザーがアップロードした面接音声スクリプトおよび関連データの所有権は、ユーザー本人に帰属します。
           </p>
@@ -240,9 +292,9 @@ export default function TermsOfServicePage() {
           </ul>
         </section>
 
-        {/* 第8条 知的財産権 */}
+        {/* 第9条 知的財産権 */}
         <section id="intellectual-property">
-          <h2 className="text-xl font-semibold">第8条 知的財産権</h2>
+          <h2 className="text-xl font-semibold">第9条 知的財産権</h2>
           <ul className="list-disc space-y-1 pl-5">
             <li>
               本サービスの UI、デザイン、ロゴ、ソフトウェア、およびこれらに関連する知的財産権は、本サービスの運営者に帰属します
@@ -256,9 +308,9 @@ export default function TermsOfServicePage() {
           </ul>
         </section>
 
-        {/* 第9条 データの取り扱い */}
+        {/* 第10条 データの取り扱い */}
         <section id="data-handling">
-          <h2 className="text-xl font-semibold">第9条 データの取り扱い</h2>
+          <h2 className="text-xl font-semibold">第10条 データの取り扱い</h2>
           <p>
             個人情報を含むデータの取り扱いについては、別途定める{" "}
             <Link
@@ -270,6 +322,9 @@ export default function TermsOfServicePage() {
             に従います。
           </p>
           <ul className="list-disc space-y-1 pl-5">
+            <li>
+              面接音声ファイルは、文字起こし処理のために AssemblyAI API に送信され、処理完了後に削除されます
+            </li>
             <li>
               面接スクリプトは、フィードバック生成のために Anthropic Claude API
               に送信されます
@@ -285,9 +340,38 @@ export default function TermsOfServicePage() {
           </ul>
         </section>
 
-        {/* 第10条 サービスの変更・停止 */}
+        {/* 第11条 アカウント削除時のデータ取り扱い */}
+        <section id="account-deletion">
+          <h2 className="text-xl font-semibold">第11条 アカウント削除時のデータ取り扱い</h2>
+          <p>
+            ユーザーがアカウントを削除した場合、以下のとおりデータを取り扱います。
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>
+              <span className="font-medium">即時削除:</span>{" "}
+              アカウント認証情報（メールアドレス・パスワードハッシュ）はアカウント削除と同時に無効化されます
+            </li>
+            <li>
+              <span className="font-medium">30日以内に完全削除:</span>{" "}
+              プロフィール情報、面接スクリプト、AI フィードバック、面接履歴等のユーザーデータは、アカウント削除から30日以内に完全に削除されます
+            </li>
+            <li>
+              <span className="font-medium">復元不可:</span>{" "}
+              削除されたデータの復元はできません。必要なデータは事前にエクスポートしてください
+            </li>
+            <li>
+              <span className="font-medium">例外:</span>{" "}
+              法令により保管が義務付けられている決済関連の記録は、法定期間経過後に削除します
+            </li>
+          </ul>
+          <p className="mt-3">
+            有料プラン利用中のアカウント削除については、第13条（解約・返金）も併せてご確認ください。
+          </p>
+        </section>
+
+        {/* 第12条 サービスの変更・停止 */}
         <section id="service-change">
-          <h2 className="text-xl font-semibold">第10条 サービスの変更・停止</h2>
+          <h2 className="text-xl font-semibold">第12条 サービスの変更・停止</h2>
           <p>
             本サービスは、以下の場合にサービスの全部または一部を変更・中断・停止・終了することがあります。
           </p>
@@ -304,11 +388,11 @@ export default function TermsOfServicePage() {
           </p>
         </section>
 
-        {/* 第11条 解約・返金 */}
+        {/* 第13条 解約・返金 */}
         <section id="cancellation">
-          <h2 className="text-xl font-semibold">第11条 解約・返金</h2>
+          <h2 className="text-xl font-semibold">第13条 解約・返金</h2>
 
-          <h3 className="mt-4 text-base font-medium">11-1. 解約</h3>
+          <h3 className="mt-4 text-base font-medium">13-1. 解約</h3>
           <ul className="list-disc space-y-1 pl-5">
             <li>
               無料プランのユーザーは、いつでもアカウントを削除することで解約できます
@@ -323,15 +407,20 @@ export default function TermsOfServicePage() {
             </li>
           </ul>
 
-          <h3 className="mt-4 text-base font-medium">11-2. 返金</h3>
+          <h3 className="mt-4 text-base font-medium">13-2. 返金</h3>
           <p>
             月途中での解約の場合、日割りでの返金は行いません。ただし、サービスに重大な不具合が生じ、相当期間利用できなかった場合は、個別に対応を検討します。
           </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>初回サブスクリプション開始から7日以内にサポートへご連絡いただいた場合、全額返金に対応します</li>
+            <li>7日経過後の返金は原則として行いません</li>
+            <li>返金のお手続きは support@interviewcoach.jp までご連絡ください</li>
+          </ul>
         </section>
 
-        {/* 第12条 損害賠償の制限 */}
+        {/* 第14条 損害賠償の制限 */}
         <section id="liability">
-          <h2 className="text-xl font-semibold">第12条 損害賠償の制限</h2>
+          <h2 className="text-xl font-semibold">第14条 損害賠償の制限</h2>
           <p>
             本サービスの利用により生じた損害について、本サービスの運営者は以下の範囲で責任を負います。
           </p>
@@ -348,9 +437,9 @@ export default function TermsOfServicePage() {
           </ul>
         </section>
 
-        {/* 第13条 準拠法・管轄裁判所 */}
+        {/* 第15条 準拠法・管轄裁判所 */}
         <section id="governing-law">
-          <h2 className="text-xl font-semibold">第13条 準拠法・管轄裁判所</h2>
+          <h2 className="text-xl font-semibold">第15条 準拠法・管轄裁判所</h2>
           <ul className="list-disc space-y-1 pl-5">
             <li>本規約の解釈および適用は、日本法に準拠するものとします</li>
             <li>
