@@ -28,12 +28,13 @@ export default async function MockInterviewPage() {
   // プロフィール情報を取得（初期値用）
   const { data: profile } = await supabase
     .from("profiles")
-    .select("target_industry")
+    .select("target_industry, personality_type")
     .eq("user_id", user.id)
     .single();
 
-  const targetIndustry =
-    (profile as { target_industry?: string[] } | null)?.target_industry ?? [];
+  const typedProfile = profile as { target_industry?: string[]; personality_type?: string | null } | null;
+  const targetIndustry = typedProfile?.target_industry ?? [];
+  const personalityType = typedProfile?.personality_type ?? null;
 
   return (
     <div className="container mx-auto max-w-2xl px-4 py-8">
@@ -41,7 +42,7 @@ export default async function MockInterviewPage() {
       <p className="mb-6 text-sm text-muted-foreground">
         AIが面接官役となり、リアルな模擬面接を体験できます。設定を選んで面接を始めましょう。
       </p>
-      <SetupForm defaultIndustry={targetIndustry[0] ?? ""} />
+      <SetupForm defaultIndustry={targetIndustry[0] ?? ""} personalityType={personalityType} />
     </div>
   );
 }

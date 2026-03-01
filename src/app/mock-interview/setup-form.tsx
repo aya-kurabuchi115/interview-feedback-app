@@ -2,7 +2,8 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, MessageSquare } from "lucide-react";
+import Link from "next/link";
+import { Loader2, MessageSquare, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +21,8 @@ import type {
   MockInterviewRound,
   MockInterviewDifficulty,
 } from "@/types/database";
+import { PERSONALITY_DATA, isValidPersonalityType } from "@/lib/personality/types";
+import type { PersonalityType } from "@/lib/personality/types";
 
 // --- 定数 ---
 const MAX_COMPANY_NAME_LENGTH = 100;
@@ -71,9 +74,10 @@ const DIFFICULTY_OPTIONS: { value: MockInterviewDifficulty; label: string; descr
 
 interface SetupFormProps {
   defaultIndustry: string;
+  personalityType: string | null;
 }
 
-export function SetupForm({ defaultIndustry }: SetupFormProps) {
+export function SetupForm({ defaultIndustry, personalityType }: SetupFormProps) {
   // フォーム状態
   const [companyName, setCompanyName] = useState("");
   const [industry, setIndustry] = useState(defaultIndustry);
@@ -338,6 +342,48 @@ export function SetupForm({ defaultIndustry }: SetupFormProps) {
               </button>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* パーソナリティタイプ */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Sparkles className="h-4 w-4" />
+            パーソナリティタイプ
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {personalityType && isValidPersonalityType(personalityType) ? (() => {
+            const pData = PERSONALITY_DATA[personalityType.toUpperCase() as PersonalityType];
+            return (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{pData.animalEmoji}</span>
+                  <span className="font-medium">{pData.type} - {pData.name}</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  あなたのパーソナリティに基づいた面接練習ができます。フィードバックにタイプ固有のアドバイスが含まれます。
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  面接での強み: {pData.interviewStrengths.join("、")}
+                </p>
+              </div>
+            );
+          })() : (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                パーソナリティタイプを設定すると、あなたに合ったフィードバックが得られます。
+              </p>
+              <Link
+                href="/personality"
+                className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                パーソナリティ診断を受ける
+              </Link>
+            </div>
+          )}
         </CardContent>
       </Card>
 
