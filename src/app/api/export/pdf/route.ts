@@ -25,6 +25,11 @@ const ROUND_MAP: Record<string, string> = {
   other: "その他",
 };
 
+/** ISO 8601 日付形式の検証（YYYY-MM-DD） */
+function isValidDateString(dateStr: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateStr) && !isNaN(Date.parse(dateStr));
+}
+
 /** 最大エクスポート件数 */
 const MAX_EXPORT_ROWS = 100;
 
@@ -203,9 +208,33 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // クエリパラメータ: 特定の面接 ID（任意）
+    // クエリパラメータ: 特定の面接 ID（任意）、日付範囲（任意）
     const { searchParams } = new URL(request.url);
     const interviewId = searchParams.get("id");
+    const from = searchParams.get("from");
+    const to = searchParams.get("to");
+
+    // 日付バリデーション
+    if (from && !isValidDateString(from)) {
+      return NextResponse.json(
+        { error: "開始日の形式が不正です（YYYY-MM-DD）" },
+        { status: 400 }
+      );
+    }
+
+    if (to && !isValidDateString(to)) {
+      return NextResponse.json(
+        { error: "終了日の形式が不正です（YYYY-MM-DD）" },
+        { status: 400 }
+      );
+    }
+
+    if (from && to && from > to) {
+      return NextResponse.json(
+        { error: "開始日は終了日より前に設定してください" },
+        { status: 400 }
+      );
+    }
 
     let interviews: Interview[] = [];
     const feedbackMap = new Map<string, Feedback>();
@@ -228,11 +257,20 @@ export async function GET(request: NextRequest) {
 
       interviews = [interviewData as Interview];
     } else {
-      // 全件取得（最大100件）
-      const { data: interviewsData, error: interviewsError } = await supabase
+      // 全件取得（最大100件）、日付範囲フィルタ対応
+      let query = supabase
         .from("interviews")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", user.id);
+
+      if (from) {
+        query = query.gte("interview_date", from);
+      }
+      if (to) {
+        query = query.lte("interview_date", to);
+      }
+
+      const { data: interviewsData, error: interviewsError } = await query
         .order("interview_date", { ascending: false, nullsFirst: false })
         .limit(MAX_EXPORT_ROWS);
 
