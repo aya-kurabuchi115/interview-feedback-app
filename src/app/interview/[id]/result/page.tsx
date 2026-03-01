@@ -1,7 +1,15 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/supabase";
 import { ResultContent } from "./result-content";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "面接結果 | InterviewCoach",
+    robots: { index: false },
+  };
+}
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Transcript = Database["public"]["Tables"]["transcripts"]["Row"];
@@ -46,10 +54,12 @@ export default async function ResultPage({
   const transcripts = (transcriptsData ?? []) as Transcript[];
 
   // 最新のフィードバックを取得（履歴として複数保持されるため）
+  // Defence-in-Depth: RLS に加えアプリケーション層でも user_id フィルタ
   const { data: feedbackData } = await supabase
     .from("feedbacks")
     .select("*")
     .eq("interview_id", id)
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(1)
     .single();

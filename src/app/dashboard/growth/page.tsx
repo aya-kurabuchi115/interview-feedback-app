@@ -52,11 +52,13 @@ export default async function GrowthPage() {
 
   // フィードバックを一括取得
   // 面接IDが0件の場合はクエリをスキップし、空配列として扱う
+  // Defence-in-Depth: RLS に加えアプリケーション層でも user_id フィルタ
   const { data: feedbacks } = interviewIds.length > 0
     ? await supabase
         .from("feedbacks")
         .select("interview_id, overall_score, category_scores, filler_words, created_at")
         .in("interview_id", interviewIds)
+        .eq("user_id", user.id)
     : { data: null };
 
   const feedbackList = (feedbacks ?? []) as {
