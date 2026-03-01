@@ -60,6 +60,7 @@ export function Header() {
   const navItems = user
     ? [
         { href: "/dashboard", label: "ダッシュボード" },
+        { href: "/mock-interview", label: "模擬面接" },
         { href: "/dashboard/growth", label: "成長記録" },
         { href: "/profile", label: "プロフィール" },
       ]

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Plus, ClipboardList } from "lucide-react";
+import { Plus, ClipboardList, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -173,6 +173,12 @@ export default async function DashboardPage({
           <Suspense fallback={<div className="h-9 w-[180px] animate-pulse rounded-md bg-muted" />}>
             <ExportButtons variant="dropdown" />
           </Suspense>
+          <Button variant="outline" asChild>
+            <Link href="/mock-interview">
+              <MessageSquare className="mr-2 h-4 w-4" />
+              AI模擬面接
+            </Link>
+          </Button>
           <Button asChild>
             <Link href="/interview/new">
               <Plus className="mr-2 h-4 w-4" />
