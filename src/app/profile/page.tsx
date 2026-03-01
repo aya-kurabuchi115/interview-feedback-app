@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,13 @@ import {
   isNotificationEnabled,
   setNotificationEnabled as setNotificationEnabledStorage,
 } from "@/lib/notifications";
+import {
+  PERSONALITY_TYPES,
+  PERSONALITY_DATA,
+  getGroupForType,
+  isValidPersonalityType,
+  type PersonalityType,
+} from "@/lib/personality/types";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -114,6 +122,7 @@ export default function ProfilePage() {
   const [preferredWorkLocation, setPreferredWorkLocation] = useState<string[]>(
     []
   );
+  const [personalityType, setPersonalityType] = useState<string>("");
 
   // 通知設定
   const [notificationSupported, setNotificationSupported] = useState(false);
@@ -171,6 +180,7 @@ export default function ProfilePage() {
         setTargetJobType(profile.target_job_type ?? []);
         setJobHuntingStatus(profile.job_hunting_status ?? "not_started");
         setPreferredWorkLocation(profile.preferred_work_location ?? []);
+        setPersonalityType(profile.personality_type ?? "");
       }
     } catch {
       setToast({ type: "error", message: "プロフィールの読み込みに失敗しました" });
@@ -232,6 +242,7 @@ export default function ProfilePage() {
           target_job_type: targetJobType,
           job_hunting_status: jobHuntingStatus,
           preferred_work_location: preferredWorkLocation,
+          personality_type: personalityType || null,
         }),
       });
 
@@ -587,6 +598,93 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* パーソナリティタイプ */}
+        <Card
+          style={
+            personalityType && isValidPersonalityType(personalityType)
+              ? { borderColor: `${PERSONALITY_DATA[personalityType as PersonalityType].color}40` }
+              : undefined
+          }
+        >
+          <CardHeader>
+            <CardTitle>パーソナリティタイプ</CardTitle>
+            <CardDescription>
+              16パーソナリティタイプを設定すると、AIフィードバックがより的確になります
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* 設定済みの場合: タイプ表示 */}
+            {personalityType && isValidPersonalityType(personalityType) && (() => {
+              const pInfo = PERSONALITY_DATA[personalityType as PersonalityType];
+              const gInfo = getGroupForType(personalityType as PersonalityType);
+              return (
+                <div
+                  className="flex items-center gap-4 rounded-lg p-4"
+                  style={{ backgroundColor: pInfo.colorLight }}
+                >
+                  <div className="text-4xl">{pInfo.animalEmoji}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="rounded-full px-2.5 py-0.5 text-xs font-bold text-white"
+                        style={{ backgroundColor: pInfo.color }}
+                      >
+                        {pInfo.type}
+                      </span>
+                      <span className="text-sm font-bold">{pInfo.name}</span>
+                      <span className="text-xs text-muted-foreground">{pInfo.nameEn}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {gInfo.name}グループ / {pInfo.tagline}
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* 手動選択ドロップダウン */}
+            <div className="space-y-2">
+              <Label htmlFor="personalityType">
+                タイプを手動で選択
+                <span className="ml-2 text-xs text-muted-foreground">
+                  (既に自分のタイプを知っている方)
+                </span>
+              </Label>
+              <select
+                id="personalityType"
+                value={personalityType}
+                onChange={(e) => setPersonalityType(e.target.value)}
+                autoComplete="off"
+                className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                aria-label="パーソナリティタイプ"
+              >
+                <option value="">未設定</option>
+                {PERSONALITY_TYPES.map((t) => {
+                  const info = PERSONALITY_DATA[t];
+                  return (
+                    <option key={t} value={t}>
+                      {info.animalEmoji} {t} - {info.name}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            {/* 診断リンク */}
+            <div className="rounded-lg border border-dashed p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                自分のタイプが分からない方は
+              </p>
+              <Link
+                href="/personality/diagnosis"
+                className="mt-2 inline-flex items-center text-sm font-medium text-primary hover:underline"
+              >
+                簡易診断テスト（10問・約2分）を受ける →
+              </Link>
+            </div>
           </CardContent>
         </Card>
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
+import { PERSONALITY_TYPES } from "@/lib/personality/types";
 
 type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
 
@@ -57,6 +58,17 @@ const VALID_JOB_HUNTING_STATUSES = [
   "decided",
   "other",
 ] as const;
+
+/** バリデーション: パーソナリティタイプ (16タイプのみ or null) */
+function validatePersonalityType(value: unknown): string | null {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value !== "string") return null;
+  const upper = value.toUpperCase();
+  if (PERSONALITY_TYPES.includes(upper as (typeof PERSONALITY_TYPES)[number])) {
+    return upper;
+  }
+  return null;
+}
 
 /** バリデーション: 就活ステータス */
 function validateJobHuntingStatus(
@@ -151,6 +163,11 @@ export async function PUT(request: Request) {
       11
     );
 
+    // personality_type が送られてきた場合のみバリデーション＆セット
+    const personalityType = body.personality_type !== undefined
+      ? validatePersonalityType(body.personality_type)
+      : undefined;
+
     const profileData: ProfileInsert = {
       user_id: user.id,
       display_name: displayName,
@@ -162,6 +179,7 @@ export async function PUT(request: Request) {
       target_job_type: targetJobType,
       job_hunting_status: jobHuntingStatus,
       preferred_work_location: preferredWorkLocation,
+      ...(body.personality_type !== undefined && { personality_type: personalityType }),
       updated_at: new Date().toISOString(),
     };
 
