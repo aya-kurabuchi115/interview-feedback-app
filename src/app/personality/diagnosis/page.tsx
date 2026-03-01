@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { redirectToLogin } from "@/lib/auth/redirect";
 import { createClient } from "@/lib/supabase/server";
 import { getUserSubscription } from "@/lib/subscription";
 import { DiagnosisClient } from "./diagnosis-client";
@@ -23,7 +24,8 @@ export default async function DiagnosisPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    await redirectToLogin();
+    return null;
   }
 
   // プランチェック: Pro/Premium のみ

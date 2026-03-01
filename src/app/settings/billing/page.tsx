@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirectToLogin } from "@/lib/auth/redirect";
 import { createClient } from "@/lib/supabase/server";
 import { getUserSubscription, getRemainingUsage } from "@/lib/subscription";
 import { PLANS } from "@/lib/stripe/config";
@@ -9,7 +9,7 @@ export const metadata = { title: "プラン管理 | InterviewCoach" };
 export default async function BillingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) { await redirectToLogin(); return null; }
 
   const subscription = await getUserSubscription(user.id);
   const usage = await getRemainingUsage(user.id);

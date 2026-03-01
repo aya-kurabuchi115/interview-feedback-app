@@ -45,6 +45,10 @@ export async function updateSession(request: NextRequest) {
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    url.searchParams.set("expired", "true");
+    // 元のパスを保持（再ログイン後に戻れるようにする）
+    const originalPath = request.nextUrl.pathname + request.nextUrl.search;
+    url.searchParams.set("redirect", originalPath);
     return NextResponse.redirect(url);
   }
 

@@ -156,14 +156,14 @@ export default function ProfilePage() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        router.push("/login");
+        router.push(`/login?expired=true&redirect=${encodeURIComponent("/profile")}`);
         return;
       }
 
       const res = await fetch("/api/profile");
       if (!res.ok) {
         if (res.status === 401) {
-          router.push("/login");
+          router.push(`/login?expired=true&redirect=${encodeURIComponent("/profile")}`);
           return;
         }
         throw new Error("Failed to fetch profile");

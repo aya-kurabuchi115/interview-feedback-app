@@ -17,7 +17,43 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, Info } from "lucide-react";
+
+/**
+ * redirect パラメータのバリデーション。
+ * 同一オリジンの相対パスのみ許可し、オープンリダイレクトを防止する。
+ */
+function getSafeRedirectPath(redirect: string | null): string | null {
+  if (!redirect) return null;
+
+  // 相対パス（/ で始まる）のみ許可
+  if (!redirect.startsWith("/")) return null;
+
+  // プロトコル相対URL（//example.com）を拒否
+  if (redirect.startsWith("//")) return null;
+
+  // バックスラッシュを使った回避策を拒否
+  if (redirect.includes("\\")) return null;
+
+  // 許可される遷移先のプレフィックス（保護されたルートのみ）
+  const allowedPrefixes = [
+    "/dashboard",
+    "/interview",
+    "/mock-interview",
+    "/profile",
+    "/es-review",
+    "/settings",
+    "/onboarding",
+    "/personality",
+    "/questions",
+  ];
+  const pathWithoutQuery = redirect.split("?")[0];
+  if (!allowedPrefixes.some((prefix) => pathWithoutQuery.startsWith(prefix))) {
+    return null;
+  }
+
+  return redirect;
+}
 
 export default function LoginPage() {
   return (
@@ -33,8 +69,19 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [errorAction, setErrorAction] = useState<AuthErrorInfo["action"]>();
   const [loading, setLoading] = useState(false);
+  const [sessionExpiredBanner, setSessionExpiredBanner] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // セッション切れバナーの表示
+  const isExpired = searchParams.get("expired") === "true";
+  const redirectParam = searchParams.get("redirect");
+
+  useEffect(() => {
+    if (isExpired) {
+      setSessionExpiredBanner(true);
+    }
+  }, [isExpired]);
 
   // auth callback からのエラーコードをマッピングして表示（XSS 対策）
   useEffect(() => {
@@ -68,7 +115,9 @@ function LoginForm() {
         return;
       }
 
-      router.push("/dashboard");
+      // リダイレクト先のバリデーション（オープンリダイレクト防止）
+      const safeRedirect = getSafeRedirectPath(redirectParam);
+      router.push(safeRedirect ?? "/dashboard");
       router.refresh();
     } catch {
       setError("サーバーとの通信に失敗しました。時間を置いて再度お試しください。");
@@ -88,6 +137,27 @@ function LoginForm() {
         </CardHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <CardContent className="space-y-4">
+            {/* セッション切れバナー（info スタイル・青系） */}
+            {sessionExpiredBanner && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200"
+              >
+                <Info className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                <div>
+                  <p>セッションの有効期限が切れました。再度ログインしてください。</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSessionExpiredBanner(false)}
+                  className="ml-auto flex-shrink-0 text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100"
+                  aria-label="通知を閉じる"
+                >
+                  &times;
+                </button>
+              </div>
+            )}
             {error && (
               <div
                 role="alert"
