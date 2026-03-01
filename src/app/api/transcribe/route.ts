@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { unauthorized, badRequest, notFound, serverError } from "@/lib/api/error-response";
 
 const ASSEMBLYAI_BASE = "https://api.assemblyai.com/v2";
 
@@ -23,18 +24,18 @@ export async function POST(request: Request) {
   try {
     const { interview_id } = await request.json();
     if (!interview_id) {
-      return NextResponse.json({ error: "interview_id is required" }, { status: 400 });
+      return badRequest("面接IDは必須です");
     }
 
     const apiKey = process.env.ASSEMBLYAI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: "ASSEMBLYAI_API_KEY not configured" }, { status: 500 });
+      return serverError("文字起こしサービスの設定にこちらの問題が発生しています。しばらくしてから再度お試しください。");
     }
 
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
 
     // interviews レコードを取得（所有権チェック込み）
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
       .single();
 
     if (fetchError || !interview) {
-      return NextResponse.json({ error: "Interview not found" }, { status: 404 });
+      return notFound("面接データが見つかりません");
     }
 
     // ステータスを transcribing に更新

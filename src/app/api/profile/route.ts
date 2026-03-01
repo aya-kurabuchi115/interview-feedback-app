@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 import { PERSONALITY_TYPES } from "@/lib/personality/types";
+import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
 
 type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
 

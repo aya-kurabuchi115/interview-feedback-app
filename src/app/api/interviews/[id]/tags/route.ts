@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { MAX_TAGS_PER_INTERVIEW } from "@/lib/constants";
+import { unauthorized, badRequest, notFound, serverError } from "@/lib/api/error-response";
 
 export async function GET(
   _request: Request,
@@ -12,8 +13,7 @@ export async function GET(
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user)
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+    if (!user) return unauthorized();
 
     const { data: interview } = await supabase
       .from("interviews")
@@ -21,17 +21,15 @@ export async function GET(
       .eq("id", id)
       .eq("user_id", user.id)
       .single();
-    if (!interview)
-      return NextResponse.json({ error: "面接が見つかりません" }, { status: 404 });
+    if (!interview) return notFound("面接が見つかりません");
 
     const { data, error } = await supabase
       .from("interview_tags")
       .select("tag_id, tags(id, name, color, created_at)")
       .eq("interview_id", id);
     if (error)
-      return NextResponse.json(
-        { error: "タグの取得に失敗しました" },
-        { status: 500 }
+      return serverError(
+        "タグの取得中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
       );
 
     const tags = ((data ?? []) as never[])
@@ -44,9 +42,8 @@ export async function GET(
 
     return NextResponse.json({ tags });
   } catch {
-    return NextResponse.json(
-      { error: "予期しないエラーが発生しました" },
-      { status: 500 }
+    return serverError(
+      "タグの取得中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
     );
   }
 }
@@ -61,8 +58,7 @@ export async function PUT(
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user)
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+    if (!user) return unauthorized();
 
     const { data: interview } = await supabase
       .from("interviews")
@@ -70,30 +66,22 @@ export async function PUT(
       .eq("id", id)
       .eq("user_id", user.id)
       .single();
-    if (!interview)
-      return NextResponse.json({ error: "面接が見つかりません" }, { status: 404 });
+    if (!interview) return notFound("面接が見つかりません");
 
     const body = await request.json();
     const { tag_ids } = body as { tag_ids: string[] };
     if (!Array.isArray(tag_ids))
-      return NextResponse.json(
-        { error: "tag_ids は配列で指定してください" },
-        { status: 400 }
-      );
+      return badRequest("tag_ids は配列で指定してください");
     if (tag_ids.length > MAX_TAGS_PER_INTERVIEW)
-      return NextResponse.json(
-        { error: "タグは最大" + MAX_TAGS_PER_INTERVIEW + "個までです" },
-        { status: 400 }
-      );
+      return badRequest("タグは最大" + MAX_TAGS_PER_INTERVIEW + "個までです");
 
     const { error: deleteError } = await supabase
       .from("interview_tags")
       .delete()
       .eq("interview_id", id);
     if (deleteError)
-      return NextResponse.json(
-        { error: "タグの更新に失敗しました" },
-        { status: 500 }
+      return serverError(
+        "タグの更新中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
       );
 
     if (tag_ids.length > 0) {
@@ -102,17 +90,15 @@ export async function PUT(
         .from("interview_tags")
         .insert(rows as never);
       if (insertError)
-        return NextResponse.json(
-          { error: "タグの追加に失敗しました" },
-          { status: 500 }
+        return serverError(
+          "タグの追加中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
         );
     }
 
     return NextResponse.json({ success: true });
   } catch {
-    return NextResponse.json(
-      { error: "予期しないエラーが発生しました" },
-      { status: 500 }
+    return serverError(
+      "タグの更新中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
     );
   }
 }

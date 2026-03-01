@@ -10,6 +10,7 @@ import type {
 } from "@/types/database";
 import { checkUsageLimit, getModelForPlan } from "@/lib/subscription";
 import { PLANS } from "@/lib/stripe/config";
+import { unauthorized, badRequest, forbidden, serverError } from "@/lib/api/error-response";
 const VALID_CATEGORIES: MockInterviewCategory[] = ["general", "behavioral", "technical", "case"];
 const VALID_ROUNDS: MockInterviewRound[] = ["first", "second", "third", "final"];
 const VALID_DIFFICULTIES: MockInterviewDifficulty[] = ["easy", "normal", "hard"];
@@ -113,21 +114,21 @@ export async function POST(request: Request) {
     const durationMinutes = body.duration_minutes ?? 15;
 
     if (!VALID_CATEGORIES.includes(category)) {
-      return NextResponse.json({ error: "無効な面接カテゴリです" }, { status: 400 });
+      return badRequest("無効な面接カテゴリです");
     }
     if (!VALID_ROUNDS.includes(round)) {
-      return NextResponse.json({ error: "無効な面接ラウンドです" }, { status: 400 });
+      return badRequest("無効な面接ラウンドです");
     }
     if (!VALID_DIFFICULTIES.includes(difficulty)) {
-      return NextResponse.json({ error: "無効な難易度です" }, { status: 400 });
+      return badRequest("無効な難易度です");
     }
     if (!VALID_DURATIONS.includes(durationMinutes)) {
-      return NextResponse.json({ error: "無効な面接時間です" }, { status: 400 });
+      return badRequest("無効な面接時間です");
     }
 
     const companyName = body.company_name?.trim() || null;
     if (companyName && companyName.length > 100) {
-      return NextResponse.json({ error: "企業名は100文字以内で入力してください" }, { status: 400 });
+      return badRequest("企業名は100文字以内で入力してください");
     }
 
     const industry = body.industry?.trim() || null;
@@ -147,7 +148,7 @@ export async function POST(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
 
     // サブスクリプション利用制限チェック

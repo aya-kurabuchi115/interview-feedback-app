@@ -10,6 +10,7 @@ import type {
   MockInterviewMessage,
 } from "@/types/database";
 import { getUserSubscription, getModelForPlan } from "@/lib/subscription";
+import { unauthorized, badRequest, notFound, serverError } from "@/lib/api/error-response";
 const MAX_ANSWER_LENGTH = 5000;
 
 /** 質問数の上限（この範囲内でAIが完了を判断） */
@@ -159,7 +160,7 @@ export async function POST(
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
 
     // プランに応じた AI モデルを決定

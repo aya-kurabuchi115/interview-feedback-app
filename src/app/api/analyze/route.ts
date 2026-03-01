@@ -7,6 +7,7 @@ import { checkUsageLimit, getModelForPlan } from "@/lib/subscription";
 import { PLANS } from "@/lib/stripe/config";
 import { PERSONALITY_DATA, isValidPersonalityType } from "@/lib/personality/types";
 import type { PersonalityType } from "@/lib/personality/types";
+import { unauthorized, badRequest, notFound, forbidden, serverError } from "@/lib/api/error-response";
 
 // ============================================================
 // 型定義
@@ -395,7 +396,7 @@ export async function POST(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
 
     // 面接データを取得（所有権チェック込み）

@@ -11,6 +11,7 @@ import { PLANS } from "@/lib/stripe/config";
 import type { SubscriptionPlan } from "@/types/database";
 import { PERSONALITY_DATA, isValidPersonalityType } from "@/lib/personality/types";
 import type { PersonalityType } from "@/lib/personality/types";
+import { unauthorized, badRequest, notFound, forbidden, conflict, serverError } from "@/lib/api/error-response";
 
 // ============================================================
 // 定数
@@ -327,7 +328,7 @@ export async function POST(
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
 
     // 模擬面接データを取得（Defence-in-Depth: RLS + user_id フィルタ）
