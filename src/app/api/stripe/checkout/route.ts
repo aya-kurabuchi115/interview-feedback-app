@@ -4,6 +4,7 @@ import { getStripe } from "@/lib/stripe/server";
 import { PLANS, getBaseUrl, PAID_PLAN_KEYS } from "@/lib/stripe/config";
 import type { PaidPlanKey } from "@/lib/stripe/config";
 import { getUserSubscription } from "@/lib/subscription";
+import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
 
 interface CheckoutRequest {
   plan?: string;
@@ -16,7 +17,7 @@ export async function POST(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+      return unauthorized();
     }
 
     // リクエストボディからプランを取得（デフォルトは pro）

@@ -4,6 +4,7 @@ import type {
   InterviewCategory,
   InterviewRound,
 } from "@/types/database";
+import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
 
 /** バリデーション定数 */
 const VALID_CATEGORIES: InterviewCategory[] = [
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+      return unauthorized();
     }
 
     // リクエストボディの取得

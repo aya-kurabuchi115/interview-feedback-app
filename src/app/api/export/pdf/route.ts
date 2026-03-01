@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, CategoryScores } from "@/types/database";
 import { CATEGORY_LABELS } from "@/lib/constants";
+import { unauthorized, badRequest, notFound, serverError } from "@/lib/api/error-response";
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Feedback = Database["public"]["Tables"]["feedbacks"]["Row"];

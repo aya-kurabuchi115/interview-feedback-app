@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { CategoryScores } from "@/types/database";
+import { badRequest, notFound, gone, serverError } from "@/lib/api/error-response";
 
 interface SharedResult {
   id: string;

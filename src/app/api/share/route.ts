@@ -6,6 +6,7 @@
  */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { unauthorized, badRequest, notFound, serverError } from "@/lib/api/error-response";
 
 /** デフォルトの有効期限: 7日間 */
 const DEFAULT_EXPIRY_DAYS = 7;

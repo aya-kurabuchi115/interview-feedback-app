@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getUserSubscription, getRemainingUsage } from "@/lib/subscription";
+import { unauthorized, serverError } from "@/lib/api/error-response";
 
 export async function GET() {
   try {
@@ -9,7 +10,7 @@ export async function GET() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+      return unauthorized();
     }
 
     const subscription = await getUserSubscription(user.id);

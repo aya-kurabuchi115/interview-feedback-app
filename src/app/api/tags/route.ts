@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { TAG_COLORS } from "@/lib/constants";
+import { unauthorized, badRequest, conflict, serverError } from "@/lib/api/error-response";
 
 export async function GET() {
   try {
@@ -8,11 +9,7 @@ export async function GET() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user)
-      return NextResponse.json(
-        { error: "認証が必要です" },
-        { status: 401 }
-      );
+    if (!user) return unauthorized();
 
     const { data, error } = await supabase
       .from("tags")
@@ -21,9 +18,8 @@ export async function GET() {
       .order("created_at", { ascending: true });
 
     if (error)
-      return NextResponse.json(
-        { error: "タグの取得に失敗しました" },
-        { status: 500 }
+      return serverError(
+        "タグの取得中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
       );
 
     return NextResponse.json(
@@ -35,9 +31,8 @@ export async function GET() {
       }
     );
   } catch {
-    return NextResponse.json(
-      { error: "予期しないエラーが発生しました" },
-      { status: 500 }
+    return serverError(
+      "タグの取得中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
     );
   }
 }
@@ -48,27 +43,17 @@ export async function POST(request: Request) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user)
-      return NextResponse.json(
-        { error: "認証が必要です" },
-        { status: 401 }
-      );
+    if (!user) return unauthorized();
 
     const body = await request.json();
     const { name, color } = body as { name: string; color?: string };
 
     if (!name || typeof name !== "string")
-      return NextResponse.json(
-        { error: "タグ名は必須です" },
-        { status: 400 }
-      );
+      return badRequest("タグ名は必須です");
 
     const trimmedName = name.trim();
     if (trimmedName.length === 0 || trimmedName.length > 50)
-      return NextResponse.json(
-        { error: "タグ名は1～50文字で入力してください" },
-        { status: 400 }
-      );
+      return badRequest("タグ名は1～50文字で入力してください");
 
     const validColors = TAG_COLORS.map((c) => c.value);
     const tagColor =
@@ -88,21 +73,16 @@ export async function POST(request: Request) {
 
     if (error) {
       if (error.code === "23505")
-        return NextResponse.json(
-          { error: "同じ名前のタグが既に存在します" },
-          { status: 409 }
-        );
-      return NextResponse.json(
-        { error: "タグの作成に失敗しました" },
-        { status: 500 }
+        return conflict("同じ名前のタグが既に存在します");
+      return serverError(
+        "タグの作成中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
       );
     }
 
     return NextResponse.json({ tag: data }, { status: 201 });
   } catch {
-    return NextResponse.json(
-      { error: "予期しないエラーが発生しました" },
-      { status: 500 }
+    return serverError(
+      "タグの作成中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
     );
   }
 }

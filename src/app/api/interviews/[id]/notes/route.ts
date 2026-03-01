@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { MAX_NOTES_LENGTH } from "@/lib/constants";
+import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
 
 export async function PUT(
   request: Request,
@@ -12,27 +13,16 @@ export async function PUT(
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user)
-      return NextResponse.json(
-        { error: "認証が必要です" },
-        { status: 401 }
-      );
+    if (!user) return unauthorized();
 
     const body = await request.json();
     const { notes } = body as { notes: string };
 
     if (typeof notes !== "string")
-      return NextResponse.json(
-        { error: "メモは文字列で指定してください" },
-        { status: 400 }
-      );
+      return badRequest("メモは文字列で指定してください");
     if (notes.length > MAX_NOTES_LENGTH)
-      return NextResponse.json(
-        {
-          error:
-            "メモは" + MAX_NOTES_LENGTH + "文字以内で入力してください",
-        },
-        { status: 400 }
+      return badRequest(
+        "メモは" + MAX_NOTES_LENGTH + "文字以内で入力してください"
       );
 
     const { error } = await supabase
@@ -42,16 +32,14 @@ export async function PUT(
       .eq("user_id", user.id);
 
     if (error)
-      return NextResponse.json(
-        { error: "メモの保存に失敗しました" },
-        { status: 500 }
+      return serverError(
+        "メモの保存中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
       );
 
     return NextResponse.json({ success: true });
   } catch {
-    return NextResponse.json(
-      { error: "予期しないエラーが発生しました" },
-      { status: 500 }
+    return serverError(
+      "メモの保存中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
     );
   }
 }

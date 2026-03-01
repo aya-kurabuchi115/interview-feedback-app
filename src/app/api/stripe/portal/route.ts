@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe/server";
 import { getUserSubscription } from "@/lib/subscription";
 import { getBaseUrl } from "@/lib/stripe/config";
+import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
 
 export async function POST() {
   try {
@@ -11,7 +12,7 @@ export async function POST() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+      return unauthorized();
     }
 
     const subscription = await getUserSubscription(user.id);

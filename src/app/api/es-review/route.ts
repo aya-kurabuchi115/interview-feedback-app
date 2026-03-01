@@ -8,6 +8,7 @@ import { PERSONALITY_DATA, isValidPersonalityType } from "@/lib/personality/type
 import type { PersonalityType } from "@/lib/personality/types";
 import type { SubscriptionPlan } from "@/types/database";
 import type { ESFeedback, ESReviewRequest } from "@/types/es-review";
+import { unauthorized, badRequest, forbidden, serverError } from "@/lib/api/error-response";
 
 // ============================================================
 // 定数
@@ -255,7 +256,7 @@ export async function POST(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorized();
     }
 
     // サブスクリプション利用制限チェック

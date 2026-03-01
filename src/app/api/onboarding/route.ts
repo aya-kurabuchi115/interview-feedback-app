@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
+import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
 
 type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
 
@@ -74,7 +75,7 @@ export async function PUT(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+      return unauthorized();
     }
 
     const body = await request.json();

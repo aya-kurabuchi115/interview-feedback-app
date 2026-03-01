@@ -6,6 +6,7 @@
  */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { unauthorized, badRequest, notFound, forbidden, serverError } from "@/lib/api/error-response";
 
 /** 共有リンクの型 */
 interface SharedResultRow {
