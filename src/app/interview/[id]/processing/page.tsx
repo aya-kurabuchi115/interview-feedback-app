@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, useRef, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
@@ -39,13 +39,13 @@ const STEPS: Step[] = [
     label: "文字起こし中...",
     status: "transcribing",
     icon: <FileText className="h-5 w-5" />,
-    estimatedTime: "約1〜3分",
+    estimatedTime: "約1~3分",
   },
   {
     label: "AI分析中...",
     status: "analyzing",
     icon: <Brain className="h-5 w-5" />,
-    estimatedTime: "約1〜2分",
+    estimatedTime: "約1~2分",
   },
   {
     label: "完了",
@@ -81,12 +81,48 @@ export default function ProcessingPage({
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const analyzeCalledRef = useRef(false);
 
+  // AI分析 API を呼び出す関数
+  const triggerAnalysis = useCallback(async () => {
+    if (analyzeCalledRef.current) return;
+    analyzeCalledRef.current = true;
+    setIsAnalyzing(true);
+
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interview_id: id }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        if (data.code === "RATE_LIMIT_EXCEEDED") {
+          setIsError(true);
+          setErrorMessage(data.error);
+          setIsAnalyzing(false);
+          return;
+        }
+        throw new Error(data.error || "分析に失敗しました");
+      }
+    } catch (error) {
+      console.error("[processing] analyze error:", error);
+      analyzeCalledRef.current = false;
+    }
+    setIsAnalyzing(false);
+  }, [id]);
+
+  // ステータスポーリング & 分析トリガー
   useEffect(() => {
     const supabase = createClient();
     let timeoutId: ReturnType<typeof setTimeout>;
+    let cancelled = false;
 
     async function fetchStatus() {
+      if (cancelled) return;
+
       try {
         const { data, error } = await supabase
           .from("interviews")
@@ -108,7 +144,8 @@ export default function ProcessingPage({
           return;
         }
 
-        const status = (data as Record<string, unknown>).status as InterviewStatus;
+        const status = (data as Record<string, unknown>)
+          .status as InterviewStatus;
         setCurrentStatus(status);
         setIsLoading(false);
 
@@ -121,11 +158,20 @@ export default function ProcessingPage({
         }
 
         if (status === "completed") {
-          router.push(`/interview/${id}/result`);
+          setTimeout(() => {
+            router.push(`/interview/${id}/result`);
+          }, 1000);
           return;
         }
 
-        timeoutId = setTimeout(fetchStatus, POLL_INTERVAL);
+        // uploaded 状態の場合、AI分析を自動開始
+        if (status === "uploaded" && !analyzeCalledRef.current) {
+          triggerAnalysis();
+        }
+
+        if (!cancelled) {
+          timeoutId = setTimeout(fetchStatus, POLL_INTERVAL);
+        }
       } catch {
         setIsError(true);
         setErrorMessage("通信エラーが発生しました");
@@ -136,14 +182,16 @@ export default function ProcessingPage({
     fetchStatus();
 
     return () => {
+      cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [id, router]);
+  }, [id, router, triggerAnalysis]);
 
   const handleRetry = async () => {
     setIsError(false);
     setErrorMessage(null);
     setIsLoading(true);
+    analyzeCalledRef.current = false;
 
     try {
       const supabase = createClient();
@@ -169,6 +217,10 @@ export default function ProcessingPage({
   };
 
   const currentStepIndex = getStepIndex(currentStatus);
+  // isAnalyzing を参照して lint の未使用警告を防ぐ
+  const headerTitle = isAnalyzing
+    ? "AIがフィードバックを生成しています..."
+    : "面接データを処理しています";
 
   return (
     <div className="container mx-auto max-w-2xl px-4 py-8">
@@ -177,7 +229,7 @@ export default function ProcessingPage({
       <Card>
         <CardHeader>
           <CardTitle className="text-lg text-center">
-            面接データを処理しています
+            {headerTitle}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -191,10 +243,18 @@ export default function ProcessingPage({
               <p className="text-sm text-destructive text-center">
                 {errorMessage}
               </p>
-              <Button onClick={handleRetry} variant="outline">
-                <RefreshCw className="mr-2 h-4 w-4" />
-                リトライ
-              </Button>
+              <div className="flex gap-3">
+                <Button onClick={handleRetry} variant="outline">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  リトライ
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => router.push("/dashboard")}
+                >
+                  ダッシュボードに戻る
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-0">
