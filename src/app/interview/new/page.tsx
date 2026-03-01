@@ -117,10 +117,12 @@ export default function NewInterviewPage() {
 
     try {
       const supabase = createClient();
+      // ワイルドカード文字をエスケープして ilike インジェクションを防止
+      const escaped = query.replace(/[%_\\]/g, "\\$&");
       const { data } = await supabase
         .from("companies")
         .select("name")
-        .ilike("name", `%${query}%`)
+        .ilike("name", `%${escaped}%`)
         .limit(5);
 
       const companies = data as { name: string }[] | null;

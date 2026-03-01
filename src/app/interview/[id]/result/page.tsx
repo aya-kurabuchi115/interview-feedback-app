@@ -24,6 +24,7 @@ export default async function ResultPage({
     .from("interviews")
     .select("*")
     .eq("id", id)
+    .eq("user_id", user.id)
     .single();
 
   const interview = interviewData as Interview | null;
