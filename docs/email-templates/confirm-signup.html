@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>InterviewCoach - メールアドレスの確認</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background-color: #f0f2f5; font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+  <!-- Wrapper Table -->
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f0f2f5;">
+    <tr>
+      <td align="center" style="padding: 24px 16px;">
+        <!-- Email Container -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
+          <!-- Header -->
+          <tr>
+            <td style="background-color: #1e3a5f; padding: 28px 32px; text-align: center;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="color: #ffffff; font-size: 24px; font-weight: bold; letter-spacing: 1px; text-align: center;">
+                    InterviewCoach
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding: 40px 32px 32px 32px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="color: #333333; font-size: 16px; line-height: 1.7;">
+                    <p style="margin: 0 0 20px 0; font-size: 18px; font-weight: bold; color: #1e3a5f;">
+                      こんにちは！
+                    </p>
+                    <p style="margin: 0 0 20px 0;">
+                      InterviewCoach へのご登録ありがとうございます。
+                    </p>
+                    <p style="margin: 0 0 28px 0;">
+                      以下のボタンをクリックして、メールアドレスを確認してください。
+                    </p>
+                  </td>
+                </tr>
+                <!-- CTA Button -->
+                <tr>
+                  <td align="center" style="padding: 0 0 28px 0;">
+                    <!--[if mso]>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ .ConfirmationURL }}" style="height:48px;v-text-anchor:middle;width:280px;" arcsize="13%" fillcolor="#1e3a5f">
+                      <w:anchorlock/>
+                      <center style="color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:bold;">メールアドレスを確認する</center>
+                    </v:roundrect>
+                    <![endif]-->
+                    <!--[if !mso]><!-->
+                    <a href="{{ .ConfirmationURL }}" target="_blank" style="display: inline-block; background-color: #1e3a5f; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; padding: 14px 28px; border-radius: 6px; min-width: 200px; text-align: center; mso-hide: all;">
+                      メールアドレスを確認する
+                    </a>
+                    <!--<![endif]-->
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color: #666666; font-size: 14px; line-height: 1.6;">
+                    <p style="margin: 0 0 12px 0;">
+                      このリンクは <strong>24時間</strong> 有効です。
+                    </p>
+                    <p style="margin: 0 0 12px 0;">
+                      ボタンが機能しない場合は、以下のURLをブラウザに貼り付けてください:
+                    </p>
+                    <p style="margin: 0; word-break: break-all; color: #1e3a5f; font-size: 13px;">
+                      {{ .ConfirmationURL }}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f5f5f5; padding: 24px 32px; border-top: 1px solid #e8e8e8;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="color: #888888; font-size: 12px; line-height: 1.6; text-align: center;">
+                    <p style="margin: 0 0 8px 0;">
+                      &copy; InterviewCoach
+                    </p>
+                    <p style="margin: 0 0 8px 0;">
+                      <a href="{{ .SiteURL }}" style="color: #1e3a5f; text-decoration: underline;">{{ .SiteURL }}</a>
+                    </p>
+                    <p style="margin: 0;">
+                      このメールに心当たりがない場合は無視してください。
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
