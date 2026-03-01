@@ -7,6 +7,12 @@ export function Footer() {
         <p>&copy; {new Date().getFullYear()} InterviewCoach. All rights reserved.</p>
         <nav className="flex gap-4">
           <Link
+            href="/legal/terms"
+            className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
+          >
+            利用規約
+          </Link>
+          <Link
             href="/legal/privacy"
             className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
