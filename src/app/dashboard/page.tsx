@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import type { Database, InterviewCategory } from "@/types/database";
 import { InterviewCard } from "@/components/interview-card";
 import { InterviewFilter, type SortOption } from "@/components/interview-filter";
+import { ExportButtons } from "@/components/export-buttons";
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Feedback = Database["public"]["Tables"]["feedbacks"]["Row"];
@@ -117,12 +118,15 @@ export default async function DashboardPage({
       {/* ヘッダー */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">面接履歴</h1>
-        <Button asChild>
-          <Link href="/interview/new">
-            <Plus className="mr-2 h-4 w-4" />
-            新規面接を記録
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportButtons variant="dropdown" />
+          <Button asChild>
+            <Link href="/interview/new">
+              <Plus className="mr-2 h-4 w-4" />
+              新規面接を記録
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* フィルタ・ソート */}
