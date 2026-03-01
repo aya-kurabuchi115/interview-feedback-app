@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, Menu, Mic } from "lucide-react";
+import { LogOut, Menu, Mic, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -58,7 +58,10 @@ export function Header() {
   };
 
   const navItems = user
-    ? [{ href: "/dashboard", label: "ダッシュボード" }]
+    ? [
+        { href: "/dashboard", label: "ダッシュボード" },
+        { href: "/profile", label: "プロフィール" },
+      ]
     : [];
 
   return (
@@ -91,6 +94,12 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href="/profile">
+                    <UserCircle className="mr-2 h-4 w-4" />
+                    プロフィール
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   ログアウト
