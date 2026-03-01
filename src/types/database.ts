@@ -492,6 +492,50 @@ export interface Database {
         Relationships: [];
       };
 
+      /** Issue #133: ES添削 */
+      es_reviews: {
+        Row: {
+          id: string;
+          user_id: string;
+          question: string;
+          answer: string;
+          char_count: number;
+          feedback: Json | null;
+          score: number | null;
+          status: string;
+          model_version: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          question: string;
+          answer: string;
+          char_count?: number;
+          feedback?: Json | null;
+          score?: number | null;
+          status?: string;
+          model_version?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          question?: string;
+          answer?: string;
+          char_count?: number;
+          feedback?: Json | null;
+          score?: number | null;
+          status?: string;
+          model_version?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
       /** Issue #78: 面接結果の共有リンク */
       shared_results: {
         Row: {
