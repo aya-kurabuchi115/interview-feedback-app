@@ -84,6 +84,7 @@ const ONBOARDING_BYPASS_PREFIXES = [
   "/signup",
   "/reset-password",
   "/update-password",
+  "/personality",
 ];
 
 const ONBOARDING_REQUIRED_PREFIXES = [
