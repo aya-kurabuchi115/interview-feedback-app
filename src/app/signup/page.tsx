@@ -74,10 +74,14 @@ export default function SignUpPage() {
             メールアドレスとパスワードで登録
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <CardContent className="space-y-4">
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+              >
                 {error}
               </div>
             )}
@@ -86,6 +90,7 @@ export default function SignUpPage() {
               <Input
                 id="email"
                 type="email"
+                autoComplete="email"
                 placeholder="example@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -97,6 +102,7 @@ export default function SignUpPage() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="new-password"
                 placeholder="8文字以上"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

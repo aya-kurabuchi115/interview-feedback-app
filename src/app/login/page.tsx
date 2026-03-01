@@ -58,7 +58,7 @@ export default function LoginPage() {
             メールアドレスとパスワードでログイン
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <CardContent className="space-y-4">
             {error && (
               <div
