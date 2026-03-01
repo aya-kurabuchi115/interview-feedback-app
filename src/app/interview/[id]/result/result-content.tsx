@@ -15,6 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import type { Database } from "@/types/supabase";
 import type { Json } from "@/types/supabase";
 import type { CategoryScores } from "@/types/database";
+import { CATEGORY_LABELS } from "@/lib/constants";
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Transcript = Database["public"]["Tables"]["transcripts"]["Row"];
@@ -32,8 +33,15 @@ interface FillerWord {
 }
 
 function parseJsonArray<T>(data: Json): T[] {
-  if (Array.isArray(data)) return data as T[];
-  return [];
+  if (!Array.isArray(data)) return [];
+  // null/undefined を除外してキャスト
+  return data.filter((item) => item != null) as T[];
+}
+
+/** string 配列専用のパーサー。各要素が string であることを保証する */
+function parseStringArray(data: Json): string[] {
+  if (!Array.isArray(data)) return [];
+  return data.filter((item): item is string => typeof item === "string");
 }
 
 // ============================================================
@@ -68,17 +76,6 @@ function ScoreDisplay({ score }: { score: number }) {
 // ============================================================
 // カテゴリ別スコア表示
 // ============================================================
-
-const CATEGORY_LABELS: Record<string, string> = {
-  communication: "コミュニケーション",
-  content: "回答内容",
-  manner: "マナー",
-  logic: "論理性",
-  specificity: "具体性",
-  enthusiasm: "熱意",
-  manners: "マナー",
-  question_handling: "質問対応",
-};
 
 function CategoryScoreBar({
   label,
@@ -154,16 +151,16 @@ export function ResultContent({
     ? parseJsonArray<FillerWord>(feedback.filler_words)
     : [];
   const goodPoints = feedback
-    ? parseJsonArray<string>(feedback.good_points)
+    ? parseStringArray(feedback.good_points)
     : [];
   const improvementPoints = feedback
-    ? parseJsonArray<string>(feedback.improvement_points)
+    ? parseStringArray(feedback.improvement_points)
     : [];
   const strengths = feedback
-    ? parseJsonArray<string>(feedback.strengths)
+    ? parseStringArray(feedback.strengths)
     : [];
   const improvements = feedback
-    ? parseJsonArray<string>(feedback.improvements)
+    ? parseStringArray(feedback.improvements)
     : [];
 
   // good_points が空の場合は strengths にフォールバック

@@ -78,7 +78,7 @@ export default function NewInterviewPage() {
   // --- 下書き保存・復元 ---
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
+      const saved = sessionStorage.getItem(DRAFT_STORAGE_KEY);
       if (saved) {
         const draft: DraftData = JSON.parse(saved);
         if (draft.companyName) setCompanyName(draft.companyName);
@@ -101,7 +101,7 @@ export default function NewInterviewPage() {
       transcript,
     };
     try {
-      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+      sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
     } catch {
       // ストレージ書き込み失敗は無視
     }
@@ -331,7 +331,7 @@ export default function NewInterviewPage() {
       }
 
       // 下書きをクリア
-      localStorage.removeItem(DRAFT_STORAGE_KEY);
+      sessionStorage.removeItem(DRAFT_STORAGE_KEY);
 
       router.push("/dashboard");
       router.refresh();

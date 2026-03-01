@@ -124,6 +124,8 @@ export default function ProcessingPage({
       if (cancelled) return;
 
       try {
+        // 注: user_id による明示的フィルタは追加していない。
+        // Supabase RLS ポリシーにより、認証ユーザーは自分の interviews のみ取得可能。
         const { data, error } = await supabase
           .from("interviews")
           .select("status")

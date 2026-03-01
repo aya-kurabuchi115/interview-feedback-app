@@ -175,7 +175,8 @@ export default function ProfilePage() {
   };
 
   // 保存（二重送信防止付き）
-  const handleSave = async () => {
+  const handleSave = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (savingRef.current) return;
 
     // バリデーション
@@ -270,7 +271,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <div className="space-y-6">
+      <form onSubmit={handleSave} className="space-y-6">
         {/* 基本情報 */}
         <Card>
           <CardHeader>
@@ -568,7 +569,7 @@ export default function ProfilePage() {
 
         {/* 保存ボタン */}
         <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={saving} size="lg">
+          <Button type="submit" disabled={saving} size="lg">
             {saving ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -577,7 +578,7 @@ export default function ProfilePage() {
             {saving ? "保存中..." : "保存する"}
           </Button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
