@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import Anthropic from "@anthropic-ai/sdk";
 import type { InterviewCategory, InterviewRound } from "@/types/database";
+import { checkUsageLimit } from "@/lib/subscription";
+import { FREE_MONTHLY_LIMIT } from "@/lib/stripe/config";
 
 // ============================================================
 // 型定義
@@ -344,34 +346,16 @@ export async function POST(request: Request) {
 
     const interview = interviewData as Record<string, unknown>;
 
-    // 無料プランの月3回制限チェック
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    const { count: feedbackCount } = await supabase
-      .from("feedbacks")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .gte("created_at", monthStart);
-
-    // サブスクリプション確認
-    const { data: subData } = await supabase
-      .from("subscriptions")
-      .select("plan, status")
-      .eq("user_id", user.id)
-      .eq("status", "active")
-      .single();
-
-    const subscription = subData as { plan: string; status: string } | null;
-    const plan = subscription?.plan || "free";
-    const FREE_MONTHLY_LIMIT = 3;
-
-    if (plan === "free" && (feedbackCount ?? 0) >= FREE_MONTHLY_LIMIT) {
+    // サブスクリプション利用制限チェック
+    const canUse = await checkUsageLimit(user.id);
+    if (!canUse) {
       return NextResponse.json(
         {
-          error: `無料プランの月間利用上限（${FREE_MONTHLY_LIMIT}回）に達しました。しばらく待ってから再試行してください。`,
-          code: "RATE_LIMIT_EXCEEDED",
+          error: `無料プランの月間利用上限（${FREE_MONTHLY_LIMIT}回）に達しました。Pro プランにアップグレードすると無制限でご利用いただけます。`,
+          code: "USAGE_LIMIT_EXCEEDED",
+          upgrade_url: "/pricing",
         },
-        { status: 429 }
+        { status: 403 }
       );
     }
 

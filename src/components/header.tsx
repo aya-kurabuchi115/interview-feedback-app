@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, Menu, Mic, UserCircle } from "lucide-react";
+import { CreditCard, LogOut, Menu, Mic, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -99,6 +99,12 @@ export function Header() {
                   <Link href="/profile">
                     <UserCircle className="mr-2 h-4 w-4" />
                     プロフィール
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/billing">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    プラン管理
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>

@@ -341,7 +341,7 @@ export default function Home() {
               </CardContent>
               <CardFooter>
                 <Button className="w-full" size="lg" asChild>
-                  <Link href="/signup">Pro で始める</Link>
+                  <Link href="/pricing">Pro で始める</Link>
                 </Button>
               </CardFooter>
             </Card>
