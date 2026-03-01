@@ -18,6 +18,12 @@ export function Footer() {
           >
             プライバシーポリシー
           </Link>
+          <Link
+            href="/legal/tokushoho"
+            className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
+          >
+            特定商取引法に基づく表記
+          </Link>
         </nav>
       </div>
     </footer>
