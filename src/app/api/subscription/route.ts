@@ -15,7 +15,14 @@ export async function GET() {
     const subscription = await getUserSubscription(user.id);
     const usage = await getRemainingUsage(user.id);
 
-    return NextResponse.json({ subscription, usage });
+    return NextResponse.json(
+      { subscription, usage },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+        },
+      }
+    );
   } catch (error) {
     console.error("[subscription] Error:", error);
     return NextResponse.json(

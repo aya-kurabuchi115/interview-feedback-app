@@ -7,11 +7,13 @@ import { Footer } from "@/components/footer";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const siteUrl = "https://interviewcoach.jp";
@@ -61,6 +63,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
+      <head>
+        {/* Supabase への接続を事前確立して LCP を改善 */}
+        <link
+          rel="dns-prefetch"
+          href={`https://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace("https://", "") ?? ""}`}
+        />
+        <link
+          rel="preconnect"
+          href={`https://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace("https://", "") ?? ""}`}
+          crossOrigin="anonymous"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

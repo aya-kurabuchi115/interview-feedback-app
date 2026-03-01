@@ -2,7 +2,10 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // 画像最適化: WebP/AVIF フォーマットに対応
+  images: {
+    formats: ["image/avif", "image/webp"],
+  },
 };
 
 export default withSentryConfig(nextConfig, {

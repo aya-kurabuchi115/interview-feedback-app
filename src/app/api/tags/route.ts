@@ -26,7 +26,14 @@ export async function GET() {
         { status: 500 }
       );
 
-    return NextResponse.json({ tags: data ?? [] });
+    return NextResponse.json(
+      { tags: data ?? [] },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+        },
+      }
+    );
   } catch {
     return NextResponse.json(
       { error: "予期しないエラーが発生しました" },
