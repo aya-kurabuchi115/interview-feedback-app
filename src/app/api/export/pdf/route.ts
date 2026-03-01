@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, CategoryScores } from "@/types/database";
+import { CATEGORY_LABELS } from "@/lib/constants";
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Feedback = Database["public"]["Tables"]["feedbacks"]["Row"];
@@ -22,18 +23,6 @@ const ROUND_MAP: Record<string, string> = {
   gd: "GD",
   case: "ケース",
   other: "その他",
-};
-
-/** カテゴリ別スコアの日本語ラベル */
-const SCORE_CATEGORY_LABELS: Record<string, string> = {
-  communication: "コミュニケーション",
-  content: "回答内容",
-  manner: "マナー",
-  logic: "論理性",
-  specificity: "具体性",
-  enthusiasm: "熱意",
-  manners: "マナー",
-  question_handling: "質問対応",
 };
 
 /** 最大エクスポート件数 */
@@ -121,7 +110,7 @@ function renderSingleReport(
                 .map(
                   ([key, value]) => `
                 <div class="category-score-row">
-                  <span class="category-label">${escapeHtml(SCORE_CATEGORY_LABELS[key] || key)}</span>
+                  <span class="category-label">${escapeHtml(CATEGORY_LABELS[key] || key)}</span>
                   <div class="score-bar-container">
                     <div class="score-bar" style="width: ${value}%; background-color: ${scoreColor(value)}"></div>
                   </div>
@@ -219,7 +208,7 @@ export async function GET(request: NextRequest) {
     const interviewId = searchParams.get("id");
 
     let interviews: Interview[] = [];
-    let feedbackMap = new Map<string, Feedback>();
+    const feedbackMap = new Map<string, Feedback>();
 
     if (interviewId) {
       // 特定の面接を取得
