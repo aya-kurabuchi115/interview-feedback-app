@@ -134,6 +134,18 @@ export async function middleware(request: NextRequest) {
 
   const response = await updateSession(request);
 
+  // ログイン済みユーザーがトップページ（/）にアクセスした場合、ダッシュボードにリダイレクト
+  if (request.nextUrl.pathname === "/") {
+    const hasSession = request.cookies.getAll().some(
+      (cookie) => cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token")
+    );
+    if (hasSession) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (shouldCheckOnboarding(request.nextUrl.pathname)) {
     const onboardingCompleted = request.cookies.get("onboarding_completed")?.value;
     const hasSession = request.cookies.getAll().some(

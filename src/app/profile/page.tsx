@@ -207,22 +207,47 @@ export default function ProfilePage() {
     }
   };
 
+  // フィールドごとのバリデーションエラー
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // クライアントサイドバリデーション
+  const validateForm = (): Record<string, string> => {
+    const errors: Record<string, string> = {};
+    const trimmedName = displayName.trim();
+    if (trimmedName.length === 0) {
+      errors.displayName = "フルネームを入力してください（1〜30文字）";
+    } else if (trimmedName.length > 30) {
+      errors.displayName = "フルネームは30文字以内で入力してください";
+    }
+    if (university.trim().length > 100) {
+      errors.university = "大学名は100文字以内で入力してください";
+    }
+    if (faculty.trim().length > 100) {
+      errors.faculty = "学部・学科は100文字以内で入力してください";
+    }
+    if (targetIndustry.length > 5) {
+      errors.targetIndustry = "志望業界は最大5つまで選択できます";
+    }
+    if (targetJobType.length > 5) {
+      errors.targetJobType = "志望職種は最大5つまで選択できます";
+    }
+    return errors;
+  };
+
   // 保存（二重送信防止付き）
   const handleSave = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (savingRef.current) return;
 
-    // バリデーション
-    if (displayName.trim().length > 0 && displayName.trim().length > 30) {
-      setToast({ type: "error", message: "表示名は1~30文字で入力してください" });
-      return;
-    }
-    if (targetIndustry.length > 5) {
-      setToast({ type: "error", message: "志望業界は最大5つまで選択できます" });
-      return;
-    }
-    if (targetJobType.length > 5) {
-      setToast({ type: "error", message: "志望職種は最大5つまで選択できます" });
+    // クライアントバリデーション
+    const errors = validateForm();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      const errorMessages = Object.values(errors);
+      setToast({
+        type: "error",
+        message: `入力内容を確認してください:\n${errorMessages.join("\n")}`,
+      });
       return;
     }
 
@@ -248,13 +273,17 @@ export default function ProfilePage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "保存に失敗しました");
+        throw new Error(
+          data.error || "サーバーとの通信に失敗しました。時間を置いて再度お試しください。"
+        );
       }
 
       setToast({ type: "success", message: "プロフィールを保存しました" });
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "保存に失敗しました";
+        err instanceof Error
+          ? err.message
+          : "サーバーとの通信に失敗しました。時間を置いて再度お試しください。";
       setToast({ type: "error", message });
     } finally {
       setSaving(false);
@@ -288,13 +317,14 @@ export default function ProfilePage() {
               : "border-red-200 bg-red-50 text-red-800"
           }`}
           role="alert"
+          aria-live="assertive"
         >
           {toast.type === "success" ? (
             <CheckCircle className="h-4 w-4 shrink-0" />
           ) : (
             <AlertCircle className="h-4 w-4 shrink-0" />
           )}
-          <span className="text-sm">{toast.message}</span>
+          <span className="text-sm whitespace-pre-line">{toast.message}</span>
           <button
             onClick={() => setToast(null)}
             className="ml-auto"
@@ -311,50 +341,109 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle>基本情報</CardTitle>
             <CardDescription>
-              あなたの基本的な情報を入力してください
+              あなたの基本的な情報を入力してください（<span className="text-destructive">*</span>は必須項目）
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="displayName">フルネーム</Label>
+              <Label htmlFor="displayName">
+                フルネーム<span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="displayName"
                 value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
+                onChange={(e) => {
+                  setDisplayName(e.target.value);
+                  if (fieldErrors.displayName) {
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.displayName;
+                      return next;
+                    });
+                  }
+                }}
                 placeholder="山田 太郎"
                 maxLength={30}
+                autoComplete="name"
                 aria-describedby="displayName-hint"
+                aria-invalid={!!fieldErrors.displayName}
+                aria-errormessage={fieldErrors.displayName ? "displayName-error" : undefined}
+                required
               />
-              <p id="displayName-hint" className="text-xs text-muted-foreground">
-                1~30文字
-              </p>
+              {fieldErrors.displayName ? (
+                <p id="displayName-error" className="text-xs text-destructive" role="alert">
+                  {fieldErrors.displayName}
+                </p>
+              ) : (
+                <p id="displayName-hint" className="text-xs text-muted-foreground">
+                  1〜30文字（必須）
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="university">大学名</Label>
+              <Label htmlFor="university">
+                大学名<span className="ml-1 text-xs text-muted-foreground">（任意）</span>
+              </Label>
               <Input
                 id="university"
                 value={university}
-                onChange={(e) => setUniversity(e.target.value)}
+                onChange={(e) => {
+                  setUniversity(e.target.value);
+                  if (fieldErrors.university) {
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.university;
+                      return next;
+                    });
+                  }
+                }}
                 placeholder="東京大学"
                 maxLength={100}
+                autoComplete="organization"
+                aria-invalid={!!fieldErrors.university}
               />
+              {fieldErrors.university && (
+                <p className="text-xs text-destructive" role="alert">
+                  {fieldErrors.university}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="faculty">学部・学科</Label>
+              <Label htmlFor="faculty">
+                学部・学科<span className="ml-1 text-xs text-muted-foreground">（任意）</span>
+              </Label>
               <Input
                 id="faculty"
                 value={faculty}
-                onChange={(e) => setFaculty(e.target.value)}
+                onChange={(e) => {
+                  setFaculty(e.target.value);
+                  if (fieldErrors.faculty) {
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.faculty;
+                      return next;
+                    });
+                  }
+                }}
                 placeholder="工学部 情報工学科"
                 maxLength={100}
+                autoComplete="off"
+                aria-invalid={!!fieldErrors.faculty}
               />
+              {fieldErrors.faculty && (
+                <p className="text-xs text-destructive" role="alert">
+                  {fieldErrors.faculty}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="graduationYear">卒業予定年</Label>
+                <Label htmlFor="graduationYear">
+                  卒業予定年<span className="ml-1 text-xs text-muted-foreground">（任意）</span>
+                </Label>
                 <select
                   id="graduationYear"
                   value={graduationYear}
@@ -375,7 +464,9 @@ export default function ProfilePage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="graduationMonth">卒業予定月</Label>
+                <Label htmlFor="graduationMonth">
+                  卒業予定月<span className="ml-1 text-xs text-muted-foreground">（任意）</span>
+                </Label>
                 <select
                   id="graduationMonth"
                   value={graduationMonth}
@@ -409,7 +500,9 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="jobHuntingStatus">就活状況</Label>
+              <Label htmlFor="jobHuntingStatus">
+                就活状況<span className="ml-1 text-xs text-muted-foreground">（任意）</span>
+              </Label>
               <select
                 id="jobHuntingStatus"
                 value={jobHuntingStatus}
@@ -427,10 +520,7 @@ export default function ProfilePage() {
 
             <div className="space-y-2">
               <Label>
-                志望業界
-                <span className="ml-2 text-xs text-muted-foreground">
-                  (最大5つ)
-                </span>
+                志望業界<span className="ml-1 text-xs text-muted-foreground">（任意・最大5つ）</span>
               </Label>
               <div className="flex flex-wrap gap-2">
                 {INDUSTRIES.map((industry) => {
@@ -469,10 +559,7 @@ export default function ProfilePage() {
 
             <div className="space-y-2">
               <Label>
-                志望職種
-                <span className="ml-2 text-xs text-muted-foreground">
-                  (最大5つ)
-                </span>
+                志望職種<span className="ml-1 text-xs text-muted-foreground">（任意・最大5つ）</span>
               </Label>
               <div className="flex flex-wrap gap-2">
                 {JOB_TYPES.map((jobType) => {
@@ -519,7 +606,9 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>希望勤務地</Label>
+              <Label>
+                希望勤務地<span className="ml-1 text-xs text-muted-foreground">（任意）</span>
+              </Label>
               <div className="flex flex-wrap gap-2">
                 {WORK_LOCATIONS.map((location) => {
                   const selected = preferredWorkLocation.includes(location);
@@ -648,10 +737,7 @@ export default function ProfilePage() {
             {/* 手動選択ドロップダウン */}
             <div className="space-y-2">
               <Label htmlFor="personalityType">
-                タイプを手動で選択
-                <span className="ml-2 text-xs text-muted-foreground">
-                  (既に自分のタイプを知っている方)
-                </span>
+                タイプを手動で選択<span className="ml-1 text-xs text-muted-foreground">（任意・既に自分のタイプを知っている方）</span>
               </Label>
               <select
                 id="personalityType"
