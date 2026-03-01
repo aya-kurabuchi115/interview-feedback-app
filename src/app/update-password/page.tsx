@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -21,7 +21,30 @@ export default function UpdatePasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
   const router = useRouter();
+
+  // 認証状態の検証: 未認証ユーザーがパスワード更新ページにアクセスすることを防止
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+          // 未認証の場合はパスワードリセットページにリダイレクト
+          router.replace("/reset-password");
+          return;
+        }
+      } catch {
+        router.replace("/reset-password");
+        return;
+      }
+      setAuthChecking(false);
+    };
+
+    checkAuth();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +84,19 @@ export default function UpdatePasswordPage() {
     }
   };
 
+  // 認証チェック中はローディング表示
+  if (authChecking) {
+    return (
+      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex items-center justify-center py-12">
+            <p className="text-sm text-muted-foreground">認証状態を確認中...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4">
       <Card className="w-full max-w-md">
@@ -73,7 +109,11 @@ export default function UpdatePasswordPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+              >
                 {error}
               </div>
             )}
@@ -82,6 +122,7 @@ export default function UpdatePasswordPage() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="new-password"
                 placeholder="8文字以上"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -94,6 +135,7 @@ export default function UpdatePasswordPage() {
               <Input
                 id="confirmPassword"
                 type="password"
+                autoComplete="new-password"
                 placeholder="もう一度入力"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/supabase";
@@ -5,6 +6,15 @@ import { CompareContent } from "./compare-content";
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Feedback = Database["public"]["Tables"]["feedbacks"]["Row"];
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "フィードバック比較 | InterviewCoach",
+    description:
+      "面接フィードバックを比較して成長を可視化します。カテゴリ別スコアや改善ポイントの変化を確認できます。",
+    robots: { index: false },
+  };
+}
 
 export default async function ComparePage({
   params,
@@ -35,11 +45,12 @@ export default async function ComparePage({
   const currentInterview = currentInterviewData as Interview | null;
   if (!currentInterview) redirect("/dashboard");
 
-  // 現在の面接のフィードバック取得
+  // 現在の面接のフィードバック取得（user_id フィルタで Defence-in-Depth）
   const { data: currentFeedbackData } = await supabase
     .from("feedbacks")
     .select("*")
     .eq("interview_id", id)
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(1)
     .single();
@@ -74,10 +85,12 @@ export default async function ComparePage({
     compareInterview = compareInterviewData as Interview | null;
 
     if (compareInterview) {
+      // 比較対象のフィードバック取得（user_id フィルタで Defence-in-Depth）
       const { data: compareFeedbackData } = await supabase
         .from("feedbacks")
         .select("*")
         .eq("interview_id", compareId)
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1)
         .single();

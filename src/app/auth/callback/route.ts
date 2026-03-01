@@ -2,8 +2,24 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+/**
+ * リダイレクト先のオリジンを安全に取得する。
+ * リバースプロキシ環境では X-Forwarded-Host が攻撃者に操作される可能性があるため、
+ * 環境変数 NEXT_PUBLIC_SITE_URL を優先的に使用し、Open Redirect を防止する。
+ */
+function getSafeOrigin(requestUrl: string): string {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (siteUrl) {
+    // 末尾スラッシュを除去して返す
+    return siteUrl.replace(/\/+$/, "");
+  }
+  // フォールバック: 開発環境向け
+  return new URL(requestUrl).origin;
+}
+
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const origin = getSafeOrigin(request.url);
   const code = searchParams.get("code");
   const type = searchParams.get("type");
 
