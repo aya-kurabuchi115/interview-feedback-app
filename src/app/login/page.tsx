@@ -4,6 +4,8 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { getAuthErrorInfo } from "@/lib/auth/error-messages";
+import type { AuthErrorInfo } from "@/lib/auth/error-messages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,21 +31,25 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [errorAction, setErrorAction] = useState<AuthErrorInfo["action"]>();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // auth callback からのエラーメッセージを表示
+  // auth callback からのエラーコードをマッピングして表示（XSS 対策）
   useEffect(() => {
     const errorParam = searchParams.get("error");
-    if (errorParam) {
-      setError(errorParam);
+    const errorInfo = getAuthErrorInfo(errorParam);
+    if (errorInfo) {
+      setError(errorInfo.message);
+      setErrorAction(errorInfo.action);
     }
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setErrorAction(undefined);
     setLoading(true);
 
     try {
@@ -88,7 +94,15 @@ function LoginForm() {
                 aria-live="assertive"
                 className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
               >
-                {error}
+                <p>{error}</p>
+                {errorAction && (
+                  <Link
+                    href={errorAction.href}
+                    className="mt-1 inline-block font-medium underline hover:no-underline"
+                  >
+                    {errorAction.label}
+                  </Link>
+                )}
               </div>
             )}
             <div className="space-y-2">
