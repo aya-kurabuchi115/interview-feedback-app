@@ -10,6 +10,10 @@ import { createClient } from "@/lib/supabase/server";
 /** デフォルトの有効期限: 7日間 */
 const DEFAULT_EXPIRY_DAYS = 7;
 
+/** expiryDays の許容範囲 */
+const MIN_EXPIRY_DAYS = 1;
+const MAX_EXPIRY_DAYS = 90;
+
 /** 既存共有リンクの型 */
 interface ExistingShare {
   id: string;
@@ -103,8 +107,14 @@ export async function POST(request: Request) {
     // 共有トークン生成（crypto.randomUUID は URL-safe）
     const shareToken = crypto.randomUUID();
 
-    // 有効期限を計算
-    const days = expiryDays ?? DEFAULT_EXPIRY_DAYS;
+    // 有効期限を計算（型チェック・範囲チェック付き）
+    const days =
+      typeof expiryDays === "number" &&
+      Number.isFinite(expiryDays) &&
+      expiryDays >= MIN_EXPIRY_DAYS &&
+      expiryDays <= MAX_EXPIRY_DAYS
+        ? Math.floor(expiryDays)
+        : DEFAULT_EXPIRY_DAYS;
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + days);
 
