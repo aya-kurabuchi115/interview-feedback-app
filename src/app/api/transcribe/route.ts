@@ -37,11 +37,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // interviews レコードを取得
+    // interviews レコードを取得（所有権チェック込み）
     const { data: interview, error: fetchError } = await supabase
       .from("interviews")
       .select("*")
       .eq("id", interview_id)
+      .eq("user_id", user.id)
       .single();
 
     if (fetchError || !interview) {
@@ -76,8 +77,8 @@ export async function POST(request: Request) {
     // ポーリングで完了を待つ
     const result = await pollTranscript(transcriptData.id, apiKey);
 
-    // utterances を transcripts テーブルに保存
-    if (result.utterances) {
+    // utterances を transcripts テーブルに一括保存（N+1 回避）
+    if (result.utterances && result.utterances.length > 0) {
       const transcripts = result.utterances.map(
         (u: { speaker: string; text: string; start: number; end: number }, index: number) => ({
           interview_id,
@@ -88,8 +89,12 @@ export async function POST(request: Request) {
         })
       );
 
-      for (const t of transcripts) {
-        await supabase.from("transcripts").insert(t as never);
+      const { error: insertError } = await supabase
+        .from("transcripts")
+        .insert(transcripts as never[]);
+
+      if (insertError) {
+        throw new Error(`文字起こしデータの保存に失敗しました: ${insertError.message}`);
       }
     }
 

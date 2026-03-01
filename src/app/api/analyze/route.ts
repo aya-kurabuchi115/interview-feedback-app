@@ -488,6 +488,10 @@ export async function POST(request: Request) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     console.error("[analyze] Error:", errorMessage);
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    // 内部エラーの詳細をクライアントに露出しない
+    return NextResponse.json(
+      { error: "分析処理中にエラーが発生しました。しばらくしてから再度お試しください。" },
+      { status: 500 }
+    );
   }
 }
