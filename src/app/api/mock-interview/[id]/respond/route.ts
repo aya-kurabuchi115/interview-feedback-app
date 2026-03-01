@@ -9,12 +9,7 @@ import type {
   MockInterviewDifficulty,
   MockInterviewMessage,
 } from "@/types/database";
-
-// ============================================================
-// 定数
-// ============================================================
-
-const MODEL_NAME = "claude-sonnet-4-6";
+import { getUserSubscription, getModelForPlan } from "@/lib/subscription";
 const MAX_ANSWER_LENGTH = 5000;
 
 /** 質問数の上限（この範囲内でAIが完了を判断） */
@@ -167,6 +162,10 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // プランに応じた AI モデルを決定
+    const subscription = await getUserSubscription(user.id);
+    const modelName = getModelForPlan(subscription.plan);
+
     // 面接セッションを取得（所有権チェック込み: Defence-in-Depth）
     const { data: mockData, error: fetchError } = await supabase
       .from("mock_interviews")
@@ -251,7 +250,7 @@ export async function POST(
 
     const anthropic = new Anthropic({ apiKey });
     const response = await anthropic.messages.create({
-      model: MODEL_NAME,
+      model: modelName,
       max_tokens: 512,
       system: systemPrompt,
       messages: anthropicMessages,
