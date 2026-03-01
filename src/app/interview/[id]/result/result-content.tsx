@@ -17,10 +17,19 @@ import type { Json } from "@/types/supabase";
 import type { CategoryScores } from "@/types/database";
 import { CATEGORY_LABELS } from "@/lib/constants";
 import { ExportButtons } from "@/components/export-buttons";
+import { TagSelector } from "@/components/tag-selector";
+import { NotesEditor } from "@/components/notes-editor";
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Transcript = Database["public"]["Tables"]["transcripts"]["Row"];
 type Feedback = Database["public"]["Tables"]["feedbacks"]["Row"];
+
+interface TagData {
+  id: string;
+  name: string;
+  color: string;
+  created_at: string;
+}
 
 interface Suggestion {
   original: string;
@@ -140,10 +149,12 @@ export function ResultContent({
   interview,
   transcripts,
   feedback,
+  interviewTags = [],
 }: {
   interview: Interview;
   transcripts: Transcript[];
   feedback: Feedback | null;
+  interviewTags?: TagData[];
 }) {
   const suggestions = feedback
     ? parseJsonArray<Suggestion>(feedback.suggestions)
@@ -204,6 +215,16 @@ export function ResultContent({
           </CardContent>
         </Card>
       )}
+
+      {/* タグ・メモセクション */}
+      <Card className="mb-6">
+        <CardContent className="space-y-6 pt-6">
+          <TagSelector interviewId={interview.id} initialTags={interviewTags} />
+          <div className="border-t pt-4">
+            <NotesEditor interviewId={interview.id} initialNotes={(interview as Interview & { notes?: string | null }).notes ?? null} />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* スコア & カテゴリ別スコア */}
       {feedback && (
