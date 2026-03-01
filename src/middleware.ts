@@ -89,6 +89,7 @@ const ONBOARDING_BYPASS_PREFIXES = [
 const ONBOARDING_REQUIRED_PREFIXES = [
   "/dashboard",
   "/interview",
+  "/mock-interview",
   "/profile",
 ];
 
