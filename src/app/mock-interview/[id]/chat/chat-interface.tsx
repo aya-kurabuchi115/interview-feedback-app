@@ -511,6 +511,7 @@ export function ChatInterface({
               <div className="relative flex-1">
                 <textarea
                   ref={textareaRef}
+                  autoComplete="off"
                   value={currentAnswer}
                   onChange={(e) => {
                     setCurrentAnswer(e.target.value);
