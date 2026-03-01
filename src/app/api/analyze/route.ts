@@ -491,7 +491,7 @@ export async function POST(request: Request) {
       suggestions: feedback.suggestions || [],
       strengths: feedback.strengths || [],
       improvements: feedback.improvements || [],
-      annotations: Array.isArray(feedback.annotations) ? feedback.annotations : [],
+      annotations: Array.isArray(feedback.annotations) ? feedback.annotations.slice(0, 30) : [],
       raw_response: feedback as unknown,
       model_version: MODEL_NAME,
     } as never);

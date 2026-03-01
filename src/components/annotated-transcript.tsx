@@ -40,7 +40,9 @@ export function parseAnnotations(data: Json): Annotation[] {
     .filter((item) => {
       return (
         typeof item.start === "number" &&
+        Number.isFinite(item.start) &&
         typeof item.end === "number" &&
+        Number.isFinite(item.end) &&
         typeof item.type === "string" &&
         typeof item.text === "string" &&
         typeof item.reason === "string" &&
@@ -138,8 +140,17 @@ function AnnotationTooltip({
         onClose();
       }
     }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [onClose]);
 
   const typeConfig = {
