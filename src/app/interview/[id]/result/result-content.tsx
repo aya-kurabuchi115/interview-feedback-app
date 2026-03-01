@@ -15,9 +15,10 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { Database } from "@/types/supabase";
 import type { Json } from "@/types/supabase";
-import type { CategoryScores } from "@/types/database";
+import type { CategoryScores, SubscriptionPlan } from "@/types/database";
 import { CATEGORY_LABELS } from "@/lib/constants";
 import { parseAnnotations } from "@/components/annotated-transcript";
+import { ProUpsellCard } from "@/components/pro-upsell-card";
 
 // 動的インポート: 初期表示に不要なインタラクティブコンポーネントを遅延ロード
 const AnnotatedTranscript = dynamic(
@@ -256,6 +257,7 @@ export function ResultContent({
   interviewTags = [],
   hasOtherInterviews = false,
   rawTranscript = null,
+  currentPlan = "free",
 }: {
   interview: Interview;
   transcripts: Transcript[];
@@ -263,6 +265,7 @@ export function ResultContent({
   interviewTags?: TagData[];
   hasOtherInterviews?: boolean;
   rawTranscript?: string | null;
+  currentPlan?: SubscriptionPlan;
 }) {
   const suggestions = feedback
     ? parseJsonArray<Suggestion>(feedback.suggestions)
@@ -685,6 +688,9 @@ export function ResultContent({
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Pro プランアップセルカード（Free プランのみ） */}
+      {feedback && <ProUpsellCard plan={currentPlan} />}
 
       {/* ダッシュボードへのリンク */}
       <div className="mt-8 text-center">

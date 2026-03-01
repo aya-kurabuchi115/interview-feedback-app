@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { ExportButtons } from "@/components/export-buttons";
 import { createClient } from "@/lib/supabase/server";
 import { redirectToLogin } from "@/lib/auth/redirect";
+import { getRemainingUsage } from "@/lib/subscription";
 import type { InterviewCategory } from "@/types/database";
 import type { SortOption } from "@/components/interview-filter";
 import { InterviewListSection } from "@/components/dashboard/interview-list-section";
 import { InterviewListSkeleton } from "@/components/dashboard/interview-list-skeleton";
+import { UsageNudgeBanner } from "@/components/dashboard/usage-nudge-banner";
 import { WeeklySummarySection } from "@/components/dashboard/weekly-summary-section";
 import { WeeklySummarySkeleton } from "@/components/dashboard/weekly-summary-skeleton";
 
@@ -59,8 +61,19 @@ export default async function DashboardPage({
     ? (sortParam as SortOption)
     : "date_desc";
 
+  // 利用状況を取得（ナッジバナー用）
+  const usage = await getRemainingUsage(user.id);
+
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* 利用上限ナッジバナー（Free プラン & 残り1回以下のみ表示） */}
+      <UsageNudgeBanner
+        plan={usage.plan}
+        remaining={usage.remaining}
+        limit={usage.limit}
+        used={usage.used}
+      />
+
       {/* ヘッダー（即座に表示） */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">面接履歴</h1>
