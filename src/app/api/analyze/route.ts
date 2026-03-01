@@ -5,6 +5,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { InterviewCategory, InterviewRound, SubscriptionPlan } from "@/types/database";
 import { checkUsageLimit, getModelForPlan } from "@/lib/subscription";
 import { PLANS } from "@/lib/stripe/config";
+import { PERSONALITY_DATA, isValidPersonalityType } from "@/lib/personality/types";
+import type { PersonalityType } from "@/lib/personality/types";
 
 // ============================================================
 // 型定義
@@ -163,7 +165,8 @@ function buildUserPrompt(
     faculty?: string | null;
     target_industry?: string[];
     target_job_type?: string[];
-  } | null
+  } | null,
+  personalityType: string | null
 ): string {
   const categoryGuideline = getCategoryGuideline(category, round);
 
@@ -186,6 +189,26 @@ ${parts.join("\n")}`;
     }
   }
 
+  // パーソナリティタイプに基づく追加ガイドライン
+  let personalitySection = "";
+  if (personalityType && isValidPersonalityType(personalityType)) {
+    const pData = PERSONALITY_DATA[personalityType.toUpperCase() as PersonalityType];
+    personalitySection = `
+
+【候補者のパーソナリティタイプ: ${pData.type}（${pData.name}）】
+このタイプの話し方の特徴: ${pData.talkStyle}
+面接での強み: ${pData.interviewStrengths.join("、")}
+面接での弱み: ${pData.interviewWeaknesses.join("、")}
+相性の良い企業文化: ${pData.compatibleCultures.join("、")}
+パーソナリティに基づくアドバイス: ${pData.adviceTip}
+
+以下の観点もフィードバックに含めてください:
+- このタイプの話し方の特徴が回答にどう表れているか
+- パーソナリティの強みを活かせている部分と、弱みが出ている部分
+- 志望企業の文化とパーソナリティタイプの相性に関するコメント
+- このタイプ特有の改善アドバイス（具体的なアクション付き）`;
+  }
+
   const categoryLabels: Record<InterviewCategory, string> = {
     arubaito: "アルバイト",
     intern: "インターン",
@@ -200,6 +223,7 @@ ${parts.join("\n")}`;
 - 面接カテゴリ: ${categoryLabels[category] || "その他"}
 ${round ? `- 面接ラウンド: ${round}` : ""}
 ${profileSection}
+${personalitySection}
 
 ${categoryGuideline}
 
@@ -456,7 +480,7 @@ export async function POST(request: Request) {
     // ユーザーのプロフィール情報を取得（パーソナライズ用）
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("university, faculty, target_industry, target_job_type")
+      .select("university, faculty, target_industry, target_job_type, personality_type")
       .eq("user_id", user.id)
       .single();
 
@@ -465,7 +489,10 @@ export async function POST(request: Request) {
       faculty?: string | null;
       target_industry?: string[];
       target_job_type?: string[];
+      personality_type?: string | null;
     } | null;
+
+    const personalityType = profile?.personality_type ?? null;
 
     // プロンプト生成
     const systemPrompt = buildSystemPrompt();
@@ -474,7 +501,8 @@ export async function POST(request: Request) {
       (interview.interview_category as InterviewCategory) || "other",
       (interview.interview_round as InterviewRound) || null,
       (interview.company_name_snapshot as string) || "",
-      profile
+      profile,
+      personalityType
     );
 
     // Claude API 呼び出し（リトライ付き・プラン別モデル）

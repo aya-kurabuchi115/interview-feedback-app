@@ -9,6 +9,8 @@ import type {
 import { checkUsageLimit, getModelForPlan } from "@/lib/subscription";
 import { PLANS } from "@/lib/stripe/config";
 import type { SubscriptionPlan } from "@/types/database";
+import { PERSONALITY_DATA, isValidPersonalityType } from "@/lib/personality/types";
+import type { PersonalityType } from "@/lib/personality/types";
 
 // ============================================================
 // 定数
@@ -129,7 +131,8 @@ function buildFeedbackUserPrompt(
   qaPairs: { question: string; answer: string }[],
   category: string,
   companyName: string | null,
-  difficulty: string
+  difficulty: string,
+  personalityType: string | null
 ): string {
   const categoryLabels: Record<string, string> = {
     general: "人物面接（総合）",
@@ -151,13 +154,32 @@ function buildFeedbackUserPrompt(
     )
     .join("\n\n");
 
+  // パーソナリティタイプに基づく追加ガイドライン
+  let personalitySection = "";
+  if (personalityType && isValidPersonalityType(personalityType)) {
+    const pData = PERSONALITY_DATA[personalityType.toUpperCase() as PersonalityType];
+    personalitySection = `
+【候補者のパーソナリティタイプ: ${pData.type}（${pData.name}）】
+このタイプの話し方の特徴: ${pData.talkStyle}
+面接での強み: ${pData.interviewStrengths.join("、")}
+面接での弱み: ${pData.interviewWeaknesses.join("、")}
+相性の良い企業文化: ${pData.compatibleCultures.join("、")}
+パーソナリティに基づくアドバイス: ${pData.adviceTip}
+
+以下の観点もフィードバックに含めてください:
+- このタイプの話し方の特徴が回答にどう表れているか
+- パーソナリティの強みを活かせている部分と、弱みが出ている部分
+- このタイプ特有の面接戦略アドバイス（具体的なアクション付き）
+`;
+  }
+
   return `以下のAI模擬面接の会話を分析し、フィードバックを生成してください。
 
 【面接情報】
 - 企業名: ${companyName || "指定なし"}
 - 面接タイプ: ${categoryLabels[category] || "その他"}
 - 難易度: ${difficultyLabels[difficulty] || "標準"}
-
+${personalitySection}
 【質問と回答のペア】
 ${qaPairsText}
 
@@ -378,6 +400,15 @@ export async function POST(
     // プランに応じた AI モデルを決定
     const modelName = getModelForPlan(usageResult.plan);
 
+    // ユーザーのパーソナリティタイプを取得
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("personality_type")
+      .eq("user_id", user.id)
+      .single();
+
+    const personalityType = (profileData as { personality_type?: string | null } | null)?.personality_type ?? null;
+
     // 会話データを構造化
     const conversationText = buildConversationText(messages);
     const qaPairs = extractQAPairs(messages);
@@ -389,7 +420,8 @@ export async function POST(
       qaPairs,
       mockInterview.category,
       mockInterview.company_name,
-      mockInterview.difficulty
+      mockInterview.difficulty,
+      personalityType
     );
 
     // Claude API 呼び出し
