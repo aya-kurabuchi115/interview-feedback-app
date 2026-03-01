@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
@@ -16,6 +15,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { PasswordStrength } from "@/components/ui/password-strength";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export default function UpdatePasswordPage() {
   const [password, setPassword] = useState("");
@@ -120,9 +121,8 @@ export default function UpdatePasswordPage() {
             )}
             <div className="space-y-2">
               <Label htmlFor="password">新しいパスワード</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 autoComplete="new-password"
                 placeholder="8文字以上"
                 value={password}
@@ -130,12 +130,12 @@ export default function UpdatePasswordPage() {
                 required
                 minLength={8}
               />
+              <PasswordStrength password={password} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">新しいパスワード（確認）</Label>
-              <Input
+              <PasswordInput
                 id="confirmPassword"
-                type="password"
                 autoComplete="new-password"
                 placeholder="もう一度入力"
                 value={confirmPassword}
@@ -144,9 +144,6 @@ export default function UpdatePasswordPage() {
                 minLength={8}
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              パスワードは8文字以上で設定してください。
-            </p>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading}>

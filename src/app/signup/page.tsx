@@ -15,6 +15,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Loader2, Mail } from "lucide-react";
+import { PasswordStrength } from "@/components/ui/password-strength";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -142,9 +144,8 @@ export default function SignUpPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">パスワード</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 autoComplete="new-password"
                 placeholder="8文字以上"
                 value={password}
@@ -152,6 +153,7 @@ export default function SignUpPage() {
                 required
                 minLength={8}
               />
+              <PasswordStrength password={password} />
             </div>
             <div className="flex items-start gap-2">
               <input
