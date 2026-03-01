@@ -76,7 +76,7 @@ export default async function DashboardPage({
   if (interviewIds.length > 0) {
     const { data: feedbacksData } = await supabase
       .from("feedbacks")
-      .select("*")
+      .select("interview_id, overall_score")
       .in("interview_id", interviewIds);
     feedbacks = (feedbacksData ?? []) as Feedback[];
   }

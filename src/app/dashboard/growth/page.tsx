@@ -6,14 +6,7 @@ import { StatsCard } from "@/components/stats-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CategoryScores } from "@/types/database";
 
-// カテゴリスコアの日本語ラベル
-const CATEGORY_LABELS: Record<string, string> = {
-  logic: "論理性",
-  specificity: "具体性",
-  enthusiasm: "熱意",
-  manners: "マナー",
-  question_handling: "質問対応",
-};
+import { CATEGORY_LABELS } from "@/lib/constants";
 
 // 面接カテゴリの日本語ラベル
 const INTERVIEW_CATEGORY_LABELS: Record<string, string> = {
@@ -57,10 +50,13 @@ export default async function GrowthPage() {
   const interviewIds = interviewList.map((i) => i.id);
 
   // フィードバックを一括取得
-  const { data: feedbacks } = await supabase
-    .from("feedbacks")
-    .select("interview_id, overall_score, category_scores, created_at")
-    .in("interview_id", interviewIds.length > 0 ? interviewIds : ["__none__"]);
+  // 面接IDが0件の場合はクエリをスキップし、空配列として扱う
+  const { data: feedbacks } = interviewIds.length > 0
+    ? await supabase
+        .from("feedbacks")
+        .select("interview_id, overall_score, category_scores, created_at")
+        .in("interview_id", interviewIds)
+    : { data: null };
 
   const feedbackList = (feedbacks ?? []) as {
     interview_id: string;

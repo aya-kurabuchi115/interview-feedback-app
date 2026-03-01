@@ -376,6 +376,7 @@ export async function POST(request: Request) {
     }
 
     // ステータスを analyzing に更新
+    // as never: Supabase 生成型が未定義のため型アサーションが必要。supabase gen types 実行後に除去可能。
     await supabase
       .from("interviews")
       .update({ status: "analyzing" } as never)
@@ -404,6 +405,7 @@ export async function POST(request: Request) {
       transcriptText = interview.transcript as string;
     } else {
       // ステータスをエラーに戻す
+      // as never: Supabase 生成型が未定義のため型アサーションが必要。supabase gen types 実行後に除去可能。
       await supabase
         .from("interviews")
         .update({ status: "error" } as never)
@@ -446,6 +448,7 @@ export async function POST(request: Request) {
     const feedback = await callClaudeWithRetry(anthropic, systemPrompt, userPrompt);
 
     // feedbacks テーブルに保存（履歴として追加、上書きしない）
+    // as never: Supabase 生成型が未定義のため型アサーションが必要。supabase gen types 実行後に除去可能。
     const { error: insertError } = await supabase.from("feedbacks").insert({
       interview_id: interviewId,
       user_id: user.id,
@@ -468,6 +471,7 @@ export async function POST(request: Request) {
     }
 
     // ステータスを completed に更新
+    // as never: Supabase 生成型が未定義のため型アサーションが必要。supabase gen types 実行後に除去可能。
     await supabase
       .from("interviews")
       .update({ status: "completed" } as never)
@@ -484,6 +488,7 @@ export async function POST(request: Request) {
     if (interviewId) {
       try {
         const supabase = await createClient();
+        // as never: Supabase 生成型が未定義のため型アサーションが必要。supabase gen types 実行後に除去可能。
         await supabase
           .from("interviews")
           .update({ status: "error" } as never)
