@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { CreditCard, ExternalLink } from "lucide-react";
+import { CreditCard, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -89,9 +89,9 @@ export function BillingClient({ plan, status, planName, priceMonthly, currentPer
           ) : null}
           {hasStripeCustomer ? (
             <Button variant="outline" onClick={handleOpenPortal} disabled={portalLoading}>
-              <CreditCard className="mr-2 size-4" />
+              {portalLoading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <CreditCard className="mr-2 size-4" />}
               {portalLoading ? "読み込み中..." : "支払い・プラン管理"}
-              <ExternalLink className="ml-2 size-3" />
+              {!portalLoading && <ExternalLink className="ml-2 size-3" />}
             </Button>
           ) : null}
         </CardFooter>

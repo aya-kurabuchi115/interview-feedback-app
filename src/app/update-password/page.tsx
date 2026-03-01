@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 export default function UpdatePasswordPage() {
   const [password, setPassword] = useState("");
@@ -149,6 +150,7 @@ export default function UpdatePasswordPage() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {loading ? "更新中..." : "パスワードを更新"}
             </Button>
             <Link
