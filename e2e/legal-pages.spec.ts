@@ -27,7 +27,7 @@ test.describe("プライバシーポリシーページ", () => {
     await expect(page.getByText("1. はじめに")).toBeVisible();
     await expect(page.getByText("3. 収集する情報")).toBeVisible();
     await expect(page.getByText("5. 第三者提供")).toBeVisible();
-    await expect(page.getByText("13. お問い合わせ")).toBeVisible();
+    await expect(page.getByText("15. お問い合わせ")).toBeVisible();
   });
 
   test("トップページへの戻りリンクが存在する", async ({ page }) => {
@@ -68,7 +68,7 @@ test.describe("利用規約ページ", () => {
       page.getByRole("heading", { name: "第5条 禁止事項" })
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "第13条 準拠法・管轄裁判所" })
+      page.getByRole("heading", { name: "第15条 準拠法・管轄裁判所" })
     ).toBeVisible();
   });
 
@@ -109,11 +109,15 @@ test.describe("特定商取引法に基づく表記ページ", () => {
   });
 
   test("関連ページへのリンクが存在する", async ({ page }) => {
+    // 「関連ページ」セクション内のリンクを確認
+    const relatedSection = page.locator("section", {
+      has: page.getByRole("heading", { name: "関連ページ" }),
+    });
     await expect(
-      page.getByRole("link", { name: "利用規約" })
+      relatedSection.getByRole("link", { name: "利用規約" })
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "プライバシーポリシー" })
+      relatedSection.getByRole("link", { name: "プライバシーポリシー" })
     ).toBeVisible();
   });
 
