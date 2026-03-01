@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background -->
+  <circle cx="100" cy="100" r="95" fill="#EDE7F6"/>
+  <circle cx="100" cy="100" r="80" fill="#D1C4E9"/>
+
+  <!-- ENTJ - Lion (ライオン) - リーダーシップ -->
+
+  <!-- Body -->
+  <ellipse cx="100" cy="145" rx="40" ry="38" fill="#7E57C2"/>
+  <ellipse cx="100" cy="145" rx="40" ry="38" fill="none" stroke="#5E35A1" stroke-width="2"/>
+
+  <!-- Belly -->
+  <ellipse cx="100" cy="152" rx="26" ry="26" fill="#D7C0F0"/>
+
+  <!-- Mane (たてがみ) -->
+  <circle cx="100" cy="82" r="50" fill="#9B72CF"/>
+  <!-- Mane spikes -->
+  <circle cx="60" cy="65" r="14" fill="#B39DDB"/>
+  <circle cx="72" cy="48" r="14" fill="#B39DDB"/>
+  <circle cx="90" cy="38" r="14" fill="#B39DDB"/>
+  <circle cx="110" cy="38" r="14" fill="#B39DDB"/>
+  <circle cx="128" cy="48" r="14" fill="#B39DDB"/>
+  <circle cx="140" cy="65" r="14" fill="#B39DDB"/>
+  <circle cx="143" cy="85" r="14" fill="#B39DDB"/>
+  <circle cx="57" cy="85" r="14" fill="#B39DDB"/>
+  <circle cx="55" cy="100" r="12" fill="#B39DDB"/>
+  <circle cx="145" cy="100" r="12" fill="#B39DDB"/>
+
+  <!-- Head -->
+  <circle cx="100" cy="82" r="36" fill="#7E57C2"/>
+  <circle cx="100" cy="82" r="36" fill="none" stroke="#5E35A1" stroke-width="2"/>
+
+  <!-- Eyes (confident) -->
+  <circle cx="85" cy="78" r="11" fill="white" stroke="#5E35A1" stroke-width="1.5"/>
+  <circle cx="115" cy="78" r="11" fill="white" stroke="#5E35A1" stroke-width="1.5"/>
+
+  <!-- Pupils -->
+  <circle cx="87" cy="77" r="7" fill="#2D1B4E"/>
+  <circle cx="117" cy="77" r="7" fill="#2D1B4E"/>
+
+  <!-- Eye shine -->
+  <circle cx="90" cy="74" r="2.5" fill="white"/>
+  <circle cx="120" cy="74" r="2.5" fill="white"/>
+
+  <!-- Confident eyebrows -->
+  <path d="M74 66 Q80 62 96 66" fill="none" stroke="#5E35A1" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M104 66 Q120 62 126 66" fill="none" stroke="#5E35A1" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Nose -->
+  <ellipse cx="100" cy="90" rx="6" ry="4" fill="#E8A0BF"/>
+  <ellipse cx="100" cy="90" rx="6" ry="4" fill="none" stroke="#C77D9E" stroke-width="1"/>
+
+  <!-- Mouth (confident smile) -->
+  <path d="M92 96 Q100 103 108 96" fill="none" stroke="#5E35A1" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Crown (リーダー) -->
+  <polygon points="80,42 85,28 92,38 100,22 108,38 115,28 120,42" fill="#FFD700" stroke="#FFA000" stroke-width="1.5"/>
+  <circle cx="92" cy="36" r="2" fill="#FF5722"/>
+  <circle cx="100" cy="28" r="2" fill="#2196F3"/>
+  <circle cx="108" cy="36" r="2" fill="#4CAF50"/>
+
+  <!-- Front paws -->
+  <ellipse cx="78" cy="176" rx="14" ry="8" fill="#7E57C2" stroke="#5E35A1" stroke-width="1.5"/>
+  <ellipse cx="122" cy="176" rx="14" ry="8" fill="#7E57C2" stroke="#5E35A1" stroke-width="1.5"/>
+
+  <!-- Blush -->
+  <ellipse cx="72" cy="90" rx="6" ry="4" fill="#E8A0BF" opacity="0.5"/>
+  <ellipse cx="128" cy="90" rx="6" ry="4" fill="#E8A0BF" opacity="0.5"/>
+</svg>

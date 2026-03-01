@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background -->
+  <circle cx="100" cy="100" r="95" fill="#FBE9E7"/>
+  <circle cx="100" cy="100" r="80" fill="#FFCCBC"/>
+
+  <!-- ESFP - Parakeet/Parrot (インコ) - 明るくて社交的 -->
+
+  <!-- Tail feathers -->
+  <path d="M90 160 Q80 185 75 195" fill="none" stroke="#FF7043" stroke-width="5" stroke-linecap="round"/>
+  <path d="M100 162 Q100 188 100 198" fill="none" stroke="#FFB74D" stroke-width="5" stroke-linecap="round"/>
+  <path d="M110 160 Q120 185 125 195" fill="none" stroke="#FF7043" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Body -->
+  <ellipse cx="100" cy="135" rx="35" ry="40" fill="#FFB74D"/>
+  <ellipse cx="100" cy="135" rx="35" ry="40" fill="none" stroke="#FFA726" stroke-width="2"/>
+
+  <!-- Belly -->
+  <ellipse cx="100" cy="142" rx="24" ry="28" fill="#FFF8E1"/>
+
+  <!-- Wings (slightly open - playful) -->
+  <path d="M65 115 Q45 120 40 140 Q38 150 45 150 Q50 148 55 135 L68 125" fill="#FF7043" stroke="#E64A19" stroke-width="1.5"/>
+  <path d="M135 115 Q155 120 160 140 Q162 150 155 150 Q150 148 145 135 L132 125" fill="#FF7043" stroke="#E64A19" stroke-width="1.5"/>
+
+  <!-- Wing feather tips -->
+  <path d="M40 140 Q38 145 42 148" fill="none" stroke="#F4511E" stroke-width="1"/>
+  <path d="M45 138 Q43 143 47 146" fill="none" stroke="#F4511E" stroke-width="1"/>
+  <path d="M160 140 Q162 145 158 148" fill="none" stroke="#F4511E" stroke-width="1"/>
+  <path d="M155 138 Q157 143 153 146" fill="none" stroke="#F4511E" stroke-width="1"/>
+
+  <!-- Head -->
+  <circle cx="100" cy="78" r="35" fill="#FFB74D"/>
+  <circle cx="100" cy="78" r="35" fill="none" stroke="#FFA726" stroke-width="2"/>
+
+  <!-- Head crest (mohawk-like feathers) -->
+  <path d="M92 48 Q90 30 88 25" fill="none" stroke="#FF7043" stroke-width="4" stroke-linecap="round"/>
+  <path d="M100 46 Q100 26 100 20" fill="none" stroke="#FFA726" stroke-width="4" stroke-linecap="round"/>
+  <path d="M108 48 Q110 30 112 25" fill="none" stroke="#FF7043" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="88" cy="24" r="3" fill="#FF7043"/>
+  <circle cx="100" cy="19" r="3" fill="#FFA726"/>
+  <circle cx="112" cy="24" r="3" fill="#FF7043"/>
+
+  <!-- Cheek patches -->
+  <circle cx="74" cy="85" r="10" fill="#FFE082" opacity="0.6"/>
+  <circle cx="126" cy="85" r="10" fill="#FFE082" opacity="0.6"/>
+
+  <!-- Eyes (bright, excited) -->
+  <circle cx="86" cy="75" r="11" fill="white" stroke="#FFA726" stroke-width="1.5"/>
+  <circle cx="114" cy="75" r="11" fill="white" stroke="#FFA726" stroke-width="1.5"/>
+
+  <!-- Pupils (large, excited) -->
+  <circle cx="88" cy="73" r="7" fill="#BF360C"/>
+  <circle cx="116" cy="73" r="7" fill="#BF360C"/>
+
+  <!-- Eye shine (extra sparkly!) -->
+  <circle cx="91" cy="70" r="3" fill="white"/>
+  <circle cx="119" cy="70" r="3" fill="white"/>
+  <circle cx="86" cy="75" r="1.5" fill="white"/>
+  <circle cx="114" cy="75" r="1.5" fill="white"/>
+  <circle cx="90" cy="77" r="1" fill="white"/>
+  <circle cx="118" cy="77" r="1" fill="white"/>
+
+  <!-- Beak -->
+  <path d="M95 84 Q100 78 105 84 Q100 92 95 84 Z" fill="#E64A19" stroke="#BF360C" stroke-width="1.5"/>
+
+  <!-- Open mouth (singing!) -->
+  <path d="M95 90 Q100 96 105 90" fill="#FF8A65" stroke="#E64A19" stroke-width="1"/>
+
+  <!-- Musical notes (社交的・エンターテイナー) -->
+  <g fill="#7E57C2" opacity="0.7">
+    <circle cx="42" cy="55" r="4"/>
+    <rect x="46" y="38" width="2" height="17"/>
+    <path d="M46 38 Q55 35 48 42" fill="#7E57C2"/>
+  </g>
+  <g fill="#4CAF50" opacity="0.6">
+    <circle cx="155" cy="48" r="3.5"/>
+    <rect x="158.5" y="32" width="2" height="16"/>
+    <path d="M158.5 32 Q167 29 160 36" fill="#4CAF50"/>
+  </g>
+  <g fill="#FF7043" opacity="0.6">
+    <circle cx="160" cy="68" r="3"/>
+    <rect x="163" y="54" width="1.5" height="14"/>
+    <path d="M163 54 Q170 52 164 58" fill="#FF7043"/>
+  </g>
+
+  <!-- Feet -->
+  <path d="M85 170 L80 178 L85 176 L90 178 L95 176 L90 170" fill="#E64A19" stroke="#BF360C" stroke-width="1"/>
+  <path d="M110 170 L105 178 L110 176 L115 178 L120 176 L115 170" fill="#E64A19" stroke="#BF360C" stroke-width="1"/>
+
+  <!-- Blush -->
+  <ellipse cx="74" cy="88" rx="6" ry="4" fill="#F48FB1" opacity="0.5"/>
+  <ellipse cx="126" cy="88" rx="6" ry="4" fill="#F48FB1" opacity="0.5"/>
+</svg>

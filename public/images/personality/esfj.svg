@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background -->
+  <circle cx="100" cy="100" r="95" fill="#E3F2FD"/>
+  <circle cx="100" cy="100" r="80" fill="#BBDEFB"/>
+
+  <!-- ESFJ - Hamster (ハムスター) - 世話好き -->
+
+  <!-- Body -->
+  <ellipse cx="100" cy="142" rx="42" ry="42" fill="#90CAF9"/>
+  <ellipse cx="100" cy="142" rx="42" ry="42" fill="none" stroke="#64B5F6" stroke-width="2"/>
+
+  <!-- Belly -->
+  <ellipse cx="100" cy="150" rx="30" ry="30" fill="#E3F2FD"/>
+
+  <!-- Head (round and chubby) -->
+  <circle cx="100" cy="82" r="42" fill="#90CAF9"/>
+  <circle cx="100" cy="82" r="42" fill="none" stroke="#64B5F6" stroke-width="2"/>
+
+  <!-- Cheek pouches (puffy!) -->
+  <circle cx="65" cy="90" r="16" fill="#BBDEFB" stroke="#64B5F6" stroke-width="1"/>
+  <circle cx="135" cy="90" r="16" fill="#BBDEFB" stroke="#64B5F6" stroke-width="1"/>
+
+  <!-- Small round ears -->
+  <circle cx="72" cy="50" r="13" fill="#90CAF9" stroke="#64B5F6" stroke-width="2"/>
+  <circle cx="128" cy="50" r="13" fill="#90CAF9" stroke="#64B5F6" stroke-width="2"/>
+
+  <!-- Inner ears -->
+  <circle cx="72" cy="50" r="8" fill="#F8BBD0"/>
+  <circle cx="128" cy="50" r="8" fill="#F8BBD0"/>
+
+  <!-- Eyes (warm, caring) -->
+  <circle cx="86" cy="78" r="11" fill="white" stroke="#64B5F6" stroke-width="1.5"/>
+  <circle cx="114" cy="78" r="11" fill="white" stroke="#64B5F6" stroke-width="1.5"/>
+
+  <!-- Pupils -->
+  <circle cx="88" cy="76" r="7" fill="#0D47A1"/>
+  <circle cx="116" cy="76" r="7" fill="#0D47A1"/>
+
+  <!-- Eye shine (warm sparkle) -->
+  <circle cx="91" cy="73" r="3" fill="white"/>
+  <circle cx="119" cy="73" r="3" fill="white"/>
+  <circle cx="86" cy="78" r="1.5" fill="white"/>
+  <circle cx="114" cy="78" r="1.5" fill="white"/>
+
+  <!-- Small nose -->
+  <circle cx="100" cy="90" r="4" fill="#F48FB1"/>
+
+  <!-- Happy mouth -->
+  <path d="M94 95 Q100 102 106 95" fill="none" stroke="#64B5F6" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Whiskers -->
+  <line x1="62" y1="86" x2="78" y2="90" stroke="#64B5F6" stroke-width="1" opacity="0.5"/>
+  <line x1="60" y1="92" x2="77" y2="93" stroke="#64B5F6" stroke-width="1" opacity="0.5"/>
+  <line x1="122" y1="90" x2="138" y2="86" stroke="#64B5F6" stroke-width="1" opacity="0.5"/>
+  <line x1="123" y1="93" x2="140" y2="92" stroke="#64B5F6" stroke-width="1" opacity="0.5"/>
+
+  <!-- Holding a sunflower seed (世話好き - caring with food) -->
+  <g transform="translate(95, 108)">
+    <!-- Tiny hands holding seed -->
+    <ellipse cx="-2" cy="2" rx="5" ry="4" fill="#90CAF9" stroke="#64B5F6" stroke-width="1"/>
+    <ellipse cx="12" cy="2" rx="5" ry="4" fill="#90CAF9" stroke="#64B5F6" stroke-width="1"/>
+    <!-- Seed -->
+    <ellipse cx="5" cy="0" rx="6" ry="8" fill="#FFE082" stroke="#FFC107" stroke-width="1"/>
+    <path d="M3 -4 L5 4 L7 -4" fill="none" stroke="#F9A825" stroke-width="0.8"/>
+  </g>
+
+  <!-- Small feet -->
+  <ellipse cx="82" cy="178" rx="10" ry="6" fill="#90CAF9" stroke="#64B5F6" stroke-width="1.5"/>
+  <ellipse cx="118" cy="178" rx="10" ry="6" fill="#90CAF9" stroke="#64B5F6" stroke-width="1.5"/>
+
+  <!-- Blush -->
+  <ellipse cx="68" cy="92" rx="7" ry="5" fill="#F48FB1" opacity="0.5"/>
+  <ellipse cx="132" cy="92" rx="7" ry="5" fill="#F48FB1" opacity="0.5"/>
+</svg>
