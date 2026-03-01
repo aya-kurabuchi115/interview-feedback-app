@@ -150,7 +150,7 @@ export async function middleware(request: NextRequest) {
   // ?error= パラメータ付きの場合はリダイレクトしない（auth callback からのエラー表示を妨げない）
   const authPaths = ["/login", "/signup"];
   if (authPaths.includes(request.nextUrl.pathname)) {
-    if (!request.nextUrl.searchParams.has("error")) {
+    if (!request.nextUrl.searchParams.has("error") && !request.nextUrl.searchParams.has("expired")) {
       const hasSession = request.cookies.getAll().some(
         (cookie) => cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token")
       );

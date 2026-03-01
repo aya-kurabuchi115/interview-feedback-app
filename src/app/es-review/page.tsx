@@ -52,7 +52,7 @@ export default function ESReviewPage() {
       setUser(user);
       setAuthLoading(false);
       if (!user) {
-        router.push("/login");
+        router.push(`/login?expired=true&redirect=${encodeURIComponent("/es-review")}`);
       }
     };
     getUser();
