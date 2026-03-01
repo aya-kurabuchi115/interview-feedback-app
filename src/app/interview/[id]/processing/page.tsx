@@ -194,15 +194,16 @@ export default function ProcessingPage({
     analyzeCalledRef.current = false;
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("interviews")
-        .update({ status: "uploaded" } as never)
-        .eq("id", id);
+      const res = await fetch("/api/interviews/retry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interview_id: id }),
+      });
 
-      if (error) {
+      if (!res.ok) {
+        const data = await res.json();
         setIsError(true);
-        setErrorMessage("リトライに失敗しました");
+        setErrorMessage(data.error || "リトライに失敗しました");
         setIsLoading(false);
         return;
       }

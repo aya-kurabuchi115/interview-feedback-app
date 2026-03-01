@@ -37,10 +37,11 @@ export default async function GrowthPage() {
     redirect("/login");
   }
 
-  // 面接データ + フィードバックを取得（completed のみ）
+  // 面接データ + フィードバックを取得（completed のみ、自分のデータのみ）
   const { data: interviews } = await supabase
     .from("interviews")
     .select("id, title, company_name_snapshot, interview_category, interview_date, created_at, status")
+    .eq("user_id", user.id)
     .eq("status", "completed")
     .order("created_at", { ascending: true });
 

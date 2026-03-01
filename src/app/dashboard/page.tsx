@@ -47,7 +47,7 @@ export default async function DashboardPage({
     : "date_desc";
 
   // --- データ取得 ---
-  let interviewQuery = supabase.from("interviews").select("*");
+  let interviewQuery = supabase.from("interviews").select("*").eq("user_id", user.id);
 
   if (currentCategory !== "all") {
     interviewQuery = interviewQuery.eq("interview_category", currentCategory);
