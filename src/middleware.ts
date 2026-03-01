@@ -146,6 +146,25 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // ログイン済みユーザーが /login, /signup にアクセスした場合、/dashboard にリダイレクト
+  // ?error= パラメータ付きの場合はリダイレクトしない（auth callback からのエラー表示を妨げない）
+  const authPaths = ["/login", "/signup"];
+  if (authPaths.includes(request.nextUrl.pathname)) {
+    if (!request.nextUrl.searchParams.has("error")) {
+      const hasSession = request.cookies.getAll().some(
+        (cookie) => cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token")
+      );
+
+      if (hasSession) {
+        const url = request.nextUrl.clone();
+        // オンボーディング未完了の場合は /onboarding にリダイレクト
+        const onboardingCompleted = request.cookies.get("onboarding_completed")?.value;
+        url.pathname = onboardingCompleted === "true" ? "/dashboard" : "/onboarding";
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
   if (shouldCheckOnboarding(request.nextUrl.pathname)) {
     const onboardingCompleted = request.cookies.get("onboarding_completed")?.value;
     const hasSession = request.cookies.getAll().some(
