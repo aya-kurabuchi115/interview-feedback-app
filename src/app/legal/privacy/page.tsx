@@ -2,9 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "プライバシーポリシー | InterviewCoach",
+  title: "プライバシーポリシー",
   description:
     "InterviewCoach のプライバシーポリシー。個人情報の取り扱いについてご説明します。",
+  openGraph: {
+    title: "プライバシーポリシー | InterviewCoach",
+    description:
+      "InterviewCoach のプライバシーポリシー。個人情報の取り扱いについてご説明します。",
+    url: "https://interviewcoach.jp/legal/privacy",
+  },
 };
 
 const sections = [

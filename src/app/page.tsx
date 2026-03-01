@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Brain,
@@ -21,9 +22,63 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+export const metadata: Metadata = {
+  title: "InterviewCoach - AI面接フィードバック",
+  description:
+    "面接練習の録音をAIが分析し、回答内容・話し方の両面からフィードバックを自動生成。新卒就活を成功に導くAI面接コーチ。",
+  openGraph: {
+    title: "InterviewCoach - AI面接フィードバック",
+    description:
+      "面接練習の録音をAIが分析し、回答内容・話し方の両面からフィードバックを自動生成。新卒就活を成功に導くAI面接コーチ。",
+    url: "https://interviewcoach.jp",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      name: "InterviewCoach",
+      url: "https://interviewcoach.jp",
+      description:
+        "面接練習の録音をAIが分析し、回答内容・話し方の両面からフィードバックを自動生成。新卒就活を成功に導くAI面接コーチ。",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      offers: [
+        {
+          "@type": "Offer",
+          name: "無料プラン",
+          price: "0",
+          priceCurrency: "JPY",
+          description: "月3回まで面接分析、基本的なAIフィードバック、スコア表示",
+        },
+        {
+          "@type": "Offer",
+          name: "Pro プラン",
+          price: "980",
+          priceCurrency: "JPY",
+          description:
+            "無制限の面接分析、詳細なAIフィードバック、成長トラッキング、パーソナライズ分析",
+        },
+      ],
+    },
+    {
+      "@type": "Organization",
+      name: "InterviewCoach",
+      url: "https://interviewcoach.jp",
+      email: "support@interviewcoach.jp",
+    },
+  ],
+};
+
 export default function Home() {
   return (
     <div className="flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ヒーローセクション */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-background px-4 py-24 sm:py-32">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />

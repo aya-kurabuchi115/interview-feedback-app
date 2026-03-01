@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,11 @@ import { redirect } from "next/navigation";
 import type { Database, InterviewCategory } from "@/types/database";
 import { InterviewCard } from "@/components/interview-card";
 import { InterviewFilter, type SortOption } from "@/components/interview-filter";
+
+export const metadata: Metadata = {
+  title: "ダッシュボード",
+  robots: { index: false, follow: false },
+};
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Feedback = Database["public"]["Tables"]["feedbacks"]["Row"];

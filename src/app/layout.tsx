@@ -14,10 +14,35 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = "https://interviewcoach.jp";
+const siteName = "InterviewCoach";
+const defaultDescription =
+  "面接練習の録音をAIが分析し、回答内容・話し方の両面からフィードバックを自動生成。新卒就活を成功に導くAI面接コーチ。";
+
 export const metadata: Metadata = {
-  title: "InterviewCoach",
-  description:
-    "面接練習の録音をAIが分析し、回答内容・話し方の両面からフィードバックを自動生成",
+  title: {
+    default: siteName,
+    template: `%s | ${siteName}`,
+  },
+  description: defaultDescription,
+  metadataBase: new URL(siteUrl),
+  openGraph: {
+    title: siteName,
+    description: defaultDescription,
+    type: "website",
+    locale: "ja_JP",
+    url: siteUrl,
+    siteName,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteName,
+    description: defaultDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
