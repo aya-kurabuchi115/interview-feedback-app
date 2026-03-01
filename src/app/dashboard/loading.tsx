@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function DashboardLoading() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div role="status" aria-label="読み込み中" className="container mx-auto px-4 py-8">
       {/* ヘッダー */}
       <div className="flex items-center justify-between">
         <div className="h-8 w-32 animate-pulse rounded bg-muted" />
@@ -48,6 +48,8 @@ export default function DashboardLoading() {
           </Card>
         ))}
       </div>
+
+      <span className="sr-only">読み込み中</span>
     </div>
   );
 }

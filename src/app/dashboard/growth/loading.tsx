@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function GrowthLoading() {
   return (
-    <div className="container mx-auto px-4 py-8 animate-pulse">
+    <div role="status" aria-label="読み込み中" className="container mx-auto px-4 py-8 animate-pulse">
       {/* ナビゲーション */}
       <div className="mb-6">
         <div className="h-4 w-40 rounded bg-muted" />
@@ -57,6 +57,8 @@ export default function GrowthLoading() {
           </Card>
         ))}
       </div>
+
+      <span className="sr-only">読み込み中</span>
     </div>
   );
 }

@@ -165,8 +165,43 @@ export default function ESReviewPage() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div
+        role="status"
+        aria-label="読み込み中"
+        className="container mx-auto max-w-2xl px-4 py-8"
+      >
+        {/* ヘッダー */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <div className="h-8 w-24 animate-pulse rounded bg-muted" />
+            <div className="mt-2 h-4 w-72 max-w-full animate-pulse rounded bg-muted" />
+          </div>
+          <div className="h-9 w-24 animate-pulse rounded-md bg-muted" />
+        </div>
+        <div className="space-y-6">
+          {/* ESの設問 */}
+          <div className="space-y-2">
+            <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+            <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+            <div className="flex flex-wrap gap-1.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-7 animate-pulse rounded-full bg-muted"
+                  style={{ width: `${80 + i * 20}px` }}
+                />
+              ))}
+            </div>
+          </div>
+          {/* ESの回答 */}
+          <div className="rounded-lg border bg-card p-6">
+            <div className="h-6 w-24 animate-pulse rounded bg-muted" />
+            <div className="mt-4 h-[250px] w-full animate-pulse rounded-md bg-muted" />
+          </div>
+          {/* 添削ボタン */}
+          <div className="h-11 w-full animate-pulse rounded-md bg-muted" />
+        </div>
+        <span className="sr-only">読み込み中</span>
       </div>
     );
   }
