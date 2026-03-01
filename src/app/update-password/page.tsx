@@ -29,9 +29,7 @@ export default function UpdatePasswordPage() {
     const checkAuth = async () => {
       try {
         const supabase = createClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
           // 未認証の場合はパスワードリセットページにリダイレクト
@@ -70,13 +68,9 @@ export default function UpdatePasswordPage() {
 
       if (error) {
         if (error.message.includes("same password")) {
-          setError(
-            "現在と同じパスワードは使用できません。別のパスワードを入力してください。"
-          );
+          setError("現在と同じパスワードは使用できません。別のパスワードを入力してください。");
         } else {
-          setError(
-            "パスワードの更新中にエラーが発生しました。もう一度お試しください。"
-          );
+          setError("パスワードの更新中にエラーが発生しました。もう一度お試しください。");
         }
         return;
       }
@@ -96,9 +90,7 @@ export default function UpdatePasswordPage() {
       <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4">
         <Card className="w-full max-w-md">
           <CardContent className="flex items-center justify-center py-12">
-            <p className="text-sm text-muted-foreground">
-              認証状態を確認中...
-            </p>
+            <p className="text-sm text-muted-foreground">認証状態を確認中...</p>
           </CardContent>
         </Card>
       </div>
@@ -117,7 +109,11 @@ export default function UpdatePasswordPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+              >
                 {error}
               </div>
             )}
@@ -126,6 +122,7 @@ export default function UpdatePasswordPage() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="new-password"
                 placeholder="8文字以上"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -134,12 +131,11 @@ export default function UpdatePasswordPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">
-                新しいパスワード（確認）
-              </Label>
+              <Label htmlFor="confirmPassword">新しいパスワード（確認）</Label>
               <Input
                 id="confirmPassword"
                 type="password"
+                autoComplete="new-password"
                 placeholder="もう一度入力"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}

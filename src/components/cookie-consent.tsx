@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 /** localStorage に保存する同意状態のキー */
@@ -26,6 +26,7 @@ export function getConsentLevel(): ConsentLevel | null {
  */
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
+  const bannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // localStorage から同意状態を確認
@@ -35,7 +36,14 @@ export function CookieConsent() {
     }
   }, []);
 
-  function handleConsent(level: ConsentLevel) {
+  // バナー表示時にフォーカスを移動
+  useEffect(() => {
+    if (visible && bannerRef.current) {
+      bannerRef.current.focus();
+    }
+  }, [visible]);
+
+  const handleConsent = useCallback((level: ConsentLevel) => {
     localStorage.setItem(CONSENT_KEY, level);
     setVisible(false);
 
@@ -43,14 +51,28 @@ export function CookieConsent() {
     window.dispatchEvent(
       new CustomEvent("cookie-consent-change", { detail: { level } })
     );
-  }
+  }, []);
+
+  // Esc キーで「必須 Cookie のみ」として閉じる
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleConsent("essential");
+      }
+    },
+    [handleConsent]
+  );
 
   if (!visible) return null;
 
   return (
     <div
+      ref={bannerRef}
       role="dialog"
       aria-label="Cookie の使用について"
+      aria-modal="true"
+      tabIndex={-1}
+      onKeyDown={handleKeyDown}
       className="fixed inset-x-0 bottom-0 z-50 border-t bg-background p-4 shadow-lg sm:p-6"
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
