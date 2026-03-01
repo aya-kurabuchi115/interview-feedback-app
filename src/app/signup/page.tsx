@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Loader2, Mail } from "lucide-react";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -22,7 +22,7 @@ export default function SignUpPage() {
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,25 +45,68 @@ export default function SignUpPage() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/api/auth/callback`,
+        },
       });
 
       if (error) {
         if (error.message.includes("already registered")) {
-          setError("このメールアドレスは既に登録されています");
+          setError("このメールアドレスは既に登録されています。ログインページからお試しください。");
         } else {
-          setError(error.message);
+          setError("アカウント作成に失敗しました。入力内容を確認して再度お試しください。");
         }
         return;
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      setEmailSent(true);
     } catch {
-      setError("サインアップ中にエラーが発生しました");
+      setError("サーバーとの通信に失敗しました。時間を置いて再度お試しください。");
     } finally {
       setLoading(false);
     }
   };
+
+  // メール送信完了画面
+  if (emailSent) {
+    return (
+      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">メールを確認してください</CardTitle>
+            <CardDescription className="mt-2 text-base">
+              <span className="font-medium text-foreground">{email}</span>
+              {" "}に確認メールを送信しました。
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-md bg-muted p-4 text-sm text-muted-foreground">
+              <p className="mb-2">メール内のリンクをクリックして、アカウントの登録を完了してください。</p>
+              <p>メールが届かない場合は、迷惑メールフォルダもご確認ください。</p>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setEmailSent(false)}
+            >
+              別のメールアドレスで登録する
+            </Button>
+            <p className="text-sm text-muted-foreground">
+              すでにアカウントをお持ちですか？{" "}
+              <Link href="/login" className="text-primary hover:underline">
+                ログイン
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4">
@@ -147,6 +190,7 @@ export default function SignUpPage() {
               className="w-full"
               disabled={loading || !agreed}
             >
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {loading ? "登録中..." : "サインアップ"}
             </Button>
             <p className="text-sm text-muted-foreground">
