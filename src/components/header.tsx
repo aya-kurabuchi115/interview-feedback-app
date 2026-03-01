@@ -58,6 +58,7 @@ export function Header() {
   };
 
   const publicNavItems = [
+    { href: "/questions", label: "質問集" },
     { href: "/personality", label: "16パーソナリティ" },
   ];
 
