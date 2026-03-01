@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Download, Printer, FileDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -81,9 +81,12 @@ export function ExportButtons({
   };
 
   // エラー表示を一定時間後に消す
-  if (error) {
-    setTimeout(() => setError(null), 5000);
-  }
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   if (variant === "inline") {
     return (

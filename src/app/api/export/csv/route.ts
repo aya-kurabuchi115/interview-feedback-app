@@ -84,7 +84,7 @@ export async function GET() {
 
     // フィードバック取得
     const interviewIds = interviews.map((i) => i.id);
-    let feedbackMap = new Map<string, Feedback>();
+    const feedbackMap = new Map<string, Feedback>();
 
     if (interviewIds.length > 0) {
       const { data: feedbacksData } = await supabase
