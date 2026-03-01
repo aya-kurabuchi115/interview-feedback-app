@@ -20,6 +20,16 @@ InterviewCoach プロジェクトの機能仕様書をまとめたディレク�
 | [spec-24-privacy-policy.md](./spec-24-privacy-policy.md) | [#24](../../issues/24) | プライバシーポリシーページ作成 | Draft |
 | [spec-25-terms-of-service.md](./spec-25-terms-of-service.md) | [#25](../../issues/25) | 利用規約ページ作成 | Draft |
 
+## Sprint 10 対象の仕様書
+
+| ファイル | Issue | タイトル | ステータス |
+|----------|-------|----------|------------|
+| [spec-172-auth-redirect.md](./spec-172-auth-redirect.md) | [#172](https://github.com/aya-kurabuchi115/interview-feedback-app/issues/172) | ログイン済みユーザーのリダイレクト改善 | Draft |
+| [spec-176-auth-error-messages.md](./spec-176-auth-error-messages.md) | [#176](https://github.com/aya-kurabuchi115/interview-feedback-app/issues/176) | 認証コールバックのエラーメッセージ改善 | Draft |
+| [spec-104-email-templates.md](./spec-104-email-templates.md) | [#104](https://github.com/aya-kurabuchi115/interview-feedback-app/issues/104) | メールテンプレートのカスタマイズ | Draft |
+| [spec-160-button-feedback-ui.md](./spec-160-button-feedback-ui.md) | [#160](https://github.com/aya-kurabuchi115/interview-feedback-app/issues/160) | ボタン操作後のフィードバックUI改善 | Draft |
+| [spec-132-answer-templates.md](./spec-132-answer-templates.md) | [#132](https://github.com/aya-kurabuchi115/interview-feedback-app/issues/132) | 回答テンプレート・模範解答機能 | Draft |
+
 ## 依存関係
 
 ```mermaid
@@ -28,6 +38,8 @@ graph LR
     A --> C["#19 AIフィードバック生成"]
     B --> C
     D["#24 プライバシーポリシー"] -.共有コンポーネント.-> E["#25 利用規約"]
+    F["#172 リダイレクト改善"] -.エラーパラメータ整合性.-> G["#176 エラーメッセージ改善"]
+    H["#160 フィードバックUI"] -.関連.-> I["#174 スケルトンスクリーン"]
 ```
 
 ## 仕様書のステータス
