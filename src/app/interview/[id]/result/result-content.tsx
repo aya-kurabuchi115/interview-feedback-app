@@ -16,6 +16,7 @@ import type { Database } from "@/types/supabase";
 import type { Json } from "@/types/supabase";
 import type { CategoryScores } from "@/types/database";
 import { CATEGORY_LABELS } from "@/lib/constants";
+import { ExportButtons } from "@/components/export-buttons";
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Transcript = Database["public"]["Tables"]["transcripts"]["Row"];
@@ -178,7 +179,10 @@ export function ResultContent({
             ダッシュボードに戻る
           </Link>
         </Button>
-        <h1 className="text-2xl font-bold">{interview.title}</h1>
+        <h1 className="flex-1 text-2xl font-bold">{interview.title}</h1>
+        {feedback && (
+          <ExportButtons interviewId={interview.id} variant="inline" />
+        )}
       </div>
 
       {/* フィードバック未生成の場合 */}
