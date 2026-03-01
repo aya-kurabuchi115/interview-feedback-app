@@ -106,6 +106,7 @@ export interface Database {
           job_hunting_status: JobHuntingStatus;
           job_hunting_start_date: string | null;
           preferred_work_location: string[];
+          onboarding_completed: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -122,6 +123,7 @@ export interface Database {
           job_hunting_status?: JobHuntingStatus;
           job_hunting_start_date?: string | null;
           preferred_work_location?: string[];
+          onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -138,6 +140,7 @@ export interface Database {
           job_hunting_status?: JobHuntingStatus;
           job_hunting_start_date?: string | null;
           preferred_work_location?: string[];
+          onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
         };

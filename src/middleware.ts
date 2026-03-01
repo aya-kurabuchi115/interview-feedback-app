@@ -73,6 +73,29 @@ function checkRateLimit(ip: string): { allowed: boolean; remaining: number; rese
   };
 }
 
+const ONBOARDING_BYPASS_PREFIXES = [
+  "/onboarding",
+  "/api/",
+  "/auth/",
+  "/legal/",
+  "/_next/",
+  "/login",
+  "/signup",
+];
+
+const ONBOARDING_REQUIRED_PREFIXES = [
+  "/dashboard",
+  "/interview",
+  "/profile",
+];
+
+function shouldCheckOnboarding(pathname: string): boolean {
+  if (ONBOARDING_BYPASS_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    return false;
+  }
+  return ONBOARDING_REQUIRED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
 export async function middleware(request: NextRequest) {
   // /api/* へのリクエストにレート制限を適用
   if (request.nextUrl.pathname.startsWith("/api/")) {
@@ -102,7 +125,22 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  return await updateSession(request);
+  const response = await updateSession(request);
+
+  if (shouldCheckOnboarding(request.nextUrl.pathname)) {
+    const onboardingCompleted = request.cookies.get("onboarding_completed")?.value;
+    const hasSession = request.cookies.getAll().some(
+      (cookie) => cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token")
+    );
+
+    if (hasSession && onboardingCompleted !== "true") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/onboarding";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  return response;
 }
 
 export const config = {
