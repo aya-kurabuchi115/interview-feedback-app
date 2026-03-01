@@ -95,8 +95,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   // ── 分析家グループ ──
   INTJ: {
     type: "INTJ",
-    name: "建築家",
-    nameEn: "Architect",
+    name: "戦略プランナー",
+    nameEn: "Strategic Planner",
     group: "analyst",
     animal: "フクロウ",
     animalEmoji: "🦉",
@@ -115,8 +115,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   },
   INTP: {
     type: "INTP",
-    name: "論理学者",
-    nameEn: "Logician",
+    name: "知的エクスプローラー",
+    nameEn: "Intellectual Explorer",
     group: "analyst",
     animal: "ネコ",
     animalEmoji: "🐱",
@@ -135,8 +135,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   },
   ENTJ: {
     type: "ENTJ",
-    name: "指揮官",
-    nameEn: "Commander",
+    name: "ビジョンリーダー",
+    nameEn: "Vision Leader",
     group: "analyst",
     animal: "ライオン",
     animalEmoji: "🦁",
@@ -155,8 +155,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   },
   ENTP: {
     type: "ENTP",
-    name: "討論者",
-    nameEn: "Debater",
+    name: "アイデアメイカー",
+    nameEn: "Idea Maker",
     group: "analyst",
     animal: "キツネ",
     animalEmoji: "🦊",
@@ -177,8 +177,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   // ── 外交官グループ ──
   INFJ: {
     type: "INFJ",
-    name: "提唱者",
-    nameEn: "Advocate",
+    name: "静かなビジョナリー",
+    nameEn: "Quiet Visionary",
     group: "diplomat",
     animal: "シカ",
     animalEmoji: "🦌",
@@ -197,8 +197,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   },
   INFP: {
     type: "INFP",
-    name: "仲介者",
-    nameEn: "Mediator",
+    name: "共感クリエイター",
+    nameEn: "Empathy Creator",
     group: "diplomat",
     animal: "ウサギ",
     animalEmoji: "🐰",
@@ -217,8 +217,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   },
   ENFJ: {
     type: "ENFJ",
-    name: "主人公",
-    nameEn: "Protagonist",
+    name: "チームメンター",
+    nameEn: "Team Mentor",
     group: "diplomat",
     animal: "イルカ",
     animalEmoji: "🐬",
@@ -237,8 +237,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   },
   ENFP: {
     type: "ENFP",
-    name: "広報活動家",
-    nameEn: "Campaigner",
+    name: "パッションスターター",
+    nameEn: "Passion Starter",
     group: "diplomat",
     animal: "コアラ",
     animalEmoji: "🐨",
@@ -259,8 +259,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   // ── 番人グループ ──
   ISTJ: {
     type: "ISTJ",
-    name: "管理者",
-    nameEn: "Logistician",
+    name: "堅実キーパー",
+    nameEn: "Steady Keeper",
     group: "sentinel",
     animal: "クマ",
     animalEmoji: "🐻",
@@ -279,8 +279,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   },
   ISFJ: {
     type: "ISFJ",
-    name: "擁護者",
-    nameEn: "Defender",
+    name: "サイレントサポーター",
+    nameEn: "Silent Supporter",
     group: "sentinel",
     animal: "ペンギン",
     animalEmoji: "🐧",
@@ -299,8 +299,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   },
   ESTJ: {
     type: "ESTJ",
-    name: "幹部",
-    nameEn: "Executive",
+    name: "組織キャプテン",
+    nameEn: "Organization Captain",
     group: "sentinel",
     animal: "イヌ",
     animalEmoji: "🐕",
@@ -319,8 +319,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   },
   ESFJ: {
     type: "ESFJ",
-    name: "領事",
-    nameEn: "Consul",
+    name: "ムードコネクター",
+    nameEn: "Mood Connector",
     group: "sentinel",
     animal: "ハムスター",
     animalEmoji: "🐹",
@@ -341,8 +341,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   // ── 探検家グループ ──
   ISTP: {
     type: "ISTP",
-    name: "巨匠",
-    nameEn: "Virtuoso",
+    name: "冷静テクニシャン",
+    nameEn: "Cool Technician",
     group: "explorer",
     animal: "タカ",
     animalEmoji: "🦅",
@@ -361,8 +361,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   },
   ISFP: {
     type: "ISFP",
-    name: "冒険家",
-    nameEn: "Adventurer",
+    name: "感性アーティスト",
+    nameEn: "Sensory Artist",
     group: "explorer",
     animal: "チョウ",
     animalEmoji: "🦋",
@@ -381,8 +381,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   },
   ESTP: {
     type: "ESTP",
-    name: "起業家",
-    nameEn: "Entrepreneur",
+    name: "突破パイオニア",
+    nameEn: "Breakthrough Pioneer",
     group: "explorer",
     animal: "チーター",
     animalEmoji: "🐆",
@@ -401,8 +401,8 @@ export const PERSONALITY_DATA: Record<PersonalityType, PersonalityInfo> = {
   },
   ESFP: {
     type: "ESFP",
-    name: "エンターテイナー",
-    nameEn: "Entertainer",
+    name: "ステージライター",
+    nameEn: "Stage Lighter",
     group: "explorer",
     animal: "インコ",
     animalEmoji: "🦜",
