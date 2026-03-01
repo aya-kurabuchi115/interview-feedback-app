@@ -24,17 +24,26 @@ const ROUND_MAP: Record<string, string> = {
   other: "その他",
 };
 
-/** CSV 用に値をエスケープする（ダブルクォートで囲み、内部のダブルクォートをエスケープ） */
+/** CSV 用に値をエスケープする（CSV インジェクション対策 + ダブルクォートエスケープ） */
 function escapeCsvValue(value: string): string {
-  if (
-    value.includes(",") ||
-    value.includes('"') ||
-    value.includes("\n") ||
-    value.includes("\r")
-  ) {
-    return `"${value.replace(/"/g, '""')}"`;
+  let escaped = value;
+
+  // CSV インジェクション対策: 数式として解釈される文字で始まる場合はシングルクォートを付与
+  if (/^[=+\-@\t\r]/.test(escaped)) {
+    escaped = "'" + escaped;
   }
-  return value;
+
+  // ダブルクォートのエスケープ・カンマ・改行を含む場合はダブルクォートで囲む
+  if (
+    escaped.includes(",") ||
+    escaped.includes('"') ||
+    escaped.includes("\n") ||
+    escaped.includes("\r")
+  ) {
+    escaped = '"' + escaped.replace(/"/g, '""') + '"';
+  }
+
+  return escaped;
 }
 
 /** 最大エクスポート件数 */
