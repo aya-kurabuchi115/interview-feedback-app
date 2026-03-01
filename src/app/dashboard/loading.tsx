@@ -12,6 +12,19 @@ export default function DashboardLoading() {
         </div>
       </div>
 
+      {/* 週次サマリースケルトン */}
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={`summary-${i}`} className="animate-pulse py-4">
+            <CardContent className="flex flex-col gap-1">
+              <div className="h-4 w-28 rounded bg-muted" />
+              <div className="h-8 w-16 rounded bg-muted" />
+              <div className="h-3 w-20 rounded bg-muted" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
       {/* フィルタ */}
       <div className="mt-6 space-y-4">
         <div className="flex flex-wrap items-center gap-2">

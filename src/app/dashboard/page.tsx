@@ -10,6 +10,8 @@ import type { InterviewCategory } from "@/types/database";
 import type { SortOption } from "@/components/interview-filter";
 import { InterviewListSection } from "@/components/dashboard/interview-list-section";
 import { InterviewListSkeleton } from "@/components/dashboard/interview-list-skeleton";
+import { WeeklySummarySection } from "@/components/dashboard/weekly-summary-section";
+import { WeeklySummarySkeleton } from "@/components/dashboard/weekly-summary-skeleton";
 
 export const metadata: Metadata = {
   title: "ダッシュボード",
@@ -84,6 +86,11 @@ export default async function DashboardPage({
           </Button>
         </div>
       </div>
+
+      {/* 週次進捗サマリー（Suspense 境界でストリーミング） */}
+      <Suspense fallback={<WeeklySummarySkeleton />}>
+        <WeeklySummarySection userId={user.id} />
+      </Suspense>
 
       {/* 面接一覧（Suspense 境界でストリーミング） */}
       <Suspense fallback={<InterviewListSkeleton />}>
