@@ -82,6 +82,8 @@ const ONBOARDING_BYPASS_PREFIXES = [
   "/_next/",
   "/login",
   "/signup",
+  "/reset-password",
+  "/update-password",
 ];
 
 const ONBOARDING_REQUIRED_PREFIXES = [
