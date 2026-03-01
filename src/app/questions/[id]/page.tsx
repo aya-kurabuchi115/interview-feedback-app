@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
-  BookOpen,
   CheckCircle,
   Lightbulb,
   Mic,
@@ -15,6 +14,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { questions, getQuestionById } from "@/lib/questions/data";
 import { DIFFICULTY_LABELS } from "@/lib/questions/types";
 import type { Difficulty } from "@/lib/questions/types";
+import { ExampleAnswer } from "@/components/questions/example-answer";
+import { FrameworkGuide } from "@/components/questions/framework-guide";
+import { AnswerComparison } from "@/components/questions/answer-comparison";
 
 const DIFFICULTY_COLORS: Record<Difficulty, string> = {
   easy: "bg-green-100 text-green-800",
@@ -138,23 +140,14 @@ export default async function QuestionDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
 
-          {/* 模範解答 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="size-5 text-primary" />
-                模範解答
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-lg bg-muted/50 p-4">
-                <p className="text-sm leading-relaxed">{question.exampleAnswer}</p>
-              </div>
-              <p className="mt-3 text-xs text-muted-foreground">
-                ※ 模範解答はあくまで参考例です。自分の経験に基づいたオリジナルの回答を作成しましょう。
-              </p>
-            </CardContent>
-          </Card>
+          {/* 模範解答（アコーディオン） */}
+          <ExampleAnswer exampleAnswer={question.exampleAnswer} />
+
+          {/* 回答フレームワークガイド */}
+          <FrameworkGuide />
+
+          {/* 自分の回答入力 */}
+          <AnswerComparison questionId={question.id} />
 
           {/* この質問で練習する */}
           <Card className="border-primary">
