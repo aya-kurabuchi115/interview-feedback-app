@@ -14,6 +14,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -114,6 +115,7 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           {loading ? null : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -153,7 +155,8 @@ export function Header() {
         </div>
 
         {/* Mobile Nav */}
-        <div className="flex flex-1 justify-end md:hidden">
+        <div className="flex flex-1 items-center justify-end gap-1 md:hidden">
+          <ThemeToggle />
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">

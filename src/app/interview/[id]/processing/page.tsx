@@ -248,7 +248,7 @@ export default function ProcessingPage({
       {/* アプリ内トースト通知（ブラウザ通知のフォールバック） */}
       {toastMessage && (
         <div
-          className="mb-6 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800"
+          className="mb-6 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300"
           role="alert"
         >
           <CheckCircle className="h-5 w-5 shrink-0" />
