@@ -191,7 +191,7 @@ export function OnboardingWizard() {
 
       {/* エラー表示 */}
       {error && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive" role="alert" aria-live="assertive">
           {error}
         </div>
       )}

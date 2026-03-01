@@ -93,9 +93,9 @@ export async function PUT(request: Request) {
         );
 
       if (error) {
-        console.error("Onboarding skip error:", error);
+        console.error("Onboarding skip error:", JSON.stringify(error));
         return NextResponse.json(
-          { error: "オンボーディングの完了に失敗しました" },
+          { error: "サーバーとの通信に失敗しました。時間を置いて再度お試しください。", detail: error.message },
           { status: 500 }
         );
       }
@@ -152,9 +152,9 @@ export async function PUT(request: Request) {
       .single();
 
     if (error) {
-      console.error("Onboarding upsert error:", error);
+      console.error("Onboarding upsert error:", JSON.stringify(error));
       return NextResponse.json(
-        { error: "プロフィールの保存に失敗しました" },
+        { error: "サーバーとの通信に失敗しました。時間を置いて再度お試しください。", detail: error.message },
         { status: 500 }
       );
     }
@@ -170,9 +170,10 @@ export async function PUT(request: Request) {
     });
 
     return NextResponse.json({ profile: data });
-  } catch {
+  } catch (err) {
+    console.error("Onboarding unexpected error:", err);
     return NextResponse.json(
-      { error: "サーバーエラーが発生しました" },
+      { error: "サーバーとの通信に失敗しました。時間を置いて再度お試しください。" },
       { status: 500 }
     );
   }

@@ -18,6 +18,7 @@ import type { User } from "@supabase/supabase-js";
 export function Header() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -31,12 +32,28 @@ export function Header() {
           data: { user },
         } = await supabase.auth.getUser();
         setUser(user);
+
+        // オンボーディング完了チェック
+        if (user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("onboarding_completed")
+            .eq("user_id", user.id)
+            .single();
+          setOnboardingCompleted(
+            !!(profile as { onboarding_completed?: boolean } | null)?.onboarding_completed
+          );
+        }
+
         setLoading(false);
       };
       getUser();
 
       const { data } = supabase.auth.onAuthStateChange((_event, session) => {
         setUser(session?.user ?? null);
+        if (!session?.user) {
+          setOnboardingCompleted(false);
+        }
       });
       subscription = data.subscription;
     } catch {
@@ -62,7 +79,8 @@ export function Header() {
     { href: "/personality", label: "16パーソナリティ" },
   ];
 
-  const authNavItems = user
+  // オンボーディング完了後のみ表示する保護対象ナビ
+  const authNavItems = user && onboardingCompleted
     ? [
         { href: "/dashboard", label: "ダッシュボード" },
         { href: "/mock-interview", label: "模擬面接" },
