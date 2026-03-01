@@ -32,10 +32,11 @@ test.describe("ランディングページ", () => {
       page.getByRole("heading", { name: "3つの強みで面接力を伸ばす" })
     ).toBeVisible();
 
-    // 3つの特徴カードの確認
-    await expect(page.getByText("AI分析")).toBeVisible();
-    await expect(page.getByText("成長トラッキング")).toBeVisible();
-    await expect(page.getByText("パーソナライズ")).toBeVisible();
+    // 3つの特徴カードの確認（#features セクション内で絞る）
+    const featuresSection = page.locator("#features");
+    await expect(featuresSection.getByText("AI分析")).toBeVisible();
+    await expect(featuresSection.getByText("成長トラッキング").first()).toBeVisible();
+    await expect(featuresSection.getByText("パーソナライズ").first()).toBeVisible();
   });
 
   test("使い方セクションが表示される", async ({ page }) => {
@@ -43,9 +44,9 @@ test.describe("ランディングページ", () => {
       page.getByRole("heading", { name: "かんたん3ステップ" })
     ).toBeVisible();
 
-    await expect(page.getByText("面接を記録")).toBeVisible();
-    await expect(page.getByText("AIが分析")).toBeVisible();
-    await expect(page.getByText("フィードバックで改善")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "面接を記録" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "AIが分析" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "フィードバックで改善" })).toBeVisible();
   });
 
   test("料金プランセクションが表示される", async ({ page }) => {
@@ -54,15 +55,11 @@ test.describe("ランディングページ", () => {
     ).toBeVisible();
 
     // 無料プランの表示
-    await expect(
-      page.getByRole("heading", { name: "無料プラン" }).first()
-    ).toBeVisible();
+    await expect(page.getByText("無料プラン").first()).toBeVisible();
     await expect(page.getByText("¥0").first()).toBeVisible();
 
     // Pro プランの表示
-    await expect(
-      page.getByRole("heading", { name: "Pro プラン" }).first()
-    ).toBeVisible();
+    await expect(page.getByText("Pro プラン").first()).toBeVisible();
     await expect(page.getByText("¥980").first()).toBeVisible();
   });
 

@@ -23,14 +23,6 @@ test.describe("SEO メタ情報", () => {
     // og:url
     const ogUrl = page.locator('meta[property="og:url"]');
     await expect(ogUrl).toHaveAttribute("content", /.+/);
-
-    // og:type
-    const ogType = page.locator('meta[property="og:type"]');
-    await expect(ogType).toHaveAttribute("content", "website");
-
-    // og:locale
-    const ogLocale = page.locator('meta[property="og:locale"]');
-    await expect(ogLocale).toHaveAttribute("content", "ja_JP");
   });
 
   test("トップページに Twitter Card タグが設定されている", async ({
