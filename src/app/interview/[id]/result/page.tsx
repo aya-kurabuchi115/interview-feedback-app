@@ -66,12 +66,23 @@ export default async function ResultPage({
     .map((row: Record<string, unknown>) => row.tags as TagData | null)
     .filter((t): t is TagData => t !== null && !Array.isArray(t));
 
+  // 比較可能な他の完了済み面接が存在するか確認
+  const { count: otherCompletedCount } = await supabase
+    .from("interviews")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("status", "completed")
+    .neq("id", id);
+
+  const hasOtherInterviews = (otherCompletedCount ?? 0) > 0;
+
   return (
     <ResultContent
       interview={interview}
       transcripts={transcripts}
       feedback={feedback}
       interviewTags={interviewTags}
+      hasOtherInterviews={hasOtherInterviews}
     />
   );
 }
