@@ -12,6 +12,7 @@ import type { SortOption } from "@/components/interview-filter";
 import { InterviewListSection } from "@/components/dashboard/interview-list-section";
 import { InterviewListSkeleton } from "@/components/dashboard/interview-list-skeleton";
 import { UsageNudgeBanner } from "@/components/dashboard/usage-nudge-banner";
+import { PracticeReminderBanner } from "@/components/dashboard/practice-reminder-banner";
 import { WeeklySummarySection } from "@/components/dashboard/weekly-summary-section";
 import { WeeklySummarySkeleton } from "@/components/dashboard/weekly-summary-skeleton";
 
@@ -66,6 +67,9 @@ export default async function DashboardPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* 練習リマインダーバナー */}
+      <PracticeReminderBanner />
+
       {/* 利用上限ナッジバナー（Free プラン & 残り1回以下のみ表示） */}
       <UsageNudgeBanner
         plan={usage.plan}

@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, X, CheckCircle, AlertCircle, Bell, BellOff } from "lucide-react";
+import { Loader2, Save, X, CheckCircle, AlertCircle, Bell, BellOff, Clock, CalendarDays } from "lucide-react";
 import {
   isNotificationSupported,
   getNotificationPermission,
@@ -23,6 +23,15 @@ import {
   isNotificationEnabled,
   setNotificationEnabled as setNotificationEnabledStorage,
 } from "@/lib/notifications";
+import {
+  getReminderSettings,
+  saveReminderSettings,
+  getDaysForFrequency,
+  FREQUENCY_LABELS,
+  DAY_LABELS,
+  type ReminderFrequency,
+  type ReminderSettings,
+} from "@/lib/reminder";
 import {
   PERSONALITY_TYPES,
   PERSONALITY_DATA,
@@ -130,7 +139,13 @@ export default function ProfilePage() {
     useState<NotificationPermission | null>(null);
   const [notificationEnabled, setNotificationEnabledState] = useState(true);
 
-  // 通知状態の初期化
+  // リマインダー設定
+  const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency>("three_per_week");
+  const [reminderTime, setReminderTime] = useState("20:00");
+  const [reminderDays, setReminderDays] = useState<boolean[]>([false, true, false, true, false, true, false]);
+
+  // 通知状態・リマインダーの初期化
   useEffect(() => {
     const supported = isNotificationSupported();
     setNotificationSupported(supported);
@@ -138,6 +153,13 @@ export default function ProfilePage() {
       setNotificationPermission(getNotificationPermission());
       setNotificationEnabledState(isNotificationEnabled());
     }
+
+    // リマインダー設定の読み込み
+    const reminderSettings = getReminderSettings();
+    setReminderEnabled(reminderSettings.enabled);
+    setReminderFrequency(reminderSettings.frequency);
+    setReminderTime(reminderSettings.time);
+    setReminderDays(reminderSettings.days);
   }, []);
 
   // トースト自動非表示
@@ -920,6 +942,191 @@ export default function ProfilePage() {
               <p className="text-sm text-muted-foreground">
                 お使いのブラウザはブラウザ通知に対応していません。分析完了時はアプリ内で通知されます。
               </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 練習リマインダー設定 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CalendarDays className="h-5 w-5" />
+              練習リマインダー
+            </CardTitle>
+            <CardDescription>
+              定期的に面接練習を思い出せるようリマインダーを設定しましょう
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* ON/OFF トグル */}
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="flex items-center gap-3">
+                {reminderEnabled ? (
+                  <Bell className="h-5 w-5 text-primary" />
+                ) : (
+                  <BellOff className="h-5 w-5 text-muted-foreground" />
+                )}
+                <div>
+                  <p className="text-sm font-medium">リマインダー通知</p>
+                  <p className="text-xs text-muted-foreground">
+                    {reminderEnabled
+                      ? "設定した曜日・時刻にリマインドします"
+                      : "リマインダーは無効です"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !reminderEnabled;
+                  setReminderEnabled(next);
+                  if (next && notificationPermission !== "granted") {
+                    requestNotificationPermission().then((perm) => {
+                      setNotificationPermission(perm);
+                      if (perm === "granted") {
+                        setNotificationEnabledState(true);
+                        setNotificationEnabledStorage(true);
+                      }
+                    });
+                  }
+                  const newSettings: ReminderSettings = {
+                    enabled: next,
+                    frequency: reminderFrequency,
+                    time: reminderTime,
+                    days: reminderDays,
+                  };
+                  saveReminderSettings(newSettings);
+                }}
+                role="switch"
+                aria-checked={reminderEnabled}
+                aria-label="リマインダーの切り替え"
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                  reminderEnabled ? "bg-primary" : "bg-muted"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform ${
+                    reminderEnabled ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* 詳細設定（有効時のみ表示） */}
+            {reminderEnabled && (
+              <div className="space-y-4 rounded-lg border border-dashed p-4">
+                {/* 頻度選択 */}
+                <div className="space-y-2">
+                  <Label htmlFor="reminderFrequency" className="flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5" />
+                    頻度
+                  </Label>
+                  <select
+                    id="reminderFrequency"
+                    value={reminderFrequency}
+                    onChange={(e) => {
+                      const freq = e.target.value as ReminderFrequency;
+                      setReminderFrequency(freq);
+                      const newDays = getDaysForFrequency(freq);
+                      setReminderDays(newDays);
+                      saveReminderSettings({
+                        enabled: reminderEnabled,
+                        frequency: freq,
+                        time: reminderTime,
+                        days: newDays,
+                      });
+                    }}
+                    className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                    aria-label="リマインダー頻度"
+                  >
+                    {(Object.entries(FREQUENCY_LABELS) as [ReminderFrequency, string][]).map(
+                      ([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+
+                {/* 曜日選択 */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1.5">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    リマインド曜日
+                  </Label>
+                  <div className="flex gap-1.5">
+                    {DAY_LABELS.map((label, index) => {
+                      const active = reminderDays[index];
+                      return (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => {
+                            const newDays = [...reminderDays];
+                            newDays[index] = !newDays[index];
+                            setReminderDays(newDays);
+                            saveReminderSettings({
+                              enabled: reminderEnabled,
+                              frequency: reminderFrequency,
+                              time: reminderTime,
+                              days: newDays,
+                            });
+                          }}
+                          aria-pressed={active}
+                          aria-label={`${label}曜日`}
+                          className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium transition-colors ${
+                            active
+                              ? "bg-primary text-primary-foreground"
+                              : "border border-border bg-background text-muted-foreground hover:bg-accent"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 時刻設定 */}
+                <div className="space-y-2">
+                  <Label htmlFor="reminderTime" className="flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5" />
+                    リマインド時刻
+                  </Label>
+                  <Input
+                    id="reminderTime"
+                    type="time"
+                    value={reminderTime}
+                    onChange={(e) => {
+                      const newTime = e.target.value;
+                      setReminderTime(newTime);
+                      saveReminderSettings({
+                        enabled: reminderEnabled,
+                        frequency: reminderFrequency,
+                        time: newTime,
+                        days: reminderDays,
+                      });
+                    }}
+                    className="w-36"
+                    aria-label="リマインド時刻"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    この時刻以降にダッシュボードを開くとリマインド通知が表示されます
+                  </p>
+                </div>
+
+                {/* ブラウザ通知の状態表示 */}
+                {notificationPermission !== "granted" && (
+                  <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-900 dark:bg-yellow-950/30">
+                    <p className="text-xs text-yellow-800 dark:text-yellow-200">
+                      {notificationPermission === "denied"
+                        ? "ブラウザ通知がブロックされています。ブラウザの設定から通知を許可すると、より効果的にリマインドできます。"
+                        : "ブラウザ通知を許可すると、ページを開いた際にデスクトップ通知でもリマインドされます。"}
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>
