@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { ArrowLeft, CheckCircle2, AlertTriangle, Lightbulb } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertTriangle, Lightbulb, GitCompareArrows } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -185,11 +185,13 @@ export function ResultContent({
   transcripts,
   feedback,
   interviewTags = [],
+  hasOtherInterviews = false,
 }: {
   interview: Interview;
   transcripts: Transcript[];
   feedback: Feedback | null;
   interviewTags?: TagData[];
+  hasOtherInterviews?: boolean;
 }) {
   const suggestions = feedback
     ? parseJsonArray<Suggestion>(feedback.suggestions)
@@ -228,6 +230,14 @@ export function ResultContent({
         <h1 className="flex-1 text-2xl font-bold">{interview.title}</h1>
         {feedback && (
           <ExportButtons interviewId={interview.id} variant="inline" />
+        )}
+        {feedback && hasOtherInterviews && (
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/interview/${interview.id}/compare`}>
+              <GitCompareArrows className="mr-2 h-4 w-4" />
+              前回と比較
+            </Link>
+          </Button>
         )}
       </div>
 
