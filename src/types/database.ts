@@ -65,6 +65,33 @@ export type InterviewStatus =
 /** 話者 */
 export type Speaker = "interviewer" | "interviewee";
 
+/** 模擬面接カテゴリ */
+export type MockInterviewCategory =
+  | "general"
+  | "technical"
+  | "behavioral"
+  | "case";
+
+/** 模擬面接ラウンド */
+export type MockInterviewRound =
+  | "first"
+  | "second"
+  | "third"
+  | "final";
+
+/** 模擬面接難易度 */
+export type MockInterviewDifficulty = "easy" | "normal" | "hard";
+
+/** 模擬面接ステータス */
+export type MockInterviewStatus = "in_progress" | "completed";
+
+/** 模擬面接メッセージ */
+export interface MockInterviewMessage {
+  role: "interviewer" | "user";
+  content: string;
+  timestamp: string;
+}
+
 // ============================================================
 // カテゴリ別スコアの型
 // ============================================================
@@ -144,6 +171,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
 
       companies: {
@@ -168,6 +196,7 @@ export interface Database {
           normalized_name?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
 
       interviews: {
@@ -225,6 +254,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
 
       transcripts: {
@@ -252,6 +282,7 @@ export interface Database {
           start_time?: number;
           end_time?: number;
         };
+        Relationships: [];
       };
 
       feedbacks: {
@@ -312,6 +343,7 @@ export interface Database {
           model_version?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
 
       tags: {
@@ -336,6 +368,7 @@ export interface Database {
           color?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
 
       interview_tags: {
@@ -351,6 +384,7 @@ export interface Database {
           interview_id?: string;
           tag_id?: string;
         };
+        Relationships: [];
       };
 
       subscriptions: {
@@ -396,6 +430,63 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
+      };
+
+      /** Issue #129: AI模擬面接 */
+      mock_interviews: {
+        Row: {
+          id: string;
+          user_id: string;
+          company_name: string | null;
+          industry: string | null;
+          category: string;
+          round: string;
+          duration_minutes: number;
+          difficulty: string;
+          messages: Json;
+          status: string;
+          total_questions: number;
+          started_at: string;
+          completed_at: string | null;
+          feedback_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          company_name?: string | null;
+          industry?: string | null;
+          category?: string;
+          round?: string;
+          duration_minutes?: number;
+          difficulty?: string;
+          messages?: Json;
+          status?: string;
+          total_questions?: number;
+          started_at?: string;
+          completed_at?: string | null;
+          feedback_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          company_name?: string | null;
+          industry?: string | null;
+          category?: string;
+          round?: string;
+          duration_minutes?: number;
+          difficulty?: string;
+          messages?: Json;
+          status?: string;
+          total_questions?: number;
+          started_at?: string;
+          completed_at?: string | null;
+          feedback_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
       };
 
       /** Issue #78: 面接結果の共有リンク */
@@ -427,6 +518,7 @@ export interface Database {
           expires_at?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
     };
 
@@ -444,6 +536,10 @@ export interface Database {
       subscription_plan: SubscriptionPlan;
       subscription_status: SubscriptionStatus;
       job_hunting_status: JobHuntingStatus;
+      mock_interview_category: MockInterviewCategory;
+      mock_interview_round: MockInterviewRound;
+      mock_interview_difficulty: MockInterviewDifficulty;
+      mock_interview_status: MockInterviewStatus;
     };
   };
 }
