@@ -269,6 +269,7 @@ export interface Database {
           improvement_points: Json;
           overall_comment: string | null;
           category_scores: CategoryScores;
+          annotations: Json;
           raw_response: Json | null;
           model_version: string | null;
           created_at: string;
@@ -287,6 +288,7 @@ export interface Database {
           improvement_points?: Json;
           overall_comment?: string | null;
           category_scores?: CategoryScores;
+          annotations?: Json;
           raw_response?: Json | null;
           model_version?: string | null;
           created_at?: string;
@@ -305,6 +307,7 @@ export interface Database {
           improvement_points?: Json;
           overall_comment?: string | null;
           category_scores?: CategoryScores;
+          annotations?: Json;
           raw_response?: Json | null;
           model_version?: string | null;
           created_at?: string;

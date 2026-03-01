@@ -14,6 +14,16 @@ interface AnalyzeRequest {
   interview_id: string;
 }
 
+/** テキストアノテーション（ハイライト情報） */
+interface Annotation {
+  start: number;
+  end: number;
+  type: "error" | "warning" | "good";
+  text: string;
+  reason: string;
+  suggestion?: string;
+}
+
 /** Claude API が返す構造化フィードバック */
 interface AIFeedbackResponse {
   overall_score: number;
@@ -37,6 +47,7 @@ interface AIFeedbackResponse {
   };
   strengths: string[];
   improvements: string[];
+  annotations: Annotation[];
 }
 
 // ============================================================
@@ -230,8 +241,31 @@ ${transcriptText}
     "assessment": "フィラー使用に関する評価コメント（例: 少なめで好印象です / やや多め。意識的に間を置くことで改善できます）"
   },
   "strengths": ["強み1", "強み2"],
-  "improvements": ["改善点1", "改善点2"]
-}`;
+  "improvements": ["改善点1", "改善点2"],
+  "annotations": [
+    {
+      "start": <原文テキスト内の問題箇所の開始位置（0-indexed の文字数オフセット）>,
+      "end": <原文テキスト内の問題箇所の終了位置（0-indexed の文字数オフセット）>,
+      "type": "<'error' | 'warning' | 'good' のいずれか>",
+      "text": "該当するテキストの原文（start-end の範囲と完全一致すること）",
+      "reason": "ハイライトの理由（なぜこの部分が良い/悪いか）",
+      "suggestion": "改善提案（type が good の場合は省略可）"
+    }
+  ]
+}
+
+【annotations の type 分類基準】
+- "error"（赤色ハイライト）: 重大な問題 — 論理の破綻、事実と矛盾する発言、不適切な表現、志望動機の欠如
+- "warning"（黄色ハイライト）: 改善推奨 — 冗長な表現、フィラー表現（えーと、あのー等）、曖昧な回答、具体性不足
+- "good"（緑色ハイライト）: 良い表現 — 効果的なエピソード、具体的な数字、論理的な構成、適切な敬語
+
+【annotations の重要ルール】
+- <user_transcript> タグ内のテキスト全体を対象に、start/end の文字数オフセットを正確に計算すること
+- start/end はタグ内テキストの先頭を 0 とする文字インデックス
+- "[面接官]" や "[候補者]" などの話者ラベルも文字数に含めること
+- 最低 3 個、最大 15 個程度のアノテーションを付与すること
+- 重複する範囲のアノテーションは作成しないこと
+- text フィールドは原文テキストの該当範囲と完全一致させること`;
 }
 
 // ============================================================
@@ -457,6 +491,7 @@ export async function POST(request: Request) {
       suggestions: feedback.suggestions || [],
       strengths: feedback.strengths || [],
       improvements: feedback.improvements || [],
+      annotations: Array.isArray(feedback.annotations) ? feedback.annotations : [],
       raw_response: feedback as unknown,
       model_version: MODEL_NAME,
     } as never);

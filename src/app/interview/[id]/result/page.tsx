@@ -76,6 +76,19 @@ export default async function ResultPage({
 
   const hasOtherInterviews = (otherCompletedCount ?? 0) > 0;
 
+  // 原文テキストを取得（transcripts → interview.transcript の優先順）
+  let rawTranscript: string | null = null;
+  if (transcripts.length > 0) {
+    rawTranscript = transcripts
+      .map((t) => {
+        const speaker = t.speaker === "interviewer" ? "面接官" : "候補者";
+        return `[${speaker}] ${t.content}`;
+      })
+      .join("\n");
+  } else if (interview.transcript) {
+    rawTranscript = interview.transcript;
+  }
+
   return (
     <ResultContent
       interview={interview}
@@ -83,6 +96,7 @@ export default async function ResultPage({
       feedback={feedback}
       interviewTags={interviewTags}
       hasOtherInterviews={hasOtherInterviews}
+      rawTranscript={rawTranscript}
     />
   );
 }

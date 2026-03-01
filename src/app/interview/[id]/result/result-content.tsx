@@ -17,8 +17,22 @@ import type { Database } from "@/types/supabase";
 import type { Json } from "@/types/supabase";
 import type { CategoryScores } from "@/types/database";
 import { CATEGORY_LABELS } from "@/lib/constants";
+import { parseAnnotations } from "@/components/annotated-transcript";
 
 // 動的インポート: 初期表示に不要なインタラクティブコンポーネントを遅延ロード
+const AnnotatedTranscript = dynamic(
+  () =>
+    import("@/components/annotated-transcript").then(
+      (mod) => mod.AnnotatedTranscript
+    ),
+  {
+    loading: () => (
+      <div className="h-48 w-full animate-pulse rounded-lg bg-muted" />
+    ),
+    ssr: false,
+  }
+);
+
 const ExportButtons = dynamic(
   () => import("@/components/export-buttons").then((mod) => mod.ExportButtons),
   {
@@ -241,12 +255,14 @@ export function ResultContent({
   feedback,
   interviewTags = [],
   hasOtherInterviews = false,
+  rawTranscript = null,
 }: {
   interview: Interview;
   transcripts: Transcript[];
   feedback: Feedback | null;
   interviewTags?: TagData[];
   hasOtherInterviews?: boolean;
+  rawTranscript?: string | null;
 }) {
   const suggestions = feedback
     ? parseJsonArray<Suggestion>(feedback.suggestions)
@@ -265,6 +281,11 @@ export function ResultContent({
     : [];
   const improvements = feedback
     ? parseStringArray(feedback.improvements)
+    : [];
+
+  // annotations をパース
+  const annotations = feedback
+    ? parseAnnotations(feedback.annotations)
     : [];
 
   // good_points が空の場合は strengths にフォールバック
@@ -442,6 +463,16 @@ export function ResultContent({
                 </CardContent>
               </Card>
             )}
+        </div>
+      )}
+
+      {/* 原文スクリプト（ハイライト付き） */}
+      {rawTranscript && (
+        <div className="mb-6">
+          <AnnotatedTranscript
+            transcript={rawTranscript}
+            annotations={annotations}
+          />
         </div>
       )}
 
