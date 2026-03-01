@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, FileText, Plus } from "lucide-react";
+import { ArrowLeft, FileText, Plus, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 
 interface ReviewItem {
@@ -63,20 +64,23 @@ export function ESReviewHistoryContent({
       </div>
 
       {reviews.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-12">
-            <FileText className="h-12 w-12 text-muted-foreground" />
-            <div className="text-center">
-              <p className="text-lg font-medium">添削履歴がありません</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                ES添削を始めて、回答を改善しましょう
-              </p>
-            </div>
-            <Button asChild>
-              <Link href="/es-review">ES添削を始める</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={FileText}
+          title="ESをAIで添削してみましょう！"
+          description="エントリーシートの回答を入力すると、AIがスコアと改善アドバイスを提供します。何度でも推敲して完成度を高められます。"
+          primaryAction={{
+            label: "ES添削を始める",
+            href: "/es-review",
+            icon: Plus,
+          }}
+          secondaryActions={[
+            {
+              label: "面接を記録する",
+              href: "/interview/new",
+              icon: ClipboardList,
+            },
+          ]}
+        />
       ) : (
         <div className="space-y-3">
           {reviews.map((review) => (

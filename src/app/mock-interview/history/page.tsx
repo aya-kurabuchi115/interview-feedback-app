@@ -9,9 +9,11 @@ import {
   Clock,
   ChevronRight,
   Plus,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
@@ -161,23 +163,23 @@ export default async function MockInterviewHistoryPage() {
 
       {/* 履歴一覧 */}
       {mockInterviews.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center py-16">
-            <MessageSquare className="mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="text-lg font-medium text-muted-foreground">
-              模擬面接の履歴はまだありません
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              AI模擬面接を始めて、面接力を磨きましょう
-            </p>
-            <Button className="mt-4" asChild>
-              <Link href="/mock-interview">
-                <Plus className="mr-2 h-4 w-4" />
-                面接を始める
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={MessageSquare}
+          title="AI模擬面接で面接力を磨きましょう！"
+          description="AIが面接官になって質問を投げかけます。回答後にはスコアと改善ポイントのフィードバックが受けられます。"
+          primaryAction={{
+            label: "模擬面接を始める",
+            href: "/mock-interview",
+            icon: Plus,
+          }}
+          secondaryActions={[
+            {
+              label: "面接を記録する",
+              href: "/interview/new",
+              icon: ClipboardList,
+            },
+          ]}
+        />
       ) : (
         <div className="space-y-3">
           {mockInterviews.map((mi) => {
