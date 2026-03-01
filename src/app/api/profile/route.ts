@@ -6,21 +6,27 @@ import { PERSONALITY_TYPES } from "@/lib/personality/types";
 type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
 
 /** バリデーション: 表示名は1~30文字 */
-function validateDisplayName(name: unknown): string | null {
-  if (typeof name !== "string") return null;
+function validateDisplayName(name: unknown): { value: string | null; error?: string } {
+  if (typeof name !== "string" || name.trim().length === 0) {
+    return { value: null, error: "フルネームを入力してください（1〜30文字）" };
+  }
   const trimmed = name.trim();
-  if (trimmed.length < 1 || trimmed.length > 30) return null;
-  return trimmed;
+  if (trimmed.length > 30) {
+    return { value: null, error: "フルネームは30文字以内で入力してください" };
+  }
+  return { value: trimmed };
 }
 
 /** バリデーション: テキストフィールド (最大100文字) */
-function validateText(value: unknown, maxLength = 100): string | null {
-  if (value === null || value === undefined || value === "") return null;
-  if (typeof value !== "string") return null;
+function validateText(value: unknown, fieldName: string, maxLength = 100): { value: string | null; error?: string } {
+  if (value === null || value === undefined || value === "") return { value: null };
+  if (typeof value !== "string") return { value: null };
   const trimmed = value.trim();
-  if (trimmed.length === 0) return null;
-  if (trimmed.length > maxLength) return null;
-  return trimmed;
+  if (trimmed.length === 0) return { value: null };
+  if (trimmed.length > maxLength) {
+    return { value: null, error: `${fieldName}は${maxLength}文字以内で入力してください` };
+  }
+  return { value: trimmed };
 }
 
 /** バリデーション: 配列フィールド (最大5件) */
@@ -118,7 +124,7 @@ export async function GET() {
     return NextResponse.json({ profile: data ?? null });
   } catch {
     return NextResponse.json(
-      { error: "サーバーエラーが発生しました" },
+      { error: "サーバーとの通信に失敗しました。時間を置いて再度お試しください。" },
       { status: 500 }
     );
   }
@@ -142,17 +148,18 @@ export async function PUT(request: Request) {
 
     const body = await request.json();
 
-    // バリデーション
-    const displayName = validateDisplayName(body.display_name);
-    if (body.display_name !== undefined && body.display_name !== null && body.display_name !== "" && !displayName) {
-      return NextResponse.json(
-        { error: "表示名は1~30文字で入力してください" },
-        { status: 400 }
-      );
-    }
+    // バリデーション（エラーを収集して一括返却）
+    const errors: string[] = [];
 
-    const university = validateText(body.university, 100);
-    const faculty = validateText(body.faculty, 100);
+    const displayNameResult = validateDisplayName(body.display_name);
+    if (displayNameResult.error) errors.push(displayNameResult.error);
+
+    const universityResult = validateText(body.university, "大学名", 100);
+    if (universityResult.error) errors.push(universityResult.error);
+
+    const facultyResult = validateText(body.faculty, "学部・学科", 100);
+    if (facultyResult.error) errors.push(facultyResult.error);
+
     const graduationYear = validateGraduationYear(body.graduation_year);
     const graduationMonth = validateGraduationMonth(body.graduation_month);
     const targetIndustry = validateArray(body.target_industry, 5);
@@ -168,11 +175,18 @@ export async function PUT(request: Request) {
       ? validatePersonalityType(body.personality_type)
       : undefined;
 
+    if (errors.length > 0) {
+      return NextResponse.json(
+        { error: errors.join("\n"), errors },
+        { status: 400 }
+      );
+    }
+
     const profileData: ProfileInsert = {
       user_id: user.id,
-      display_name: displayName,
-      university,
-      faculty,
+      display_name: displayNameResult.value,
+      university: universityResult.value,
+      faculty: facultyResult.value,
       graduation_year: graduationYear,
       graduation_month: graduationMonth,
       target_industry: targetIndustry,
@@ -192,7 +206,7 @@ export async function PUT(request: Request) {
     if (error) {
       console.error("Profile upsert error:", error);
       return NextResponse.json(
-        { error: "プロフィールの保存に失敗しました" },
+        { error: "サーバーとの通信に失敗しました。時間を置いて再度お試しください。" },
         { status: 500 }
       );
     }
@@ -200,7 +214,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ profile: data });
   } catch {
     return NextResponse.json(
-      { error: "サーバーエラーが発生しました" },
+      { error: "サーバーとの通信に失敗しました。時間を置いて再度お試しください。" },
       { status: 500 }
     );
   }
