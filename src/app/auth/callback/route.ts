@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      return NextResponse.redirect(`${origin}/login?error=config`);
+      return NextResponse.redirect(`${origin}/login?error=config_error`);
     }
 
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
@@ -60,8 +60,21 @@ export async function GET(request: Request) {
       // 通常のログイン/サインアップの場合はダッシュボードへ
       return NextResponse.redirect(`${origin}/dashboard`);
     }
+
+    // エラーの種類に応じたエラーコードを判定
+    const errorCode =
+      type === "recovery" && error.message?.includes("expired")
+        ? "recovery_expired"
+        : error.message?.includes("expired")
+          ? "email_expired"
+          : error.message?.includes("already used") ||
+              error.message?.includes("already confirmed")
+            ? "code_used"
+            : "auth_error";
+
+    return NextResponse.redirect(`${origin}/login?error=${errorCode}`);
   }
 
-  // エラーの場合はログインページにリダイレクト
-  return NextResponse.redirect(`${origin}/login?error=auth`);
+  // code パラメータが無い場合
+  return NextResponse.redirect(`${origin}/login?error=auth_error`);
 }

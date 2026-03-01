@@ -21,10 +21,22 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${redirectBase}${next}`);
     }
+
+    // Supabase エラーメッセージに基づくエラーコード分岐
+    const errorCode = error.message?.includes("expired")
+      ? "email_expired"
+      : error.message?.includes("already used") ||
+          error.message?.includes("already confirmed")
+        ? "code_used"
+        : "email_confirm_failed";
+
+    return NextResponse.redirect(
+      `${redirectBase}/login?error=${errorCode}`
+    );
   }
 
-  // エラー時はログインページへ（エラーメッセージ付き）
+  // code パラメータが無い場合
   return NextResponse.redirect(
-    `${redirectBase}/login?error=メール確認に失敗しました。もう一度お試しください。`
+    `${redirectBase}/login?error=auth_error`
   );
 }
