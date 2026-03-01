@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { redirectToLogin } from "@/lib/auth/redirect";
 import { createClient } from "@/lib/supabase/server";
 import type { MockInterviewMessage, Json } from "@/types/database";
 import { MockResultContent } from "./result-content";
@@ -64,7 +65,8 @@ export default async function MockInterviewResultPage({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    await redirectToLogin();
+    return null;
   }
 
   // Defence-in-Depth: RLS + user_id フィルタ

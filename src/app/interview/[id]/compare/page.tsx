@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { redirectToLogin } from "@/lib/auth/redirect";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/supabase";
 import { CompareContent } from "./compare-content";
@@ -32,7 +33,7 @@ export default async function ComparePage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) { await redirectToLogin(); return null; }
 
   // 現在の面接を取得（user_id フィルタで Defence-in-Depth）
   const { data: currentInterviewData } = await supabase
