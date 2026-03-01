@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,15 +15,57 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+/** クールダウン秒数 */
+const COOLDOWN_SECONDS = 60;
+
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const cooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // クールダウンタイマーのクリーンアップ
+  useEffect(() => {
+    return () => {
+      if (cooldownTimerRef.current) {
+        clearInterval(cooldownTimerRef.current);
+      }
+    };
+  }, []);
+
+  const startCooldown = useCallback(() => {
+    setCooldown(COOLDOWN_SECONDS);
+
+    if (cooldownTimerRef.current) {
+      clearInterval(cooldownTimerRef.current);
+    }
+
+    cooldownTimerRef.current = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          if (cooldownTimerRef.current) {
+            clearInterval(cooldownTimerRef.current);
+            cooldownTimerRef.current = null;
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // クールダウン中は送信を拒否
+    if (cooldown > 0) {
+      setError(`リクエストの間隔を空けてください。${cooldown}秒後に再度お試しください。`);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -38,9 +80,13 @@ export default function ResetPasswordPage() {
       }
 
       // セキュリティ上、メール未登録でも同じメッセージを表示
+      // 送信成功・失敗に関わらずクールダウンを開始（列挙攻撃防止）
+      startCooldown();
       setSent(true);
     } catch {
       setError("リセットメールの送信中にエラーが発生しました");
+      // エラー時もクールダウンを開始
+      startCooldown();
     } finally {
       setLoading(false);
     }
@@ -67,15 +113,23 @@ export default function ResetPasswordPage() {
             </p>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
+            {cooldown > 0 && (
+              <p className="text-center text-xs text-muted-foreground">
+                再送信まであと {cooldown} 秒お待ちください
+              </p>
+            )}
             <Button
               variant="outline"
               className="w-full"
+              disabled={cooldown > 0}
               onClick={() => {
                 setSent(false);
                 setEmail("");
               }}
             >
-              別のメールアドレスで再送信
+              {cooldown > 0
+                ? `再送信まで ${cooldown} 秒`
+                : "別のメールアドレスで再送信"}
             </Button>
             <Link
               href="/login"
@@ -101,7 +155,11 @@ export default function ResetPasswordPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+              >
                 {error}
               </div>
             )}
@@ -110,6 +168,7 @@ export default function ResetPasswordPage() {
               <Input
                 id="email"
                 type="email"
+                autoComplete="email"
                 placeholder="example@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -118,8 +177,12 @@ export default function ResetPasswordPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "送信中..." : "リセットメールを送信"}
+            <Button type="submit" className="w-full" disabled={loading || cooldown > 0}>
+              {loading
+                ? "送信中..."
+                : cooldown > 0
+                  ? `再送信まで ${cooldown} 秒`
+                  : "リセットメールを送信"}
             </Button>
             <Link
               href="/login"
