@@ -29,6 +29,17 @@ function getStatusBadge(status: SubscriptionStatus) {
   return <Badge variant={config.variant}>{config.label}</Badge>;
 }
 
+/** アップグレードの案内文を返す */
+function getUpgradeMessage(plan: SubscriptionPlan): string {
+  if (plan === "free") {
+    return "上位プランにアップグレードすると、より多くの分析をご利用いただけます。";
+  }
+  if (plan === "pro") {
+    return "Premium プランにアップグレードすると無制限でご利用いただけます。";
+  }
+  return "";
+}
+
 export function BillingClient({ plan, status, planName, priceMonthly, currentPeriodEnd, cancelAt, canceledAt, hasStripeCustomer, usageUsed, usageLimit, usageRemaining }: BillingClientProps) {
   const [portalLoading, setPortalLoading] = useState(false);
   const handleOpenPortal = async () => {
@@ -47,6 +58,7 @@ export function BillingClient({ plan, status, planName, priceMonthly, currentPer
 
   const isCanceled = !!canceledAt || !!cancelAt;
   const usagePercent = usageLimit !== null ? Math.min(100, (usageUsed / usageLimit) * 100) : 0;
+  const canUpgrade = plan === "free" || plan === "pro";
 
   return (
     <div className="mt-8 space-y-6">
@@ -72,9 +84,10 @@ export function BillingClient({ plan, status, planName, priceMonthly, currentPer
           )}
         </CardContent>
         <CardFooter className="flex gap-3">
-          {plan === "free" ? (
-            <Button asChild><Link href="/pricing">Pro にアップグレード</Link></Button>
-          ) : hasStripeCustomer ? (
+          {canUpgrade ? (
+            <Button asChild><Link href="/pricing">アップグレード</Link></Button>
+          ) : null}
+          {hasStripeCustomer ? (
             <Button variant="outline" onClick={handleOpenPortal} disabled={portalLoading}>
               <CreditCard className="mr-2 size-4" />
               {portalLoading ? "読み込み中..." : "支払い・プラン管理"}
@@ -97,10 +110,11 @@ export function BillingClient({ plan, status, planName, priceMonthly, currentPer
               </div>
               <Progress value={usagePercent} className="h-2" />
               {usageRemaining === 0 && (
-                <p className="text-sm text-destructive">
-                  今月の利用上限に達しました。
-                  <Link href="/pricing" className="ml-1 font-medium underline underline-offset-4">Pro プランにアップグレード</Link>
-                  すると無制限でご利用いただけます。
+                <p className="text-sm text-destructive" role="alert" aria-live="assertive">
+                  今月の利用回数に達しました。
+                  <Link href="/pricing" className="ml-1 font-medium underline underline-offset-4">
+                    {getUpgradeMessage(plan) ? "上位プランにアップグレード" : "プランを確認"}
+                  </Link>
                 </p>
               )}
             </div>
