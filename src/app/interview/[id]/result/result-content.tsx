@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { ArrowLeft, CheckCircle2, AlertTriangle, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,9 +17,43 @@ import type { Database } from "@/types/supabase";
 import type { Json } from "@/types/supabase";
 import type { CategoryScores } from "@/types/database";
 import { CATEGORY_LABELS } from "@/lib/constants";
-import { ExportButtons } from "@/components/export-buttons";
-import { TagSelector } from "@/components/tag-selector";
-import { NotesEditor } from "@/components/notes-editor";
+
+// 動的インポート: 初期表示に不要なインタラクティブコンポーネントを遅延ロード
+const ExportButtons = dynamic(
+  () => import("@/components/export-buttons").then((mod) => mod.ExportButtons),
+  {
+    loading: () => (
+      <div className="h-9 w-[140px] animate-pulse rounded-md bg-muted" />
+    ),
+    ssr: false,
+  }
+);
+
+const TagSelector = dynamic(
+  () => import("@/components/tag-selector").then((mod) => mod.TagSelector),
+  {
+    loading: () => (
+      <div className="space-y-2">
+        <div className="h-4 w-16 animate-pulse rounded bg-muted" />
+        <div className="h-8 w-full animate-pulse rounded bg-muted" />
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const NotesEditor = dynamic(
+  () => import("@/components/notes-editor").then((mod) => mod.NotesEditor),
+  {
+    loading: () => (
+      <div className="space-y-2">
+        <div className="h-4 w-16 animate-pulse rounded bg-muted" />
+        <div className="h-24 w-full animate-pulse rounded bg-muted" />
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Transcript = Database["public"]["Tables"]["transcripts"]["Row"];

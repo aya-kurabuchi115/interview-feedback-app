@@ -394,6 +394,37 @@ export interface Database {
           updated_at?: string;
         };
       };
+
+      /** Issue #78: 面接結果の共有リンク */
+      shared_results: {
+        Row: {
+          id: string;
+          interview_id: string;
+          user_id: string;
+          share_token: string;
+          is_active: boolean;
+          expires_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          interview_id: string;
+          user_id: string;
+          share_token: string;
+          is_active?: boolean;
+          expires_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          interview_id?: string;
+          user_id?: string;
+          share_token?: string;
+          is_active?: boolean;
+          expires_at?: string | null;
+          created_at?: string;
+        };
+      };
     };
 
     Views: {
