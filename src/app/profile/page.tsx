@@ -14,7 +14,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, X, CheckCircle, AlertCircle } from "lucide-react";
+import { Loader2, Save, X, CheckCircle, AlertCircle, Bell, BellOff } from "lucide-react";
+import {
+  isNotificationSupported,
+  getNotificationPermission,
+  requestNotificationPermission,
+  isNotificationEnabled,
+  setNotificationEnabled as setNotificationEnabledStorage,
+} from "@/lib/notifications";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -107,6 +114,22 @@ export default function ProfilePage() {
   const [preferredWorkLocation, setPreferredWorkLocation] = useState<string[]>(
     []
   );
+
+  // 通知設定
+  const [notificationSupported, setNotificationSupported] = useState(false);
+  const [notificationPermission, setNotificationPermission] =
+    useState<NotificationPermission | null>(null);
+  const [notificationEnabled, setNotificationEnabledState] = useState(true);
+
+  // 通知状態の初期化
+  useEffect(() => {
+    const supported = isNotificationSupported();
+    setNotificationSupported(supported);
+    if (supported) {
+      setNotificationPermission(getNotificationPermission());
+      setNotificationEnabledState(isNotificationEnabled());
+    }
+  }, []);
 
   // トースト自動非表示
   useEffect(() => {
@@ -563,6 +586,108 @@ export default function ProfilePage() {
                   )}
                 </div>
               </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 通知設定 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>通知設定</CardTitle>
+            <CardDescription>
+              分析完了時の通知方法を設定してください
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {notificationSupported ? (
+              <>
+                {/* ブラウザ通知の許可状態 */}
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="flex items-center gap-3">
+                    {notificationEnabled && notificationPermission === "granted" ? (
+                      <Bell className="h-5 w-5 text-primary" />
+                    ) : (
+                      <BellOff className="h-5 w-5 text-muted-foreground" />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium">ブラウザ通知</p>
+                      <p className="text-xs text-muted-foreground">
+                        {notificationPermission === "granted"
+                          ? "分析完了時にブラウザ通知を送信します"
+                          : notificationPermission === "denied"
+                            ? "ブラウザの設定で通知がブロックされています"
+                            : "通知許可が必要です"}
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    {notificationPermission === "granted" ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = !notificationEnabled;
+                          setNotificationEnabledState(next);
+                          setNotificationEnabledStorage(next);
+                        }}
+                        role="switch"
+                        aria-checked={notificationEnabled}
+                        aria-label="ブラウザ通知の切り替え"
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                          notificationEnabled ? "bg-primary" : "bg-muted"
+                        }`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform ${
+                            notificationEnabled
+                              ? "translate-x-5"
+                              : "translate-x-0"
+                          }`}
+                        />
+                      </button>
+                    ) : notificationPermission === "denied" ? (
+                      <span className="text-xs text-muted-foreground">
+                        ブロック中
+                      </span>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          const perm = await requestNotificationPermission();
+                          setNotificationPermission(perm);
+                          if (perm === "granted") {
+                            setNotificationEnabledState(true);
+                            setNotificationEnabledStorage(true);
+                          }
+                        }}
+                      >
+                        許可する
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* アプリ内通知（常に有効） */}
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="flex items-center gap-3">
+                    <Bell className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-medium">アプリ内通知</p>
+                      <p className="text-xs text-muted-foreground">
+                        ブラウザ通知が利用できない場合のフォールバック
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-primary">
+                    常にON
+                  </span>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                お使いのブラウザはブラウザ通知に対応していません。分析完了時はアプリ内で通知されます。
+              </p>
             )}
           </CardContent>
         </Card>
