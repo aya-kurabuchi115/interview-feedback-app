@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { redirectToLogin } from "@/lib/auth/redirect";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/supabase";
@@ -33,7 +34,7 @@ export default async function ResultPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) { await redirectToLogin(); return null; }
 
   const { data: interviewData } = await supabase
     .from("interviews")

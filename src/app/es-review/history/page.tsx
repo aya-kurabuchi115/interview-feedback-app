@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { redirectToLogin } from "@/lib/auth/redirect";
 import type { Metadata } from "next";
 import { ESReviewHistoryContent } from "./history-content";
 
@@ -15,7 +15,8 @@ export default async function ESReviewHistoryPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    await redirectToLogin();
+    return null;
   }
 
   const { data, error } = await supabase

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { redirectToLogin } from "@/lib/auth/redirect";
 import type { MockInterviewMessage } from "@/types/database";
 import { ChatInterface } from "./chat-interface";
 
@@ -30,7 +31,8 @@ export default async function MockInterviewChatPage({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    await redirectToLogin();
+    return null;
   }
 
   // Defence-in-Depth: RLS + user_id フィルタ

@@ -5,6 +5,8 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { CookieConsent } from "@/components/cookie-consent";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SessionMonitor } from "@/components/session-monitor";
+import { MobileCTA } from "@/components/mobile-cta";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -91,6 +93,8 @@ export default function RootLayout({
             <main className="flex-1">{children}</main>
             <Footer />
           </div>
+          <SessionMonitor />
+          <MobileCTA />
           <CookieConsent />
         </ThemeProvider>
       </body>

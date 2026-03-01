@@ -148,7 +148,7 @@ export function Header() {
                 <Link href="/login">ログイン</Link>
               </Button>
               <Button size="sm" asChild>
-                <Link href="/signup">サインアップ</Link>
+                <Link href="/signup">3分で無料体験</Link>
               </Button>
             </>
           )}
@@ -194,7 +194,7 @@ export function Header() {
                       <Link href="/login">ログイン</Link>
                     </Button>
                     <Button size="sm" asChild>
-                      <Link href="/signup">サインアップ</Link>
+                      <Link href="/signup">3分で無料体験</Link>
                     </Button>
                   </>
                 )}
