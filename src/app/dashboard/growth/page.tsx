@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { StatsCard } from "@/components/stats-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CategoryScores } from "@/types/database";
+import type { Json } from "@/types/database";
 
 import { CATEGORY_LABELS } from "@/lib/constants";
 
@@ -54,7 +55,7 @@ export default async function GrowthPage() {
   const { data: feedbacks } = interviewIds.length > 0
     ? await supabase
         .from("feedbacks")
-        .select("interview_id, overall_score, category_scores, created_at")
+        .select("interview_id, overall_score, category_scores, filler_words, created_at")
         .in("interview_id", interviewIds)
     : { data: null };
 
@@ -62,6 +63,7 @@ export default async function GrowthPage() {
     interview_id: string;
     overall_score: number;
     category_scores: CategoryScores | null;
+    filler_words: Json;
     created_at: string;
   }[];
 
@@ -177,6 +179,60 @@ export default async function GrowthPage() {
       title: interview?.title ?? "",
     };
   });
+
+  // ---------- フィラー率推移（直近10件） ----------
+
+  /** filler_words カラムからフィラー率を安全に取得する */
+  function extractFillerRate(fw: Json): number | null {
+    if (fw && typeof fw === "object" && !Array.isArray(fw)) {
+      const obj = fw as Record<string, Json | undefined>;
+      if (typeof obj.filler_rate === "number") return obj.filler_rate;
+    }
+    // 旧形式（配列）の場合はフィラー率が不明なので null
+    return null;
+  }
+
+  function extractFillerTotalCount(fw: Json): number {
+    if (fw && typeof fw === "object" && !Array.isArray(fw)) {
+      const obj = fw as Record<string, Json | undefined>;
+      if (typeof obj.total_count === "number") return obj.total_count;
+    }
+    if (Array.isArray(fw)) {
+      let total = 0;
+      for (const item of fw) {
+        if (item && typeof item === "object" && !Array.isArray(item)) {
+          const d = item as Record<string, Json | undefined>;
+          if (typeof d.count === "number") total += d.count;
+        }
+      }
+      return total;
+    }
+    return 0;
+  }
+
+  const recentFillerData = recentFeedbacks.map((f) => {
+    const interview = interviewList.find((i) => i.id === f.interview_id);
+    return {
+      fillerRate: extractFillerRate(f.filler_words),
+      fillerCount: extractFillerTotalCount(f.filler_words),
+      date: new Date(f.created_at).toLocaleDateString("ja-JP", {
+        month: "short",
+        day: "numeric",
+      }),
+      title: interview?.title ?? "",
+    };
+  });
+
+  // フィラー率の平均
+  const fillerRatesWithData = feedbackList
+    .map((f) => extractFillerRate(f.filler_words))
+    .filter((r): r is number => r !== null);
+  const avgFillerRate =
+    fillerRatesWithData.length > 0
+      ? Math.round(
+          (fillerRatesWithData.reduce((a, b) => a + b, 0) / fillerRatesWithData.length) * 10
+        ) / 10
+      : null;
 
   const barMaxScore = 100;
 
@@ -391,6 +447,68 @@ export default async function GrowthPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* フィラー率推移 */}
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle>フィラー率の推移（直近10件）</CardTitle>
+          {avgFillerRate !== null && (
+            <p className="text-sm text-muted-foreground">
+              平均フィラー率: {avgFillerRate}%
+              {avgFillerRate <= 2
+                ? " — 少なめで好印象です"
+                : avgFillerRate <= 5
+                  ? " — 標準的な範囲です"
+                  : " — やや多め。意識的に間を置きましょう"}
+            </p>
+          )}
+        </CardHeader>
+        <CardContent>
+          {recentFillerData.every((d) => d.fillerRate === null) ? (
+            <p className="text-sm text-muted-foreground">
+              フィラー分析データが蓄積されると、ここにフィラー率の推移が表示されます。
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {recentFillerData.map((item, i) => {
+                const rate = item.fillerRate ?? 0;
+                // フィラー率のバー表示（最大10%で100%幅）
+                const barWidth = Math.min(Math.max((rate / 10) * 100, 2), 100);
+                const barColor =
+                  rate <= 2
+                    ? "bg-green-400 dark:bg-green-500"
+                    : rate <= 5
+                      ? "bg-yellow-400 dark:bg-yellow-500"
+                      : "bg-red-400 dark:bg-red-500";
+                return (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className="w-16 shrink-0 text-xs text-muted-foreground text-right">
+                      {item.date}
+                    </span>
+                    <div className="relative flex-1 h-7 rounded bg-muted overflow-hidden">
+                      <div
+                        className={`absolute inset-y-0 left-0 rounded ${barColor} transition-all`}
+                        style={{ width: `${barWidth}%` }}
+                      />
+                      <span className="relative z-10 flex h-full items-center px-2 text-xs font-medium">
+                        {item.fillerRate !== null ? `${item.fillerRate}%` : "—"}
+                        <span className="ml-1 text-muted-foreground">
+                          ({item.fillerCount}回)
+                        </span>
+                        {item.title && (
+                          <span className="ml-2 truncate text-muted-foreground">
+                            {item.title}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* 面接カテゴリ別の件数内訳 */}
       <Card className="mt-8">

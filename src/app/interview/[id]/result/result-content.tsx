@@ -77,6 +77,61 @@ interface FillerWord {
   count: number;
 }
 
+/** 拡張フィラー分析構造 */
+interface FillerAnalysis {
+  total_count: number;
+  filler_rate: number;
+  details: FillerWord[];
+  assessment: string;
+}
+
+/**
+ * filler_words カラムのデータをパースする。
+ * 新形式（オブジェクト）と旧形式（配列）の両方に対応。
+ */
+function parseFillerAnalysis(data: Json): FillerAnalysis {
+  if (data && typeof data === "object" && !Array.isArray(data)) {
+    const obj = data as Record<string, Json | undefined>;
+    return {
+      total_count: typeof obj.total_count === "number" ? obj.total_count : 0,
+      filler_rate: typeof obj.filler_rate === "number" ? obj.filler_rate : 0,
+      details: Array.isArray(obj.details)
+        ? obj.details
+            .filter((item): item is { [key: string]: Json | undefined } =>
+              item !== null && typeof item === "object" && !Array.isArray(item)
+            )
+            .map((item) => ({
+              word: typeof item.word === "string" ? item.word : "",
+              count: typeof item.count === "number" ? item.count : 0,
+            }))
+        : [],
+      assessment: typeof obj.assessment === "string" ? obj.assessment : "",
+    };
+  }
+  // 旧形式（配列）の場合: details として扱い、total_count を算出
+  if (Array.isArray(data)) {
+    const details: FillerWord[] = data
+      .filter((item): item is { [key: string]: Json | undefined } =>
+        item !== null && typeof item === "object" && !Array.isArray(item)
+      )
+      .map((item) => ({
+        word: typeof item.word === "string" ? item.word : "",
+        count: typeof item.count === "number" ? item.count : 0,
+      }));
+    let totalCount = 0;
+    for (const d of details) {
+      totalCount += d.count;
+    }
+    return {
+      total_count: totalCount,
+      filler_rate: 0,
+      details,
+      assessment: "",
+    };
+  }
+  return { total_count: 0, filler_rate: 0, details: [], assessment: "" };
+}
+
 function parseJsonArray<T>(data: Json): T[] {
   if (!Array.isArray(data)) return [];
   // null/undefined を除外してキャスト
@@ -196,9 +251,9 @@ export function ResultContent({
   const suggestions = feedback
     ? parseJsonArray<Suggestion>(feedback.suggestions)
     : [];
-  const fillerWords = feedback
-    ? parseJsonArray<FillerWord>(feedback.filler_words)
-    : [];
+  const fillerAnalysis = feedback
+    ? parseFillerAnalysis(feedback.filler_words)
+    : { total_count: 0, filler_rate: 0, details: [], assessment: "" };
   const goodPoints = feedback
     ? parseStringArray(feedback.good_points)
     : [];
@@ -506,32 +561,97 @@ export function ResultContent({
           </div>
         </TabsContent>
 
-        {/* フィラーワード */}
+        {/* フィラーワード分析 */}
         <TabsContent value="filler">
-          <Card>
-            <CardHeader>
-              <CardTitle>フィラーワード検出</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {fillerWords.length === 0 ? (
-                <p className="text-muted-foreground">
-                  フィラーワードは検出されませんでした
-                </p>
-              ) : (
-                <div className="flex flex-wrap gap-3">
-                  {fillerWords.map((fw, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-2 rounded-lg border px-4 py-2"
-                    >
-                      <span className="font-medium">{fw.word}</span>
-                      <Badge variant="destructive">{fw.count}回</Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            {/* サマリーカード */}
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Card>
+                <CardContent className="flex flex-col items-center py-6">
+                  <p className="text-sm font-medium text-muted-foreground">総フィラー数</p>
+                  <span className="mt-1 text-4xl font-bold">{fillerAnalysis.total_count}</span>
+                  <span className="text-xs text-muted-foreground">回</span>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="flex flex-col items-center py-6">
+                  <p className="text-sm font-medium text-muted-foreground">フィラー率</p>
+                  <span className={`mt-1 text-4xl font-bold ${
+                    fillerAnalysis.filler_rate <= 2
+                      ? "text-green-600"
+                      : fillerAnalysis.filler_rate <= 5
+                        ? "text-yellow-600"
+                        : "text-red-600"
+                  }`}>
+                    {fillerAnalysis.filler_rate}
+                  </span>
+                  <span className="text-xs text-muted-foreground">%</span>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="flex flex-col items-center py-6">
+                  <p className="text-sm font-medium text-muted-foreground">種類数</p>
+                  <span className="mt-1 text-4xl font-bold">{fillerAnalysis.details.length}</span>
+                  <span className="text-xs text-muted-foreground">種類</span>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* 評価コメント */}
+            {fillerAnalysis.assessment && (
+              <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20">
+                <CardContent className="py-4">
+                  <div className="flex items-start gap-2">
+                    <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+                    <p className="text-sm leading-relaxed">{fillerAnalysis.assessment}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* フィラー種類別の出現回数（横棒グラフ） */}
+            <Card>
+              <CardHeader>
+                <CardTitle>フィラー表現の内訳</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {fillerAnalysis.details.length === 0 ? (
+                  <p className="text-muted-foreground">
+                    フィラー表現は検出されませんでした
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {[...fillerAnalysis.details]
+                      .sort((a, b) => b.count - a.count)
+                      .map((fw, i) => {
+                        const maxCount = Math.max(
+                          ...fillerAnalysis.details.map((d) => d.count)
+                        );
+                        const barWidth = maxCount > 0
+                          ? Math.max((fw.count / maxCount) * 100, 4)
+                          : 0;
+                        return (
+                          <div key={i} className="flex items-center gap-3">
+                            <span className="w-16 shrink-0 text-sm font-medium text-right">
+                              {fw.word}
+                            </span>
+                            <div className="relative flex-1 h-7 rounded bg-muted overflow-hidden">
+                              <div
+                                className="absolute inset-y-0 left-0 rounded bg-orange-400 dark:bg-orange-500 transition-all"
+                                style={{ width: `${barWidth}%` }}
+                              />
+                              <span className="relative z-10 flex h-full items-center px-2 text-xs font-medium">
+                                {fw.count}回
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

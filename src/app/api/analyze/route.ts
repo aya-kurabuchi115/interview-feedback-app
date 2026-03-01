@@ -29,7 +29,12 @@ interface AIFeedbackResponse {
   advice: string;
   summary: string;
   suggestions: { original: string; improved: string; reason: string }[];
-  filler_words: { word: string; count: number }[];
+  filler_words: {
+    total_count: number;
+    filler_rate: number;
+    details: { word: string; count: number }[];
+    assessment: string;
+  };
   strengths: string[];
   improvements: string[];
 }
@@ -213,12 +218,17 @@ ${transcriptText}
       "reason": "改善理由"
     }
   ],
-  "filler_words": [
-    {
-      "word": "検出されたフィラーワード（えー、あの、えっと等）",
-      "count": <出現回数>
-    }
-  ],
+  "filler_words": {
+    "total_count": <検出されたフィラー表現の総出現回数>,
+    "filler_rate": <全体の発話に占めるフィラー率（%）。小数点第1位まで。計算方法: (フィラー総数 / 候補者の総発話単語数) * 100>,
+    "details": [
+      {
+        "word": "検出されたフィラー表現（えーと、あのー、えー、まあ、なんか、その、あの、ええと、うーん 等）",
+        "count": <出現回数>
+      }
+    ],
+    "assessment": "フィラー使用に関する評価コメント（例: 少なめで好印象です / やや多め。意識的に間を置くことで改善できます）"
+  },
   "strengths": ["強み1", "強み2"],
   "improvements": ["改善点1", "改善点2"]
 }`;
@@ -443,7 +453,7 @@ export async function POST(request: Request) {
       improvement_points: feedback.improvement_points,
       overall_comment: feedback.detailed_feedback,
       category_scores: feedback.category_scores,
-      filler_words: feedback.filler_words || [],
+      filler_words: feedback.filler_words || { total_count: 0, filler_rate: 0, details: [], assessment: "" },
       suggestions: feedback.suggestions || [],
       strengths: feedback.strengths || [],
       improvements: feedback.improvements || [],
