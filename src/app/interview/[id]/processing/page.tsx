@@ -12,10 +12,13 @@ import {
   FileText,
   Brain,
   PartyPopper,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { NotificationPrompt } from "@/components/notification-prompt";
+import { sendAnalysisCompleteNotification } from "@/lib/notifications";
 import type { Database } from "@/types/supabase";
 
 type InterviewStatus =
@@ -82,7 +85,9 @@ export default function ProcessingPage({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const analyzeCalledRef = useRef(false);
+  const notifiedRef = useRef(false);
 
   // AI分析 API を呼び出す関数
   const triggerAnalysis = useCallback(async () => {
@@ -160,9 +165,20 @@ export default function ProcessingPage({
         }
 
         if (status === "completed") {
+          // ブラウザ通知を送信（1回のみ）
+          if (!notifiedRef.current) {
+            notifiedRef.current = true;
+            const sent = sendAnalysisCompleteNotification(id, (url) => {
+              router.push(url);
+            });
+            // ブラウザ通知が送信できなかった場合、アプリ内トーストでフォールバック
+            if (!sent) {
+              setToastMessage("分析が完了しました！結果ページに移動します...");
+            }
+          }
           setTimeout(() => {
             router.push(`/interview/${id}/result`);
-          }, 1000);
+          }, 2000);
           return;
         }
 
@@ -228,6 +244,17 @@ export default function ProcessingPage({
   return (
     <div className="container mx-auto max-w-2xl px-4 py-8">
       <h1 className="mb-8 text-2xl font-bold text-center">処理ステータス</h1>
+
+      {/* アプリ内トースト通知（ブラウザ通知のフォールバック） */}
+      {toastMessage && (
+        <div
+          className="mb-6 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800"
+          role="alert"
+        >
+          <CheckCircle className="h-5 w-5 shrink-0" />
+          <span className="text-sm font-medium">{toastMessage}</span>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -347,6 +374,11 @@ export default function ProcessingPage({
       <p className="mt-4 text-center text-xs text-muted-foreground">
         5秒ごとに自動更新されます。このページを閉じても処理は続行されます。
       </p>
+
+      {/* 通知許可リクエスト（処理中のみ表示） */}
+      {!isError && !isLoading && currentStatus !== "completed" && (
+        <NotificationPrompt />
+      )}
     </div>
   );
 }
