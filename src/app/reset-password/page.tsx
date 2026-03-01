@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 /** クールダウン秒数 */
 const COOLDOWN_SECONDS = 60;
@@ -178,6 +179,7 @@ export default function ResetPasswordPage() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading || cooldown > 0}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {loading
                 ? "送信中..."
                 : cooldown > 0
