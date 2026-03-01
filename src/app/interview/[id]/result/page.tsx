@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { redirectToLogin } from "@/lib/auth/redirect";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getUserSubscription } from "@/lib/subscription";
 import type { Database } from "@/types/supabase";
 import { ResultContent } from "./result-content";
 
@@ -87,6 +88,9 @@ export default async function ResultPage({
 
   const hasOtherInterviews = (otherCompletedCount ?? 0) > 0;
 
+  // ユーザーのサブスクリプション情報を取得（アップセルカード用）
+  const subscription = await getUserSubscription(user.id);
+
   // 原文テキストを取得（transcripts → interview.transcript の優先順）
   let rawTranscript: string | null = null;
   if (transcripts.length > 0) {
@@ -108,6 +112,7 @@ export default async function ResultPage({
       interviewTags={interviewTags}
       hasOtherInterviews={hasOtherInterviews}
       rawTranscript={rawTranscript}
+      currentPlan={subscription.plan}
     />
   );
 }
