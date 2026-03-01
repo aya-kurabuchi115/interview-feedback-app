@@ -185,6 +185,7 @@ export interface Database {
           interview_date: string | null;
           transcript: string | null;
           transcript_char_count: number;
+          notes: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -202,6 +203,7 @@ export interface Database {
           interview_date?: string | null;
           transcript?: string | null;
           transcript_char_count?: number;
+          notes?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -219,6 +221,7 @@ export interface Database {
           interview_date?: string | null;
           transcript?: string | null;
           transcript_char_count?: number;
+          notes?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -305,6 +308,45 @@ export interface Database {
           raw_response?: Json | null;
           model_version?: string | null;
           created_at?: string;
+        };
+      };
+
+      tags: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          color: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          color?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          color?: string;
+          created_at?: string;
+        };
+      };
+
+      interview_tags: {
+        Row: {
+          interview_id: string;
+          tag_id: string;
+        };
+        Insert: {
+          interview_id: string;
+          tag_id: string;
+        };
+        Update: {
+          interview_id?: string;
+          tag_id?: string;
         };
       };
 

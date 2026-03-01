@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import type { InterviewCategory } from "@/types/database";
+import { TagBadge } from "@/components/tag-badge";
 
 /** フィルタで使用するカテゴリ定義 */
 const CATEGORIES: { value: InterviewCategory | "all"; label: string }[] = [
@@ -24,16 +25,26 @@ const SORT_OPTIONS = [
 
 export type SortOption = (typeof SORT_OPTIONS)[number]["value"];
 
+interface TagData {
+  id: string;
+  name: string;
+  color: string;
+}
+
 interface InterviewFilterProps {
   currentCategory: InterviewCategory | "all";
   currentSort: SortOption;
   totalCount: number;
+  tags?: TagData[];
+  currentTag?: string;
 }
 
 export function InterviewFilter({
   currentCategory,
   currentSort,
   totalCount,
+  tags = [],
+  currentTag = "",
 }: InterviewFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -42,7 +53,7 @@ export function InterviewFilter({
     (params: Record<string, string>) => {
       const newParams = new URLSearchParams(searchParams.toString());
       for (const [key, value] of Object.entries(params)) {
-        if (value === "all" || value === "date_desc") {
+        if (value === "" || value === "all" || (key === "sort" && value === "date_desc")) {
           newParams.delete(key);
         } else {
           newParams.set(key, value);
@@ -55,6 +66,12 @@ export function InterviewFilter({
 
   const handleCategoryChange = (category: InterviewCategory | "all") => {
     const qs = createQueryString({ category });
+    router.push(qs ? `/dashboard?${qs}` : "/dashboard");
+  };
+
+  const handleTagChange = (tagId: string) => {
+    const newTag = currentTag === tagId ? "" : tagId;
+    const qs = createQueryString({ tag: newTag });
     router.push(qs ? `/dashboard?${qs}` : "/dashboard");
   };
 
@@ -81,6 +98,40 @@ export function InterviewFilter({
           </Button>
         ))}
       </div>
+
+      {/* タグフィルタ */}
+      {tags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground mr-1">
+            タグ:
+          </span>
+          <button
+            type="button"
+            onClick={() => handleTagChange("")}
+            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${
+              !currentTag
+                ? "bg-foreground text-background"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+          >
+            全て
+          </button>
+          {tags.map((tag) => (
+            <button
+              key={tag.id}
+              type="button"
+              onClick={() => handleTagChange(tag.id)}
+              className={`transition-opacity ${
+                currentTag && currentTag !== tag.id
+                  ? "opacity-50 hover:opacity-80"
+                  : ""
+              }`}
+            >
+              <TagBadge name={tag.name} color={tag.color} />
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* ソート・件数 */}
       <div className="flex flex-wrap items-center justify-between gap-2">

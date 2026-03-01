@@ -7,6 +7,13 @@ type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Transcript = Database["public"]["Tables"]["transcripts"]["Row"];
 type Feedback = Database["public"]["Tables"]["feedbacks"]["Row"];
 
+interface TagData {
+  id: string;
+  name: string;
+  color: string;
+  created_at: string;
+}
+
 export default async function ResultPage({
   params,
 }: {
@@ -49,11 +56,22 @@ export default async function ResultPage({
 
   const feedback = feedbackData as Feedback | null;
 
+  // 面接に付与されたタグを取得
+  const { data: interviewTagsData } = await supabase
+    .from("interview_tags")
+    .select("tag_id, tags(id, name, color, created_at)")
+    .eq("interview_id", id);
+
+  const interviewTags: TagData[] = ((interviewTagsData ?? []) as never[])
+    .map((row: Record<string, unknown>) => row.tags as TagData | null)
+    .filter((t): t is TagData => t !== null && !Array.isArray(t));
+
   return (
     <ResultContent
       interview={interview}
       transcripts={transcripts}
       feedback={feedback}
+      interviewTags={interviewTags}
     />
   );
 }

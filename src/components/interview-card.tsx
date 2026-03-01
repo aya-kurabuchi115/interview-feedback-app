@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { TagBadge } from "@/components/tag-badge";
 import type {
   InterviewCategory,
   InterviewRound,
@@ -100,6 +101,7 @@ export interface InterviewCardProps {
   interviewDate: string | null;
   overallScore: number | null;
   status: InterviewStatus;
+  tags?: { id: string; name: string; color: string }[];
 }
 
 // ============================================================
@@ -114,6 +116,7 @@ export function InterviewCard({
   interviewDate,
   overallScore,
   status,
+  tags = [],
 }: InterviewCardProps) {
   const catConfig = CATEGORY_CONFIG[category];
   const statusConfig = STATUS_CONFIG[status];
@@ -146,6 +149,17 @@ export function InterviewCard({
         </CardHeader>
 
         <CardContent className="space-y-3">
+          {/* タグ */}
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {tags.slice(0, 3).map((tag) => (
+                <TagBadge key={tag.id} name={tag.name} color={tag.color} />
+              ))}
+              {tags.length > 3 && (
+                <span className="text-xs text-muted-foreground">+{tags.length - 3}</span>
+              )}
+            </div>
+          )}
           {/* 面接日 */}
           {interviewDate && (
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">

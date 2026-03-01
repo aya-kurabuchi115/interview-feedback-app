@@ -16,10 +16,17 @@ export const metadata: Metadata = {
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Feedback = Database["public"]["Tables"]["feedbacks"]["Row"];
+type Tag = Database["public"]["Tables"]["tags"]["Row"];
+
+interface InterviewTagRow {
+  interview_id: string;
+  tag_id: string;
+}
 
 /** 面接 + 最新フィードバックの結合型 */
 type InterviewWithScore = Interview & {
   overallScore: number | null;
+  tags: Tag[];
 };
 
 export default async function DashboardPage({
@@ -40,6 +47,7 @@ export default async function DashboardPage({
   const params = await searchParams;
   const categoryParam = (params.category as string) || "all";
   const sortParam = (params.sort as string) || "date_desc";
+  const tagParam = (params.tag as string) || "";
 
   const currentCategory = ["arubaito", "intern", "new_grad", "other", "all"].includes(
     categoryParam
@@ -97,10 +105,45 @@ export default async function DashboardPage({
     }
   }
 
-  const interviewsWithScore: InterviewWithScore[] = interviews.map((iv) => ({
+  // タグ取得
+  const { data: userTagsData } = await supabase
+    .from("tags")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: true });
+  const userTags = (userTagsData ?? []) as Tag[];
+
+  let interviewTagRows: InterviewTagRow[] = [];
+  if (interviewIds.length > 0) {
+    const { data: itData } = await supabase
+      .from("interview_tags")
+      .select("interview_id, tag_id")
+      .in("interview_id", interviewIds);
+    interviewTagRows = (itData ?? []) as InterviewTagRow[];
+  }
+
+  const tagMap = new Map<string, Tag[]>();
+  for (const row of interviewTagRows) {
+    const tag = userTags.find((t) => t.id === row.tag_id);
+    if (tag) {
+      const existing = tagMap.get(row.interview_id) ?? [];
+      existing.push(tag);
+      tagMap.set(row.interview_id, existing);
+    }
+  }
+
+  let interviewsWithScore: InterviewWithScore[] = interviews.map((iv) => ({
     ...iv,
     overallScore: scoreMap.get(iv.id) ?? null,
+    tags: tagMap.get(iv.id) ?? [],
   }));
+
+  // タグフィルタリング
+  if (tagParam) {
+    interviewsWithScore = interviewsWithScore.filter((iv) =>
+      iv.tags.some((t) => t.id === tagParam)
+    );
+  }
 
   // スコア順ソート（アプリレベル）
   if (currentSort === "score_desc") {
@@ -141,6 +184,8 @@ export default async function DashboardPage({
           currentCategory={currentCategory}
           currentSort={currentSort}
           totalCount={interviewsWithScore.length}
+          tags={userTags}
+          currentTag={tagParam}
         />
       </div>
 
@@ -150,12 +195,12 @@ export default async function DashboardPage({
           <div className="rounded-lg border border-dashed p-12 text-center">
             <ClipboardList className="mx-auto h-12 w-12 text-muted-foreground/50" />
             <h2 className="mt-4 text-lg font-semibold">
-              {currentCategory !== "all"
+              {currentCategory !== "all" || tagParam
                 ? "条件に一致する面接がありません"
                 : "最初の面接を記録しましょう"}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              {currentCategory !== "all"
+              {currentCategory !== "all" || tagParam
                 ? "フィルタ条件を変更するか、新しい面接を記録してください。"
                 : "面接を登録して最初のフィードバックを受けましょう。"}
             </p>
@@ -178,6 +223,7 @@ export default async function DashboardPage({
                 interviewDate={interview.interview_date}
                 overallScore={interview.overallScore}
                 status={interview.status}
+                tags={interview.tags}
               />
             ))}
           </div>
