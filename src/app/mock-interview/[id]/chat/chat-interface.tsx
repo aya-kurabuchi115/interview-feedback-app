@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import type { MockInterviewMessage } from "@/types/database";
+import { recordPracticeActivity } from "@/lib/reminder";
 
 // ============================================================
 // 定数
@@ -107,6 +108,14 @@ export function ChatInterface({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+
+  // ============================================================
+  // 最終利用日の記録
+  // ============================================================
+
+  useEffect(() => {
+    recordPracticeActivity();
+  }, []);
 
   // ============================================================
   // 自動スクロール

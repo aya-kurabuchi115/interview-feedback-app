@@ -19,6 +19,7 @@ import type { CategoryScores, SubscriptionPlan } from "@/types/database";
 import { CATEGORY_LABELS } from "@/lib/constants";
 import { parseAnnotations } from "@/components/annotated-transcript";
 import { ProUpsellCard } from "@/components/pro-upsell-card";
+import { recordPracticeActivity } from "@/lib/reminder";
 
 // 動的インポート: 初期表示に不要なインタラクティブコンポーネントを遅延ロード
 const AnnotatedTranscript = dynamic(
@@ -267,6 +268,11 @@ export function ResultContent({
   rawTranscript?: string | null;
   currentPlan?: SubscriptionPlan;
 }) {
+  // 面接結果閲覧時に最終利用日を記録
+  if (typeof window !== "undefined") {
+    recordPracticeActivity();
+  }
+
   const suggestions = feedback
     ? parseJsonArray<Suggestion>(feedback.suggestions)
     : [];
