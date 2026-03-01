@@ -19,6 +19,7 @@ import {
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -26,6 +27,11 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!agreed) {
+      setError("利用規約とプライバシーポリシーへの同意が必要です");
+      return;
+    }
 
     if (password.length < 8) {
       setError("パスワードは8文字以上で入力してください");
@@ -98,9 +104,43 @@ export default function SignUpPage() {
                 minLength={8}
               />
             </div>
+            <div className="flex items-start gap-2">
+              <input
+                id="agree"
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <Label
+                htmlFor="agree"
+                className="text-sm leading-relaxed text-muted-foreground"
+              >
+                <Link
+                  href="/legal/terms"
+                  target="_blank"
+                  className="text-primary underline underline-offset-4 hover:text-primary/80"
+                >
+                  利用規約
+                </Link>
+                と
+                <Link
+                  href="/legal/privacy"
+                  target="_blank"
+                  className="text-primary underline underline-offset-4 hover:text-primary/80"
+                >
+                  プライバシーポリシー
+                </Link>
+                に同意します
+              </Label>
+            </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading || !agreed}
+            >
               {loading ? "登録中..." : "サインアップ"}
             </Button>
             <p className="text-sm text-muted-foreground">
