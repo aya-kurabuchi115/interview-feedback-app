@@ -6,13 +6,10 @@ import type {
   MockInterviewRound,
   MockInterviewDifficulty,
   MockInterviewMessage,
+  SubscriptionPlan,
 } from "@/types/database";
-
-// ============================================================
-// 定数
-// ============================================================
-
-const MODEL_NAME = "claude-sonnet-4-6";
+import { checkUsageLimit, getModelForPlan } from "@/lib/subscription";
+import { PLANS } from "@/lib/stripe/config";
 const VALID_CATEGORIES: MockInterviewCategory[] = ["general", "behavioral", "technical", "case"];
 const VALID_ROUNDS: MockInterviewRound[] = ["first", "second", "third", "final"];
 const VALID_DIFFICULTIES: MockInterviewDifficulty[] = ["easy", "normal", "hard"];
@@ -153,6 +150,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // サブスクリプション利用制限チェック
+    const usageResult = await checkUsageLimit(user.id);
+    if (!usageResult.allowed) {
+      const planName = usageResult.plan === "free" ? "無料" : PLANS[usageResult.plan as Exclude<SubscriptionPlan, "enterprise">]?.name ?? usageResult.plan;
+      const limitCount = usageResult.limit ?? 0;
+      return NextResponse.json(
+        {
+          error: `${planName}プランの月間利用上限（${limitCount}回）に達しました。上位プランにアップグレードすると、より多くの模擬面接をご利用いただけます。`,
+          code: "USAGE_LIMIT_EXCEEDED",
+          upgrade_url: "/pricing",
+        },
+        { status: 403 }
+      );
+    }
+
+    // プランに応じた AI モデルを決定
+    const modelName = getModelForPlan(usageResult.plan);
+
     // システムプロンプト生成
     const systemPrompt = buildInterviewerSystemPrompt({
       category,
@@ -165,7 +180,7 @@ export async function POST(request: Request) {
     // 最初の面接官の質問を Claude API で生成
     const anthropic = new Anthropic({ apiKey });
     const message = await anthropic.messages.create({
-      model: MODEL_NAME,
+      model: modelName,
       max_tokens: 512,
       system: systemPrompt,
       messages: [
