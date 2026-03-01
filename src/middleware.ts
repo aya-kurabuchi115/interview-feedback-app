@@ -78,6 +78,7 @@ const ONBOARDING_BYPASS_PREFIXES = [
   "/api/",
   "/auth/",
   "/legal/",
+  "/share/",
   "/_next/",
   "/login",
   "/signup",
