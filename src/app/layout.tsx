@@ -33,11 +33,20 @@ export const metadata: Metadata = {
     locale: "ja_JP",
     url: siteUrl,
     siteName,
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "InterviewCoach - AI面接フィードバック",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: siteName,
     description: defaultDescription,
+    images: ["/opengraph-image.png"],
   },
   robots: {
     index: true,
