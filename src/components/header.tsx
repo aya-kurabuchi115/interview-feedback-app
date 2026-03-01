@@ -65,6 +65,7 @@ export function Header() {
     ? [
         { href: "/dashboard", label: "ダッシュボード" },
         { href: "/mock-interview", label: "模擬面接" },
+        { href: "/es-review", label: "ES添削" },
         { href: "/dashboard/growth", label: "成長記録" },
         { href: "/profile", label: "プロフィール" },
       ]

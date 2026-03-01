@@ -91,6 +91,7 @@ const ONBOARDING_REQUIRED_PREFIXES = [
   "/dashboard",
   "/interview",
   "/mock-interview",
+  "/es-review",
   "/profile",
 ];
 
