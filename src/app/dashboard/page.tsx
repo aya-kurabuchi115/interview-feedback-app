@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { Plus, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
@@ -62,7 +63,8 @@ export default async function DashboardPage({
     : "date_desc";
 
   // --- データ取得 ---
-  let interviewQuery = supabase.from("interviews").select("*").eq("user_id", user.id);
+  // 必要なカラムのみ取得してレスポンスサイズを削減
+  let interviewQuery = supabase.from("interviews").select("id, title, company_name_snapshot, interview_category, interview_round, interview_date, status").eq("user_id", user.id);
 
   if (currentCategory !== "all") {
     interviewQuery = interviewQuery.eq("interview_category", currentCategory);
@@ -168,7 +170,9 @@ export default async function DashboardPage({
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">面接履歴</h1>
         <div className="flex items-center gap-2">
-          <ExportButtons variant="dropdown" />
+          <Suspense fallback={<div className="h-9 w-[180px] animate-pulse rounded-md bg-muted" />}>
+            <ExportButtons variant="dropdown" />
+          </Suspense>
           <Button asChild>
             <Link href="/interview/new">
               <Plus className="mr-2 h-4 w-4" />
