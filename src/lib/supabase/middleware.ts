@@ -58,7 +58,7 @@ export async function updateSession(request: NextRequest) {
     if ((profile as { onboarding_completed?: boolean } | null)?.onboarding_completed) {
       supabaseResponse.cookies.set("onboarding_completed", "true", {
         path: "/",
-        httpOnly: false,
+        httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         maxAge: 60 * 60 * 24 * 365,

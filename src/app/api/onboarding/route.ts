@@ -104,7 +104,7 @@ export async function PUT(request: Request) {
       const cookieStore = await cookies();
       cookieStore.set("onboarding_completed", "true", {
         path: "/",
-        httpOnly: false,
+        httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         maxAge: 60 * 60 * 24 * 365,
@@ -163,7 +163,7 @@ export async function PUT(request: Request) {
     const cookieStore = await cookies();
     cookieStore.set("onboarding_completed", "true", {
       path: "/",
-      httpOnly: false,
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 365,
