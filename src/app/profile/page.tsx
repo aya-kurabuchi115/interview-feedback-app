@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, X, CheckCircle } from "lucide-react";
+import { Loader2, Save, X, CheckCircle, AlertCircle } from "lucide-react";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -49,7 +49,7 @@ const JOB_TYPES = [
 const JOB_HUNTING_STATUSES = [
   { value: "not_started", label: "未開始" },
   { value: "preparing", label: "就活準備中" },
-  { value: "active", label: "エントリー中" },
+  { value: "active", label: "エントリー・選考中" },
   { value: "offered", label: "内定あり" },
   { value: "decided", label: "就活終了" },
   { value: "other", label: "その他" },
@@ -91,6 +91,9 @@ export default function ProfilePage() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  // 二重送信防止用 ref
+  const savingRef = useRef(false);
 
   // フォームステート
   const [displayName, setDisplayName] = useState("");
@@ -171,10 +174,12 @@ export default function ProfilePage() {
     }
   };
 
-  // 保存
+  // 保存（二重送信防止付き）
   const handleSave = async () => {
+    if (savingRef.current) return;
+
     // バリデーション
-    if (displayName.trim().length > 0 && (displayName.trim().length < 1 || displayName.trim().length > 30)) {
+    if (displayName.trim().length > 0 && displayName.trim().length > 30) {
       setToast({ type: "error", message: "表示名は1~30文字で入力してください" });
       return;
     }
@@ -187,6 +192,7 @@ export default function ProfilePage() {
       return;
     }
 
+    savingRef.current = true;
     setSaving(true);
     try {
       const res = await fetch("/api/profile", {
@@ -217,6 +223,7 @@ export default function ProfilePage() {
       setToast({ type: "error", message });
     } finally {
       setSaving(false);
+      savingRef.current = false;
     }
   };
 
@@ -230,7 +237,12 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto max-w-2xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold">プロフィール設定</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">プロフィール設定</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          プロフィール情報を入力すると、AIフィードバックがあなたの状況に合わせてパーソナライズされます。
+        </p>
+      </div>
 
       {/* トースト通知 */}
       {toast && (
@@ -245,7 +257,7 @@ export default function ProfilePage() {
           {toast.type === "success" ? (
             <CheckCircle className="h-4 w-4 shrink-0" />
           ) : (
-            <X className="h-4 w-4 shrink-0" />
+            <AlertCircle className="h-4 w-4 shrink-0" />
           )}
           <span className="text-sm">{toast.message}</span>
           <button
