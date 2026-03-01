@@ -19,6 +19,7 @@ import type { CategoryScores, SubscriptionPlan } from "@/types/database";
 import { CATEGORY_LABELS } from "@/lib/constants";
 import { parseAnnotations } from "@/components/annotated-transcript";
 import { ProUpsellCard } from "@/components/pro-upsell-card";
+import { recordPracticeActivity } from "@/lib/reminder";
 
 // 動的インポート: 初期表示に不要なインタラクティブコンポーネントを遅延ロード
 const AnnotatedTranscript = dynamic(
@@ -36,6 +37,16 @@ const AnnotatedTranscript = dynamic(
 
 const ExportButtons = dynamic(
   () => import("@/components/export-buttons").then((mod) => mod.ExportButtons),
+  {
+    loading: () => (
+      <div className="h-9 w-[140px] animate-pulse rounded-md bg-muted" />
+    ),
+    ssr: false,
+  }
+);
+
+const ShareButton = dynamic(
+  () => import("@/components/share-button").then((mod) => mod.ShareButton),
   {
     loading: () => (
       <div className="h-9 w-[140px] animate-pulse rounded-md bg-muted" />
@@ -267,6 +278,11 @@ export function ResultContent({
   rawTranscript?: string | null;
   currentPlan?: SubscriptionPlan;
 }) {
+  // 面接結果閲覧時に最終利用日を記録
+  if (typeof window !== "undefined") {
+    recordPracticeActivity();
+  }
+
   const suggestions = feedback
     ? parseJsonArray<Suggestion>(feedback.suggestions)
     : [];
@@ -307,6 +323,12 @@ export function ResultContent({
           </Link>
         </Button>
         <h1 className="flex-1 text-2xl font-bold">{interview.title}</h1>
+        {feedback && (
+          <ShareButton
+            interviewId={interview.id}
+            overallScore={feedback.overall_score}
+          />
+        )}
         {feedback && (
           <ExportButtons interviewId={interview.id} variant="inline" />
         )}

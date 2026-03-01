@@ -18,6 +18,8 @@ import { Loader2, Share2, Check, Copy, Ban } from "lucide-react";
 
 interface ShareButtonProps {
   interviewId: string;
+  /** スコアをシェアテキストに含める（任意） */
+  overallScore?: number | null;
 }
 
 interface ShareState {
@@ -33,7 +35,7 @@ interface ShareState {
 // コンポーネント
 // ============================================================
 
-export function ShareButton({ interviewId }: ShareButtonProps) {
+export function ShareButton({ interviewId, overallScore }: ShareButtonProps) {
   const [state, setState] = useState<ShareState>({
     shareToken: null,
     expiresAt: null,
@@ -127,19 +129,27 @@ export function ShareButton({ interviewId }: ShareButtonProps) {
     if (!state.shareToken) return;
 
     const shareUrl = `${window.location.origin}/share/${state.shareToken}`;
-    const text = "面接練習の結果をシェア！InterviewCoach で AI 面接対策";
+    const scoreText =
+      overallScore != null
+        ? `InterviewCoachで面接練習のスコアが${overallScore}点でした！`
+        : "面接練習の結果をシェア！";
+    const text = `${scoreText}\nAI面接フィードバックで面接力UP #InterviewCoach`;
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(twitterUrl, "_blank", "noopener,noreferrer,width=550,height=420");
-  }, [state.shareToken]);
+  }, [state.shareToken, overallScore]);
 
   /** LINE で共有 */
   const handleLineShare = useCallback(() => {
     if (!state.shareToken) return;
 
     const shareUrl = `${window.location.origin}/share/${state.shareToken}`;
-    const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`;
+    const scoreText =
+      overallScore != null
+        ? `InterviewCoachで面接練習のスコアが${overallScore}点でした！AI面接フィードバックで面接力UP`
+        : "面接練習の結果をシェア！InterviewCoach で AI 面接対策";
+    const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(scoreText)}`;
     window.open(lineUrl, "_blank", "noopener,noreferrer,width=550,height=420");
-  }, [state.shareToken]);
+  }, [state.shareToken, overallScore]);
 
   /** 共有リンクを無効化 */
   const handleRevoke = useCallback(async () => {

@@ -128,10 +128,12 @@ export async function generateMetadata({
   const scoreText = feedback
     ? `総合スコア ${feedback.overall_score}点`
     : "フィードバック生成中";
-  const title = `${interview.title} - ${scoreText}`;
+  // OGP には個人情報（企業名）を含めない
+  const categoryLabel = formatCategory(interview.interview_category);
+  const title = `${categoryLabel}の結果 - ${scoreText}`;
   const description = feedback
-    ? `${interview.company_name_snapshot}の面接結果 | ${scoreText} | InterviewCoach で AI 面接フィードバックを受けよう`
-    : `${interview.company_name_snapshot}の面接結果 | InterviewCoach`;
+    ? `${scoreText} | InterviewCoach で AI 面接フィードバックを受けよう`
+    : "InterviewCoach で AI 面接フィードバックを受けよう";
 
   return {
     title,
