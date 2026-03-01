@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { FREE_MONTHLY_LIMIT } from "@/lib/stripe/config";
+import { PLAN_MONTHLY_LIMITS, PLAN_MODELS } from "@/lib/stripe/config";
 import type { Row, SubscriptionPlan, SubscriptionStatus } from "@/types/database";
 
 export interface UserSubscription {
@@ -67,35 +67,71 @@ async function getMonthlyUsageCount(userId: string): Promise<number> {
 }
 
 /**
- * ユーザーが分析を実行可能か判定する。
- * Pro プラン以上は常に true、無料プランは月間利用上限をチェックする。
+ * プラン別の月間利用上限を取得する。
+ * enterprise は無制限として扱う。
  */
-export async function checkUsageLimit(userId: string): Promise<boolean> {
-  const sub = await getUserSubscription(userId);
-  if (sub.plan !== "free") return true;
+function getPlanLimit(plan: SubscriptionPlan): number | null {
+  if (plan === "enterprise") return null;
+  return PLAN_MONTHLY_LIMITS[plan];
+}
 
+/**
+ * プラン別の AI モデルを取得する。
+ * enterprise は premium と同じモデルを使う。
+ */
+export function getModelForPlan(plan: SubscriptionPlan): string {
+  if (plan === "enterprise") return PLAN_MODELS.premium;
+  return PLAN_MODELS[plan];
+}
+
+/**
+ * ユーザーが分析を実行可能か判定する。
+ * 各プランの月間利用上限をチェックする（null = 無制限）。
+ */
+export async function checkUsageLimit(userId: string): Promise<{
+  allowed: boolean;
+  plan: SubscriptionPlan;
+  used: number;
+  limit: number | null;
+}> {
+  const sub = await getUserSubscription(userId);
+  const limit = getPlanLimit(sub.plan);
   const used = await getMonthlyUsageCount(userId);
-  return used < FREE_MONTHLY_LIMIT;
+
+  // 上限が null のプランは無制限
+  if (limit === null) {
+    return { allowed: true, plan: sub.plan, used, limit };
+  }
+
+  return {
+    allowed: used < limit,
+    plan: sub.plan,
+    used,
+    limit,
+  };
 }
 
 /**
  * 残り利用回数の情報を返す
  */
 export async function getRemainingUsage(userId: string): Promise<{
+  plan: SubscriptionPlan;
   used: number;
   limit: number | null;
   remaining: number | null;
 }> {
   const sub = await getUserSubscription(userId);
   const used = await getMonthlyUsageCount(userId);
+  const limit = getPlanLimit(sub.plan);
 
-  if (sub.plan !== "free") {
-    return { used, limit: null, remaining: null };
+  if (limit === null) {
+    return { plan: sub.plan, used, limit: null, remaining: null };
   }
 
   return {
+    plan: sub.plan,
     used,
-    limit: FREE_MONTHLY_LIMIT,
-    remaining: Math.max(0, FREE_MONTHLY_LIMIT - used),
+    limit,
+    remaining: Math.max(0, limit - used),
   };
 }

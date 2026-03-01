@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { headers } from "next/headers";
 import { getStripe } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { PLANS } from "@/lib/stripe/config";
 import type { SubscriptionPlan, SubscriptionStatus } from "@/types/database";
 import type Stripe from "stripe";
 
@@ -17,6 +18,30 @@ function getWebhookSecret(): string {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret) throw new Error("STRIPE_WEBHOOK_SECRET が設定されていません");
   return secret;
+}
+
+/**
+ * Stripe の Price ID からプランを判定する。
+ * メタデータ -> Price ID の順でフォールバック。
+ */
+function resolvePlan(metadata: Record<string, string> | undefined, priceId?: string): SubscriptionPlan {
+  // 1. メタデータに plan が明示されていればそれを使う
+  if (metadata?.plan === "premium" || metadata?.plan === "pro") {
+    return metadata.plan;
+  }
+
+  // 2. Price ID からプランをマッチング
+  if (priceId) {
+    if (PLANS.premium.stripePriceId && priceId === PLANS.premium.stripePriceId) {
+      return "premium";
+    }
+    if (PLANS.pro.stripePriceId && priceId === PLANS.pro.stripePriceId) {
+      return "pro";
+    }
+  }
+
+  // 3. デフォルトは pro（後方互換）
+  return "pro";
 }
 
 /** Stripe の subscription status を DB の enum にマッピング */
@@ -52,12 +77,20 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const periodStart = subData.current_period_start as number | undefined;
   const periodEnd = subData.current_period_end as number | undefined;
 
+  // Price ID またはメタデータからプランを判定
+  const items = subscription.items?.data;
+  const priceId = items?.[0]?.price?.id;
+  const plan = resolvePlan(
+    subscription.metadata as Record<string, string> | undefined,
+    priceId
+  );
+
   await supabase.from("subscriptions").upsert(
     {
       user_id: userId,
       stripe_customer_id: typeof session.customer === "string" ? session.customer : session.customer?.id ?? null,
       stripe_subscription_id: subscription.id,
-      plan: "pro" as SubscriptionPlan,
+      plan: plan as SubscriptionPlan,
       status: mapStripeStatus(subscription.status),
       current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
       current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
@@ -80,7 +113,12 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const periodStart = subData.current_period_start as number | undefined;
   const periodEnd = subData.current_period_end as number | undefined;
 
-  const plan: SubscriptionPlan = subscription.status === "canceled" ? "free" : "pro";
+  // キャンセル時は free、それ以外は Price ID / メタデータからプランを判定
+  const items = subscription.items?.data;
+  const priceId = items?.[0]?.price?.id;
+  const plan: SubscriptionPlan = subscription.status === "canceled"
+    ? "free"
+    : resolvePlan(subscription.metadata as Record<string, string> | undefined, priceId);
 
   await supabase
     .from("subscriptions")

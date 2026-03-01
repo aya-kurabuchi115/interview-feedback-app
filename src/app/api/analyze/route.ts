@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
 import Anthropic from "@anthropic-ai/sdk";
-import type { InterviewCategory, InterviewRound } from "@/types/database";
-import { checkUsageLimit } from "@/lib/subscription";
-import { FREE_MONTHLY_LIMIT } from "@/lib/stripe/config";
+import type { InterviewCategory, InterviewRound, SubscriptionPlan } from "@/types/database";
+import { checkUsageLimit, getModelForPlan } from "@/lib/subscription";
+import { PLANS } from "@/lib/stripe/config";
 
 // ============================================================
 // 型定義
@@ -273,19 +273,19 @@ ${transcriptText}
 // ============================================================
 
 const MAX_RETRIES = 3;
-const MODEL_NAME = "claude-sonnet-4-6";
 
 async function callClaudeWithRetry(
   anthropic: Anthropic,
   systemPrompt: string,
-  userPrompt: string
+  userPrompt: string,
+  modelName: string
 ): Promise<AIFeedbackResponse> {
   let lastError: Error | null = null;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       const message = await anthropic.messages.create({
-        model: MODEL_NAME,
+        model: modelName,
         max_tokens: 4096,
         messages: [
           {
@@ -392,17 +392,22 @@ export async function POST(request: Request) {
     const interview = interviewData as Record<string, unknown>;
 
     // サブスクリプション利用制限チェック
-    const canUse = await checkUsageLimit(user.id);
-    if (!canUse) {
+    const usageResult = await checkUsageLimit(user.id);
+    if (!usageResult.allowed) {
+      const planName = usageResult.plan === "free" ? "無料" : PLANS[usageResult.plan as Exclude<SubscriptionPlan, "enterprise">]?.name ?? usageResult.plan;
+      const limitCount = usageResult.limit ?? 0;
       return NextResponse.json(
         {
-          error: `無料プランの月間利用上限（${FREE_MONTHLY_LIMIT}回）に達しました。Pro プランにアップグレードすると無制限でご利用いただけます。`,
+          error: `${planName}プランの月間利用上限（${limitCount}回）に達しました。上位プランにアップグレードすると、より多くの分析をご利用いただけます。`,
           code: "USAGE_LIMIT_EXCEEDED",
           upgrade_url: "/pricing",
         },
         { status: 403 }
       );
     }
+
+    // プランに応じた AI モデルを決定
+    const modelName = getModelForPlan(usageResult.plan);
 
     // ステータスを analyzing に更新
     // as never: Supabase 生成型が未定義のため型アサーションが必要。supabase gen types 実行後に除去可能。
@@ -472,9 +477,9 @@ export async function POST(request: Request) {
       profile
     );
 
-    // Claude API 呼び出し（リトライ付き）
+    // Claude API 呼び出し（リトライ付き・プラン別モデル）
     const anthropic = new Anthropic({ apiKey });
-    const feedback = await callClaudeWithRetry(anthropic, systemPrompt, userPrompt);
+    const feedback = await callClaudeWithRetry(anthropic, systemPrompt, userPrompt, modelName);
 
     // feedbacks テーブルに保存（履歴として追加、上書きしない）
     // as never: Supabase 生成型が未定義のため型アサーションが必要。supabase gen types 実行後に除去可能。
@@ -493,7 +498,7 @@ export async function POST(request: Request) {
       improvements: feedback.improvements || [],
       annotations: Array.isArray(feedback.annotations) ? feedback.annotations.slice(0, 30) : [],
       raw_response: feedback as unknown,
-      model_version: MODEL_NAME,
+      model_version: modelName,
     } as never);
 
     if (insertError) {

@@ -13,7 +13,7 @@ export default async function BillingPage() {
 
   const subscription = await getUserSubscription(user.id);
   const usage = await getRemainingUsage(user.id);
-  const planConfig = PLANS[subscription.plan === "enterprise" ? "pro" : subscription.plan];
+  const planConfig = PLANS[subscription.plan === "enterprise" ? "premium" : subscription.plan];
 
   return (
     <div className="px-4 py-16">
