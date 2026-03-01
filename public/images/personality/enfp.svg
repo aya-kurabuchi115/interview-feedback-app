@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background -->
+  <circle cx="100" cy="100" r="95" fill="#E8F5E9"/>
+  <circle cx="100" cy="100" r="80" fill="#C8E6C9"/>
+
+  <!-- ENFP - Koala (コアラ) - 社交的で創造的 -->
+
+  <!-- Body -->
+  <ellipse cx="100" cy="145" rx="42" ry="40" fill="#A5D6A7"/>
+  <ellipse cx="100" cy="145" rx="42" ry="40" fill="none" stroke="#81C784" stroke-width="2"/>
+
+  <!-- Belly -->
+  <ellipse cx="100" cy="152" rx="28" ry="28" fill="#E8F5E9"/>
+
+  <!-- Arms (hugging pose) -->
+  <path d="M60 130 Q45 120 50 140 Q52 150 62 148" fill="#A5D6A7" stroke="#81C784" stroke-width="2"/>
+  <path d="M140 130 Q155 120 150 140 Q148 150 138 148" fill="#A5D6A7" stroke="#81C784" stroke-width="2"/>
+
+  <!-- Head -->
+  <circle cx="100" cy="85" r="38" fill="#A5D6A7"/>
+  <circle cx="100" cy="85" r="38" fill="none" stroke="#81C784" stroke-width="2"/>
+
+  <!-- Big fluffy ears -->
+  <circle cx="62" cy="68" r="18" fill="#A5D6A7" stroke="#81C784" stroke-width="2"/>
+  <circle cx="138" cy="68" r="18" fill="#A5D6A7" stroke="#81C784" stroke-width="2"/>
+
+  <!-- Inner ears -->
+  <circle cx="62" cy="68" r="11" fill="#F8BBD0"/>
+  <circle cx="138" cy="68" r="11" fill="#F8BBD0"/>
+
+  <!-- Face patch -->
+  <ellipse cx="100" cy="90" rx="25" ry="22" fill="#E8F5E9"/>
+
+  <!-- Eyes (big excited eyes) -->
+  <circle cx="88" cy="82" r="11" fill="white" stroke="#81C784" stroke-width="1.5"/>
+  <circle cx="112" cy="82" r="11" fill="white" stroke="#81C784" stroke-width="1.5"/>
+
+  <!-- Pupils (sparkling with excitement) -->
+  <circle cx="90" cy="80" r="7" fill="#1B5E20"/>
+  <circle cx="114" cy="80" r="7" fill="#1B5E20"/>
+
+  <!-- Eye shine (extra sparkly) -->
+  <circle cx="93" cy="77" r="3" fill="white"/>
+  <circle cx="117" cy="77" r="3" fill="white"/>
+  <circle cx="88" cy="82" r="1.5" fill="white"/>
+  <circle cx="112" cy="82" r="1.5" fill="white"/>
+
+  <!-- Big round nose -->
+  <ellipse cx="100" cy="94" rx="7" ry="5" fill="#5D4037"/>
+
+  <!-- Happy open mouth -->
+  <path d="M93 100 Q100 108 107 100" fill="#E8836F" stroke="#81C784" stroke-width="1.5"/>
+  <path d="M93 100 Q100 104 107 100" fill="#E8F5E9" stroke="none"/>
+
+  <!-- Party hat (社交的) -->
+  <polygon points="100,44 88,62 112,62" fill="#FFD54F" stroke="#FFC107" stroke-width="1.5"/>
+  <circle cx="100" cy="42" r="4" fill="#FF7043"/>
+  <!-- Hat stripes -->
+  <line x1="94" y1="56" x2="106" y2="56" stroke="#FFA726" stroke-width="1.5"/>
+  <line x1="97" y1="50" x2="103" y2="50" stroke="#FFA726" stroke-width="1.5"/>
+
+  <!-- Confetti -->
+  <rect x="55" y="42" width="4" height="8" rx="2" fill="#FF7043" opacity="0.7" transform="rotate(30 57 46)"/>
+  <rect x="140" y="38" width="4" height="8" rx="2" fill="#7E57C2" opacity="0.7" transform="rotate(-20 142 42)"/>
+  <rect x="145" y="55" width="4" height="8" rx="2" fill="#42A5F5" opacity="0.7" transform="rotate(45 147 59)"/>
+  <circle cx="50" cy="55" r="3" fill="#FFD54F" opacity="0.7"/>
+  <circle cx="152" cy="48" r="2.5" fill="#FF7043" opacity="0.7"/>
+
+  <!-- Feet -->
+  <ellipse cx="80" cy="178" rx="13" ry="7" fill="#A5D6A7" stroke="#81C784" stroke-width="1.5"/>
+  <ellipse cx="120" cy="178" rx="13" ry="7" fill="#A5D6A7" stroke="#81C784" stroke-width="1.5"/>
+
+  <!-- Blush -->
+  <ellipse cx="76" cy="92" rx="6" ry="4" fill="#F48FB1" opacity="0.5"/>
+  <ellipse cx="124" cy="92" rx="6" ry="4" fill="#F48FB1" opacity="0.5"/>
+</svg>

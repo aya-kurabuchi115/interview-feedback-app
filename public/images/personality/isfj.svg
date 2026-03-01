@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background -->
+  <circle cx="100" cy="100" r="95" fill="#E3F2FD"/>
+  <circle cx="100" cy="100" r="80" fill="#BBDEFB"/>
+
+  <!-- ISFJ - Penguin (ペンギン) - 忠実で思いやり -->
+
+  <!-- Body -->
+  <ellipse cx="100" cy="135" rx="40" ry="48" fill="#64B5F6"/>
+  <ellipse cx="100" cy="135" rx="40" ry="48" fill="none" stroke="#42A5F5" stroke-width="2"/>
+
+  <!-- Belly (white) -->
+  <ellipse cx="100" cy="142" rx="28" ry="38" fill="white"/>
+
+  <!-- Wings/Flippers -->
+  <path d="M60 120 Q48 135 52 155 Q54 160 60 158 Q62 140 64 125" fill="#64B5F6" stroke="#42A5F5" stroke-width="2"/>
+  <path d="M140 120 Q152 135 148 155 Q146 160 140 158 Q138 140 136 125" fill="#64B5F6" stroke="#42A5F5" stroke-width="2"/>
+
+  <!-- Head -->
+  <circle cx="100" cy="78" r="35" fill="#64B5F6"/>
+  <circle cx="100" cy="78" r="35" fill="none" stroke="#42A5F5" stroke-width="2"/>
+
+  <!-- Face patch (white) -->
+  <ellipse cx="100" cy="82" rx="24" ry="22" fill="white"/>
+
+  <!-- Eyes (caring, warm) -->
+  <circle cx="88" cy="78" r="9" fill="white" stroke="#42A5F5" stroke-width="1.5"/>
+  <circle cx="112" cy="78" r="9" fill="white" stroke="#42A5F5" stroke-width="1.5"/>
+
+  <!-- Pupils -->
+  <circle cx="90" cy="77" r="5.5" fill="#0D47A1"/>
+  <circle cx="114" cy="77" r="5.5" fill="#0D47A1"/>
+
+  <!-- Eye shine -->
+  <circle cx="92" cy="74" r="2.5" fill="white"/>
+  <circle cx="116" cy="74" r="2.5" fill="white"/>
+  <circle cx="88" cy="78" r="1.2" fill="white"/>
+  <circle cx="112" cy="78" r="1.2" fill="white"/>
+
+  <!-- Beak -->
+  <path d="M95 88 L100 95 L105 88" fill="#FFB74D" stroke="#F09840" stroke-width="1.5" stroke-linejoin="round"/>
+
+  <!-- Gentle smile -->
+  <path d="M95 97 Q100 101 105 97" fill="none" stroke="#42A5F5" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Heart on belly (思いやり) -->
+  <path d="M100 148 Q100 143 96 143 Q92 143 92 148 Q92 152 100 157 Q108 152 108 148 Q108 143 104 143 Q100 143 100 148 Z" fill="#F48FB1" opacity="0.6"/>
+
+  <!-- Scarf (warm caring feel) -->
+  <path d="M68 95 Q100 108 132 95 Q132 102 100 114 Q68 102 68 95" fill="#EF5350" opacity="0.8"/>
+  <rect x="105" y="105" width="10" height="22" rx="4" fill="#EF5350" opacity="0.8"/>
+  <line x1="108" y1="110" x2="112" y2="110" stroke="#C62828" stroke-width="1" opacity="0.5"/>
+  <line x1="108" y1="115" x2="112" y2="115" stroke="#C62828" stroke-width="1" opacity="0.5"/>
+  <line x1="108" y1="120" x2="112" y2="120" stroke="#C62828" stroke-width="1" opacity="0.5"/>
+
+  <!-- Feet -->
+  <path d="M82 178 L76 186 L82 184 L88 186 L94 184 L88 178" fill="#FFB74D" stroke="#F09840" stroke-width="1.5"/>
+  <path d="M112 178 L106 186 L112 184 L118 186 L124 184 L118 178" fill="#FFB74D" stroke="#F09840" stroke-width="1.5"/>
+
+  <!-- Blush -->
+  <ellipse cx="76" cy="88" rx="6" ry="4" fill="#F48FB1" opacity="0.5"/>
+  <ellipse cx="124" cy="88" rx="6" ry="4" fill="#F48FB1" opacity="0.5"/>
+</svg>

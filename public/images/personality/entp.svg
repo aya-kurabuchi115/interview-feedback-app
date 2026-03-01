@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background -->
+  <circle cx="100" cy="100" r="95" fill="#EDE7F6"/>
+  <circle cx="100" cy="100" r="80" fill="#D1C4E9"/>
+
+  <!-- ENTP - Fox (キツネ) - 機知に富む -->
+
+  <!-- Tail (big fluffy tail) -->
+  <path d="M140 155 Q175 135 170 95 Q168 80 158 88" fill="#B39DDB" stroke="#9575CD" stroke-width="2"/>
+  <path d="M158 88 Q165 85 170 95" fill="#EDE7F6" stroke="none"/>
+
+  <!-- Body -->
+  <ellipse cx="100" cy="140" rx="42" ry="42" fill="#B39DDB"/>
+  <ellipse cx="100" cy="140" rx="42" ry="42" fill="none" stroke="#9575CD" stroke-width="2"/>
+
+  <!-- Belly -->
+  <ellipse cx="100" cy="150" rx="28" ry="28" fill="#EDE7F6"/>
+
+  <!-- Head -->
+  <circle cx="100" cy="80" r="38" fill="#B39DDB"/>
+  <circle cx="100" cy="80" r="38" fill="none" stroke="#9575CD" stroke-width="2"/>
+
+  <!-- Ears (pointy fox ears) -->
+  <path d="M70 62 L55 28 L85 52" fill="#B39DDB" stroke="#9575CD" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M130 62 L145 28 L115 52" fill="#B39DDB" stroke="#9575CD" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Inner ears -->
+  <path d="M71 58 L61 36 L82 53" fill="#D4BEF0"/>
+  <path d="M129 58 L139 36 L118 53" fill="#D4BEF0"/>
+
+  <!-- Face white patch -->
+  <path d="M80 75 Q100 60 120 75 Q110 100 100 105 Q90 100 80 75" fill="#EDE7F6"/>
+
+  <!-- Eyes (mischievous, slightly narrowed) -->
+  <ellipse cx="85" cy="78" rx="10" ry="9" fill="white" stroke="#9575CD" stroke-width="1.5"/>
+  <ellipse cx="115" cy="78" rx="10" ry="9" fill="white" stroke="#9575CD" stroke-width="1.5"/>
+
+  <!-- Pupils (looking to side - clever) -->
+  <circle cx="88" cy="77" r="6" fill="#2D1B4E"/>
+  <circle cx="118" cy="77" r="6" fill="#2D1B4E"/>
+
+  <!-- Eye shine -->
+  <circle cx="90" cy="74" r="2.5" fill="white"/>
+  <circle cx="120" cy="74" r="2.5" fill="white"/>
+
+  <!-- Playful eyebrows -->
+  <path d="M75 68 Q82 64 95 68" fill="none" stroke="#9575CD" stroke-width="2" stroke-linecap="round"/>
+  <path d="M105 68 Q118 64 125 68" fill="none" stroke="#9575CD" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Nose -->
+  <ellipse cx="100" cy="90" rx="5" ry="3.5" fill="#2D1B4E"/>
+
+  <!-- Mouth (smirk - 機知) -->
+  <path d="M95 95 Q100 99 108 94" fill="none" stroke="#9575CD" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Light bulb (アイデア) -->
+  <g transform="translate(142, 40)">
+    <path d="M0 8 Q0 0 8 0 Q16 0 16 8 Q16 14 12 16 L4 16 Q0 14 0 8" fill="#FFE082" stroke="#FFC107" stroke-width="1.5"/>
+    <rect x="5" y="16" width="6" height="4" rx="1" fill="#FFC107"/>
+    <line x1="8" y1="0" x2="8" y2="-6" stroke="#FFC107" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="1" y1="3" x2="-4" y2="0" stroke="#FFC107" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="15" y1="3" x2="20" y2="0" stroke="#FFC107" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Front paws -->
+  <ellipse cx="78" cy="175" rx="13" ry="7" fill="#B39DDB" stroke="#9575CD" stroke-width="1.5"/>
+  <ellipse cx="122" cy="175" rx="13" ry="7" fill="#B39DDB" stroke="#9575CD" stroke-width="1.5"/>
+
+  <!-- Blush -->
+  <ellipse cx="72" cy="88" rx="6" ry="4" fill="#E8A0BF" opacity="0.5"/>
+  <ellipse cx="128" cy="88" rx="6" ry="4" fill="#E8A0BF" opacity="0.5"/>
+</svg>

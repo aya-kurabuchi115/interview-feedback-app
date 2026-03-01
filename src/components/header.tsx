@@ -57,7 +57,11 @@ export function Header() {
     router.refresh();
   };
 
-  const navItems = user
+  const publicNavItems = [
+    { href: "/personality", label: "16パーソナリティ" },
+  ];
+
+  const authNavItems = user
     ? [
         { href: "/dashboard", label: "ダッシュボード" },
         { href: "/mock-interview", label: "模擬面接" },
@@ -65,6 +69,8 @@ export function Header() {
         { href: "/profile", label: "プロフィール" },
       ]
     : [];
+
+  const navItems = [...publicNavItems, ...authNavItems];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
