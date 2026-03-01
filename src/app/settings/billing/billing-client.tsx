@@ -78,8 +78,8 @@ export function BillingClient({ plan, status, planName, priceMonthly, currentPer
             </div>
           )}
           {isCanceled && cancelAt && (
-            <div className="rounded-md bg-yellow-50 p-3">
-              <p className="text-sm text-yellow-800">このプランは {formatDate(cancelAt)} にキャンセルされます。</p>
+            <div className="rounded-md bg-yellow-50 p-3 dark:bg-yellow-950 dark:text-yellow-200">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">このプランは {formatDate(cancelAt)} にキャンセルされます。</p>
             </div>
           )}
         </CardContent>

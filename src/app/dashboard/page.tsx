@@ -5,7 +5,7 @@ import { Plus, ClipboardList, MessageSquare, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { redirectToLogin } from "@/lib/auth/redirect";
 import type { Database, InterviewCategory } from "@/types/database";
 import { InterviewCard } from "@/components/interview-card";
 import { InterviewFilter, type SortOption } from "@/components/interview-filter";
@@ -42,7 +42,8 @@ export default async function DashboardPage({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    await redirectToLogin();
+    return null;
   }
 
   // --- URL パラメータ取得 ---

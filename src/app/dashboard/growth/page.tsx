@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, TrendingUp, Plus, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/ui/empty-state";
-import { redirect } from "next/navigation";
+import { redirectToLogin } from "@/lib/auth/redirect";
 import { StatsCard } from "@/components/stats-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CategoryScores } from "@/types/database";
@@ -29,7 +29,8 @@ export default async function GrowthPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    await redirectToLogin();
+    return null;
   }
 
   // 面接データ + フィードバックを取得（completed のみ、自分のデータのみ）

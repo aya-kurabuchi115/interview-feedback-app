@@ -156,14 +156,14 @@ export default function ProfilePage() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        router.push("/login");
+        router.push(`/login?expired=true&redirect=${encodeURIComponent("/profile")}`);
         return;
       }
 
       const res = await fetch("/api/profile");
       if (!res.ok) {
         if (res.status === 401) {
-          router.push("/login");
+          router.push(`/login?expired=true&redirect=${encodeURIComponent("/profile")}`);
           return;
         }
         throw new Error("Failed to fetch profile");
@@ -313,8 +313,8 @@ export default function ProfilePage() {
         <div
           className={`mb-6 flex items-center gap-2 rounded-lg border p-4 ${
             toast.type === "success"
-              ? "border-green-200 bg-green-50 text-green-800"
-              : "border-red-200 bg-red-50 text-red-800"
+              ? "border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300"
+              : "border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-300"
           }`}
           role="alert"
           aria-live="assertive"
