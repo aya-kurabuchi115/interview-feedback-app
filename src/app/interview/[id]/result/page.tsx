@@ -37,10 +37,13 @@ export default async function ResultPage({
 
   const transcripts = (transcriptsData ?? []) as Transcript[];
 
+  // 最新のフィードバックを取得（履歴として複数保持されるため）
   const { data: feedbackData } = await supabase
     .from("feedbacks")
     .select("*")
     .eq("interview_id", id)
+    .order("created_at", { ascending: false })
+    .limit(1)
     .single();
 
   const feedback = feedbackData as Feedback | null;
