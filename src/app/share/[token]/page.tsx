@@ -13,6 +13,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import type { CategoryScores } from "@/types/database";
 import { CATEGORY_LABELS } from "@/lib/constants";
+import { Share2, CheckCircle2, AlertTriangle, ArrowRight } from "lucide-react";
 
 // ============================================================
 // 型定義
@@ -281,20 +282,7 @@ export default async function SharedResultPage({ params }: SharedPageProps) {
       {/* ヘッダー */}
       <div className="mb-8 text-center">
         <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-1 text-sm text-blue-700 dark:bg-blue-950/30 dark:text-blue-300">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-            />
-          </svg>
+          <Share2 className="h-4 w-4" />
           共有された面接結果
         </div>
         <h1 className="text-2xl font-bold md:text-3xl">{interview.title}</h1>
@@ -377,20 +365,7 @@ export default async function SharedResultPage({ params }: SharedPageProps) {
         <div className="mb-6 grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border bg-card p-6">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-green-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+              <CheckCircle2 className="h-5 w-5" />
               良い点
             </h2>
             {displayGoodPoints.length === 0 ? (
@@ -399,20 +374,7 @@ export default async function SharedResultPage({ params }: SharedPageProps) {
               <ul className="space-y-3">
                 {displayGoodPoints.map((point, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="mt-0.5 h-4 w-4 shrink-0 text-green-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
                     <span>{point}</span>
                   </li>
                 ))}
@@ -422,20 +384,7 @@ export default async function SharedResultPage({ params }: SharedPageProps) {
 
           <div className="rounded-xl border bg-card p-6">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-orange-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
+              <AlertTriangle className="h-5 w-5" />
               改善点
             </h2>
             {displayImprovementPoints.length === 0 ? (
@@ -444,20 +393,7 @@ export default async function SharedResultPage({ params }: SharedPageProps) {
               <ul className="space-y-3">
                 {displayImprovementPoints.map((point, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="mt-0.5 h-4 w-4 shrink-0 text-orange-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                      />
-                    </svg>
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
                     <span>{point}</span>
                   </li>
                 ))}
@@ -508,20 +444,7 @@ export default async function SharedResultPage({ params }: SharedPageProps) {
           className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700"
         >
           無料で始める
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M13 7l5 5m0 0l-5 5m5-5H6"
-            />
-          </svg>
+          <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
     </div>
