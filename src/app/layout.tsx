@@ -72,7 +72,7 @@ export default function RootLayout({
         <link
           rel="preconnect"
           href={`https://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace("https://", "") ?? ""}`}
-          crossOrigin="anonymous"
+          crossOrigin="use-credentials"
         />
       </head>
       <body
