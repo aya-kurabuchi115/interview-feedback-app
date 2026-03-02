@@ -12,7 +12,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, CheckCircle, ArrowRight, ArrowLeft, X } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import {
+  Loader2,
+  CheckCircle,
+  ArrowRight,
+  ArrowLeft,
+  X,
+  Mic,
+  FileText,
+  Brain,
+  MessageSquare,
+  Star,
+} from "lucide-react";
+import { t } from "@/lib/i18n";
 
 // ============================================================
 // 選択肢定義（プロフィールページと同じ定数）
@@ -50,7 +63,102 @@ const JOB_HUNTING_STATUSES = [
   { value: "other", label: "その他" },
 ] as const;
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
+
+const STEP_LABELS = [
+  t("onboarding.stepBasicInfo"),
+  t("onboarding.stepPreferences"),
+  t("onboarding.stepGoal"),
+  t("onboarding.stepComplete"),
+];
+
+// ============================================================
+// 目的選択の定義
+// ============================================================
+
+type GoalType = "interview" | "es" | "self_analysis" | "mock";
+
+interface GoalOption {
+  id: GoalType;
+  labelKey: string;
+  descKey: string;
+  icon: React.ElementType;
+}
+
+const GOALS: GoalOption[] = [
+  {
+    id: "interview",
+    labelKey: "onboarding.goalInterview",
+    descKey: "onboarding.goalInterviewDesc",
+    icon: Mic,
+  },
+  {
+    id: "es",
+    labelKey: "onboarding.goalES",
+    descKey: "onboarding.goalESDesc",
+    icon: FileText,
+  },
+  {
+    id: "self_analysis",
+    labelKey: "onboarding.goalSelfAnalysis",
+    descKey: "onboarding.goalSelfAnalysisDesc",
+    icon: Brain,
+  },
+  {
+    id: "mock",
+    labelKey: "onboarding.goalMock",
+    descKey: "onboarding.goalMockDesc",
+    icon: MessageSquare,
+  },
+];
+
+// ============================================================
+// 機能カードの定義
+// ============================================================
+
+interface FeatureCard {
+  id: string;
+  titleKey: string;
+  descKey: string;
+  href: string;
+  icon: React.ElementType;
+  recommendedFor: GoalType[];
+}
+
+const FEATURES: FeatureCard[] = [
+  {
+    id: "interview",
+    titleKey: "onboarding.featureInterview",
+    descKey: "onboarding.featureInterviewDesc",
+    href: "/interview/new",
+    icon: Mic,
+    recommendedFor: ["interview"],
+  },
+  {
+    id: "mock",
+    titleKey: "onboarding.featureMock",
+    descKey: "onboarding.featureMockDesc",
+    href: "/mock-interview",
+    icon: MessageSquare,
+    recommendedFor: ["mock", "interview"],
+  },
+  {
+    id: "es",
+    titleKey: "onboarding.featureES",
+    descKey: "onboarding.featureESDesc",
+    href: "/es-review",
+    icon: FileText,
+    recommendedFor: ["es"],
+  },
+  {
+    id: "personality",
+    titleKey: "onboarding.featurePersonality",
+    descKey: "onboarding.featurePersonalityDesc",
+    href: "/personality",
+    icon: Brain,
+    recommendedFor: ["self_analysis"],
+  },
+];
 
 // ============================================================
 // コンポーネント
@@ -71,6 +179,9 @@ export function OnboardingWizard() {
   const [targetIndustry, setTargetIndustry] = useState<string[]>([]);
   const [targetJobType, setTargetJobType] = useState<string[]>([]);
   const [jobHuntingStatus, setJobHuntingStatus] = useState("not_started");
+
+  // ステップ3: 目的選択
+  const [selectedGoal, setSelectedGoal] = useState<GoalType | null>(null);
 
   // 複数選択トグル
   const toggleSelection = (
@@ -116,7 +227,7 @@ export function OnboardingWizard() {
         throw new Error(data.error || "保存に失敗しました");
       }
 
-      setCurrentStep(3);
+      setCurrentStep(4);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "保存に失敗しました";
@@ -137,6 +248,9 @@ export function OnboardingWizard() {
       setError("");
       setCurrentStep(2);
     } else if (currentStep === 2) {
+      setError("");
+      setCurrentStep(3);
+    } else if (currentStep === 3) {
       saveOnboarding(false);
     }
   };
@@ -154,44 +268,54 @@ export function OnboardingWizard() {
     saveOnboarding(true);
   };
 
+  // 機能カードをソート（選択した目的に関連するものを先頭に）
+  const sortedFeatures = [...FEATURES].sort((a, b) => {
+    const aRecommended = selectedGoal
+      ? a.recommendedFor.includes(selectedGoal)
+      : false;
+    const bRecommended = selectedGoal
+      ? b.recommendedFor.includes(selectedGoal)
+      : false;
+    if (aRecommended && !bRecommended) return -1;
+    if (!aRecommended && bRecommended) return 1;
+    return 0;
+  });
+
+  const progressValue = (currentStep / TOTAL_STEPS) * 100;
+
   return (
     <div className="space-y-6">
-      {/* ステップインジケーター */}
-      <div className="flex items-center justify-center gap-2">
-        {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((step) => (
-          <div key={step} className="flex items-center gap-2">
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
-                step === currentStep
-                  ? "bg-primary text-primary-foreground"
-                  : step < currentStep
-                    ? "bg-primary/20 text-primary"
-                    : "bg-muted text-muted-foreground"
-              }`}
-            >
-              {step < currentStep ? (
-                <CheckCircle className="h-4 w-4" />
-              ) : (
-                step
-              )}
-            </div>
-            {step < TOTAL_STEPS && (
+      {/* プログレスバー */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          {STEP_LABELS.map((label, i) => {
+            const step = i + 1;
+            return (
               <div
-                className={`h-0.5 w-8 ${
-                  step < currentStep ? "bg-primary" : "bg-muted"
+                key={i}
+                className={`text-xs font-medium ${
+                  step === currentStep
+                    ? "text-primary"
+                    : step < currentStep
+                      ? "text-primary/60"
+                      : "text-muted-foreground"
                 }`}
-              />
-            )}
-          </div>
-        ))}
+              >
+                {label}
+              </div>
+            );
+          })}
+        </div>
+        <Progress value={progressValue} className="h-2" />
       </div>
-      <p className="text-center text-sm text-muted-foreground">
-        ステップ {currentStep} / {TOTAL_STEPS}
-      </p>
 
       {/* エラー表示 */}
       {error && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive" role="alert" aria-live="assertive">
+        <div
+          className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+          role="alert"
+          aria-live="assertive"
+        >
           {error}
         </div>
       )}
@@ -200,7 +324,7 @@ export function OnboardingWizard() {
       {currentStep === 1 && (
         <Card>
           <CardHeader>
-            <CardTitle>基本情報</CardTitle>
+            <CardTitle>{t("onboarding.stepBasicInfo")}</CardTitle>
             <CardDescription>
               あなたの基本的な情報を教えてください。後からプロフィールページで変更できます。
             </CardDescription>
@@ -253,7 +377,7 @@ export function OnboardingWizard() {
       {currentStep === 2 && (
         <Card>
           <CardHeader>
-            <CardTitle>志望情報</CardTitle>
+            <CardTitle>{t("onboarding.stepPreferences")}</CardTitle>
             <CardDescription>
               志望する業界・職種・就活状況を選択してください。AIフィードバックのパーソナライズに活用されます。
             </CardDescription>
@@ -353,41 +477,124 @@ export function OnboardingWizard() {
         </Card>
       )}
 
-      {/* ステップ3: 完了 */}
+      {/* ステップ3: 目的選択 */}
       {currentStep === 3 && (
         <Card>
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <CheckCircle className="h-8 w-8 text-green-600" />
-            </div>
-            <CardTitle className="text-2xl">セットアップ完了！</CardTitle>
+          <CardHeader>
+            <CardTitle>{t("onboarding.goalTitle")}</CardTitle>
             <CardDescription>
-              プロフィールの設定が完了しました。さっそく面接練習を始めましょう。
+              {t("onboarding.goalDescription")}
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <Button asChild size="lg">
-              <Link href="/dashboard">
-                ダッシュボードへ
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <p className="text-sm text-muted-foreground">
-              プロフィールは
-              <Link
-                href="/profile"
-                className="text-primary hover:underline"
-              >
-                プロフィールページ
-              </Link>
-              からいつでも変更できます。
-            </p>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {GOALS.map((goal) => {
+                const Icon = goal.icon;
+                const selected = selectedGoal === goal.id;
+                return (
+                  <button
+                    key={goal.id}
+                    type="button"
+                    onClick={() => setSelectedGoal(goal.id)}
+                    className={`flex items-start gap-3 rounded-lg border p-4 text-left transition-all ${
+                      selected
+                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                        : "border-border hover:border-primary/40 hover:bg-accent/50"
+                    }`}
+                  >
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+                        selected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">
+                        {t(goal.labelKey as Parameters<typeof t>[0])}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {t(goal.descKey as Parameters<typeof t>[0])}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ステップ4: 完了 */}
+      {currentStep === 4 && (
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950/50">
+              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+            </div>
+            <CardTitle className="text-2xl">
+              {t("onboarding.completeTitle")}
+            </CardTitle>
+            <CardDescription>
+              {t("onboarding.completeDescription")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* 機能カード（選択した目的に関連するものを優先表示） */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              {sortedFeatures.map((feature) => {
+                const Icon = feature.icon;
+                const isRecommended =
+                  selectedGoal &&
+                  feature.recommendedFor.includes(selectedGoal);
+                return (
+                  <Link
+                    key={feature.id}
+                    href={feature.href}
+                    className="group relative flex items-start gap-3 rounded-lg border p-4 transition-all hover:border-primary/40 hover:bg-accent/50"
+                  >
+                    {isRecommended && (
+                      <span className="absolute -top-2 right-2 inline-flex items-center gap-0.5 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
+                        <Star className="h-2.5 w-2.5" />
+                        {t("onboarding.recommendedForYou")}
+                      </span>
+                    )}
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">
+                        {t(feature.titleKey as Parameters<typeof t>[0])}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {t(feature.descKey as Parameters<typeof t>[0])}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* ダッシュボードへのリンク */}
+            <div className="flex flex-col items-center gap-4">
+              <Button asChild size="lg">
+                <Link href="/dashboard">
+                  {t("onboarding.goToDashboard")}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                {t("onboarding.profileEditHint")}
+              </p>
+            </div>
           </CardContent>
         </Card>
       )}
 
       {/* ナビゲーションボタン */}
-      {currentStep < 3 && (
+      {currentStep < 4 && (
         <div className="flex items-center justify-between">
           <div>
             {currentStep > 1 && (
@@ -397,7 +604,7 @@ export function OnboardingWizard() {
                 disabled={saving}
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                戻る
+                {t("common.back")}
               </Button>
             )}
           </div>
@@ -410,14 +617,16 @@ export function OnboardingWizard() {
               {saving && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              スキップ
+              {t("onboarding.tourSkip")}
             </Button>
             <Button onClick={handleNext} disabled={saving}>
               {saving && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {currentStep === 2 ? "完了" : "次へ"}
-              {!saving && currentStep < 2 && (
+              {currentStep === 3
+                ? t("onboarding.stepComplete")
+                : t("common.next")}
+              {!saving && currentStep < 3 && (
                 <ArrowRight className="ml-2 h-4 w-4" />
               )}
             </Button>
