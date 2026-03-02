@@ -218,6 +218,8 @@ export interface Database {
           transcript: string | null;
           transcript_char_count: number;
           notes: string | null;
+          archived_at: string | null;
+          deleted_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -236,6 +238,8 @@ export interface Database {
           transcript?: string | null;
           transcript_char_count?: number;
           notes?: string | null;
+          archived_at?: string | null;
+          deleted_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -254,6 +258,8 @@ export interface Database {
           transcript?: string | null;
           transcript_char_count?: number;
           notes?: string | null;
+          archived_at?: string | null;
+          deleted_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
