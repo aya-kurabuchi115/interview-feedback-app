@@ -620,6 +620,7 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "private, no-cache, no-store, must-revalidate",
       },
     });
   } catch (error) {

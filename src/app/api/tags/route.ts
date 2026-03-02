@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { TAG_COLORS } from "@/lib/constants";
 import { unauthorized, badRequest, conflict, serverError } from "@/lib/api/error-response";
 import { reportApiError } from "@/lib/error-reporting";
+import { CACHE_PRIVATE_SHORT } from "@/lib/api/cache-headers";
 
 export async function GET() {
   try {
@@ -25,11 +26,7 @@ export async function GET() {
 
     return NextResponse.json(
       { tags: data ?? [] },
-      {
-        headers: {
-          "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
-        },
-      }
+      { headers: CACHE_PRIVATE_SHORT }
     );
   } catch (error) {
     reportApiError(error, {

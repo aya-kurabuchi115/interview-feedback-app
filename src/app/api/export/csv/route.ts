@@ -207,6 +207,7 @@ export async function GET(request: NextRequest) {
         "Content-Type": "text/csv; charset=utf-8",
         "Content-Disposition":
           'attachment; filename="interview-history.csv"',
+        "Cache-Control": "private, no-cache, no-store, must-revalidate",
       },
     });
   } catch (error) {

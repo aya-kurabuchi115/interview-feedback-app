@@ -3,6 +3,9 @@ import { BookOpen } from "lucide-react";
 import { questions } from "@/lib/questions/data";
 import { QuestionFilter } from "./question-filter";
 
+/** ISR: 24時間ごとに再検証（静的コンテンツ） */
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "面接質問集",
   description:
