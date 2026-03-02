@@ -15,6 +15,8 @@ import { UsageNudgeBanner } from "@/components/dashboard/usage-nudge-banner";
 import { PracticeReminderBanner } from "@/components/dashboard/practice-reminder-banner";
 import { WeeklySummarySection } from "@/components/dashboard/weekly-summary-section";
 import { WeeklySummarySkeleton } from "@/components/dashboard/weekly-summary-skeleton";
+import { GettingStartedChecklist } from "@/components/dashboard/getting-started-checklist";
+import { OnboardingTour } from "@/components/dashboard/onboarding-tour";
 import { t } from "@/lib/i18n";
 
 /** ダッシュボードは常に最新データを表示（キャッシュ不可） */
@@ -72,8 +74,58 @@ export default async function DashboardPage({
   // 利用状況を取得（ナッジバナー用）
   const usage = await getRemainingUsage(user.id);
 
+  // --- はじめてガイド: サーバー側で完了状態を検出 ---
+  const serverCompletedItems: string[] = [];
+  try {
+    // プロフィール設定済みチェック（display_name が設定されているか）
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name, personality_type")
+      .eq("user_id", user.id)
+      .single();
+    if (profile?.display_name) {
+      serverCompletedItems.push("profile");
+    }
+    // パーソナリティ診断済みチェック
+    if (profile?.personality_type) {
+      serverCompletedItems.push("personality");
+    }
+
+    // 面接分析済みチェック（1件以上の面接レコードがあるか）
+    const { count: interviewCount } = await supabase
+      .from("interviews")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id);
+    if (interviewCount && interviewCount > 0) {
+      serverCompletedItems.push("interview");
+    }
+
+    // 模擬面接体験済みチェック
+    const { count: mockCount } = await supabase
+      .from("mock_interviews")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id);
+    if (mockCount && mockCount > 0) {
+      serverCompletedItems.push("mock");
+    }
+
+    // ES添削利用済みチェック
+    const { count: esCount } = await supabase
+      .from("es_reviews")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id);
+    if (esCount && esCount > 0) {
+      serverCompletedItems.push("es");
+    }
+  } catch {
+    // チェックリスト用データ取得エラーは無視（ガイドは表示するがサーバー側完了状態なし）
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* オンボーディングツアー（初回訪問時のみ表示） */}
+      <OnboardingTour />
+
       {/* 練習リマインダーバナー */}
       <PracticeReminderBanner />
 
@@ -110,6 +162,9 @@ export default async function DashboardPage({
           </Button>
         </div>
       </div>
+
+      {/* はじめてガイド（チェックリスト） */}
+      <GettingStartedChecklist serverCompletedItems={serverCompletedItems} />
 
       {/* 週次進捗サマリー（Suspense 境界でストリーミング） */}
       <Suspense fallback={<WeeklySummarySkeleton />}>
