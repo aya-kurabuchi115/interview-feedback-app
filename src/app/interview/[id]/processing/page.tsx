@@ -95,8 +95,32 @@ export default function ProcessingPage({
   const [isLoading, setIsLoading] = useState(true);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [hasAudio, setHasAudio] = useState<boolean | null>(null);
   const analyzeCalledRef = useRef(false);
+  const transcribeCalledRef = useRef(false);
   const notifiedRef = useRef(false);
+
+  // 文字起こし API を呼び出す関数（音声モード時）
+  const triggerTranscription = useCallback(async () => {
+    if (transcribeCalledRef.current) return;
+    transcribeCalledRef.current = true;
+
+    try {
+      const res = await fetch("/api/transcribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interview_id: id }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "文字起こしに失敗しました");
+      }
+    } catch (error) {
+      console.error("[processing] transcribe error:", error);
+      transcribeCalledRef.current = false;
+    }
+  }, [id]);
 
   // AI分析 API を呼び出す関数
   const triggerAnalysis = useCallback(async () => {
@@ -142,7 +166,7 @@ export default function ProcessingPage({
         // Supabase RLS ポリシーにより、認証ユーザーは自分の interviews のみ取得可能。
         const { data, error } = await supabase
           .from("interviews")
-          .select("status")
+          .select("status, audio_url")
           .eq("id", id)
           .single();
 
@@ -160,8 +184,15 @@ export default function ProcessingPage({
           return;
         }
 
-        const status = (data as Record<string, unknown>)
-          .status as InterviewStatus;
+        const row = data as Record<string, unknown>;
+        const status = row.status as InterviewStatus;
+        const audioUrl = row.audio_url as string | null;
+
+        // 音声モードかどうかを初回のみ判定
+        if (hasAudio === null) {
+          setHasAudio(!!audioUrl);
+        }
+
         setCurrentStatus(status);
         setIsLoading(false);
 
@@ -191,8 +222,17 @@ export default function ProcessingPage({
           return;
         }
 
-        // uploaded 状態の場合、AI分析を自動開始
-        if (status === "uploaded" && !analyzeCalledRef.current) {
+        // uploaded 状態: 音声モードなら文字起こしから、テキストモードなら直接分析
+        if (status === "uploaded") {
+          if (audioUrl && !transcribeCalledRef.current) {
+            triggerTranscription();
+          } else if (!audioUrl && !analyzeCalledRef.current) {
+            triggerAnalysis();
+          }
+        }
+
+        // analyzing 状態: 文字起こし完了後、分析を開始（音声モードのフロー）
+        if (status === "analyzing" && !analyzeCalledRef.current) {
           triggerAnalysis();
         }
 
@@ -212,13 +252,14 @@ export default function ProcessingPage({
       cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [id, router, triggerAnalysis]);
+  }, [id, router, triggerAnalysis, triggerTranscription, hasAudio]);
 
   const handleRetry = async () => {
     setIsError(false);
     setErrorMessage(null);
     setIsLoading(true);
     analyzeCalledRef.current = false;
+    transcribeCalledRef.current = false;
 
     try {
       const res = await fetch("/api/interviews/retry", {

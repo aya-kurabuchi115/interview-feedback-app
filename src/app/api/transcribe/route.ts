@@ -81,10 +81,23 @@ export async function POST(request: Request) {
 
     // utterances を transcripts テーブルに一括保存（N+1 回避）
     if (result.utterances && result.utterances.length > 0) {
+      // AssemblyAI の話者ラベル（"A", "B" 等）を interviewer/interviewee にマッピング
+      // 最初に発言した話者を面接官とみなす（面接では面接官が最初に挨拶する）
+      const speakerMap = new Map<string, "interviewer" | "interviewee">();
+      for (const u of result.utterances as { speaker: string }[]) {
+        if (!speakerMap.has(u.speaker)) {
+          speakerMap.set(
+            u.speaker,
+            speakerMap.size === 0 ? "interviewer" : "interviewee"
+          );
+        }
+        if (speakerMap.size >= 2) break;
+      }
+
       const transcripts = result.utterances.map(
-        (u: { speaker: string; text: string; start: number; end: number }, index: number) => ({
+        (u: { speaker: string; text: string; start: number; end: number }) => ({
           interview_id,
-          speaker: index % 2 === 0 ? "interviewer" : "interviewee",
+          speaker: speakerMap.get(u.speaker) ?? "interviewee",
           content: u.text,
           start_time: u.start / 1000,
           end_time: u.end / 1000,
