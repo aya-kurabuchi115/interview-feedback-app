@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Loader2, Info } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 /**
  * redirect パラメータのバリデーション。
@@ -108,9 +109,9 @@ function LoginForm() {
 
       if (error) {
         if (error.message.includes("Email not confirmed")) {
-          setError("メールアドレスの確認が完了していません。受信トレイの確認メールからアカウントを有効化してください。");
+          setError(t("auth.emailNotConfirmed"));
         } else {
-          setError("メールアドレスまたはパスワードが正しくありません。入力内容をご確認ください。");
+          setError(t("auth.invalidCredentials"));
         }
         return;
       }
@@ -120,7 +121,7 @@ function LoginForm() {
       router.push(safeRedirect ?? "/dashboard");
       router.refresh();
     } catch {
-      setError("サーバーとの通信に失敗しました。時間を置いて再度お試しください。");
+      setError(t("common.networkError"));
     } finally {
       setLoading(false);
     }
@@ -130,9 +131,9 @@ function LoginForm() {
     <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">ログイン</CardTitle>
+          <CardTitle className="text-2xl">{t("auth.login")}</CardTitle>
           <CardDescription>
-            メールアドレスとパスワードでログイン
+            {t("auth.loginDescription")}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -146,13 +147,13 @@ function LoginForm() {
               >
                 <Info className="mt-0.5 h-4 w-4 flex-shrink-0" />
                 <div>
-                  <p>セッションの有効期限が切れました。再度ログインしてください。</p>
+                  <p>{t("auth.sessionExpired")}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSessionExpiredBanner(false)}
                   className="ml-auto flex-shrink-0 text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100"
-                  aria-label="通知を閉じる"
+                  aria-label={t("auth.closeNotification")}
                 >
                   &times;
                 </button>
@@ -176,7 +177,7 @@ function LoginForm() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email">メールアドレス</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -189,12 +190,12 @@ function LoginForm() {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">パスワード</Label>
+                <Label htmlFor="password">{t("auth.password")}</Label>
                 <Link
                   href="/reset-password"
                   className="text-xs text-muted-foreground hover:text-primary hover:underline"
                 >
-                  パスワードを忘れた方
+                  {t("auth.forgotPassword")}
                 </Link>
               </div>
               <Input
@@ -210,12 +211,12 @@ function LoginForm() {
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {loading ? "ログイン中..." : "ログイン"}
+              {loading ? t("auth.loginLoading") : t("auth.login")}
             </Button>
             <p className="text-sm text-muted-foreground">
-              アカウントをお持ちでないですか？{" "}
+              {t("auth.noAccount")}{" "}
               <Link href="/signup" className="text-primary hover:underline">
-                サインアップ
+                {t("auth.signup")}
               </Link>
             </p>
           </CardFooter>
