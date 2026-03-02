@@ -1,8 +1,21 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
-import { ESReviewResultContent } from "./result-content";
+import dynamic from "next/dynamic";
 import type { ESFeedback } from "@/types/es-review";
+
+// ES添削結果コンテンツは重いクライアントコンポーネントのため遅延ロード
+const ESReviewResultContent = dynamic(
+  () => import("./result-content").then((mod) => mod.ESReviewResultContent),
+  {
+    loading: () => (
+      <div className="container mx-auto max-w-3xl px-4 py-8">
+        <div className="h-8 w-32 animate-pulse rounded bg-muted mb-6" />
+        <div className="h-96 w-full animate-pulse rounded-lg bg-muted" />
+      </div>
+    ),
+  }
+);
 
 interface PageProps {
   params: Promise<{ id: string }>;

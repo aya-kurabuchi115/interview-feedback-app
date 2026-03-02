@@ -1,8 +1,21 @@
 import { redirectToLogin } from "@/lib/auth/redirect";
 import { createClient } from "@/lib/supabase/server";
 import { getUserSubscription, getRemainingUsage } from "@/lib/subscription";
+import dynamic from "next/dynamic";
 import { PLANS } from "@/lib/stripe/config";
-import { BillingClient } from "./billing-client";
+
+// 課金クライアントは Stripe 関連の重いコンポーネントのため遅延ロード
+const BillingClient = dynamic(
+  () => import("./billing-client").then((mod) => mod.BillingClient),
+  {
+    loading: () => (
+      <div className="mt-8 space-y-6">
+        <div className="h-48 w-full animate-pulse rounded-lg bg-muted" />
+        <div className="h-32 w-full animate-pulse rounded-lg bg-muted" />
+      </div>
+    ),
+  }
+);
 
 export const metadata = { title: "プラン管理 | InterviewCoach" };
 

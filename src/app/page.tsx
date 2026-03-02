@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   Brain,
   TrendingUp,
@@ -30,7 +31,20 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CountUp } from "@/components/lp/count-up";
-import { FaqSection } from "@/components/lp/faq-section";
+
+// FAQ セクションはページ下部のため遅延ロード
+const FaqSection = dynamic(
+  () => import("@/components/lp/faq-section").then((mod) => mod.FaqSection),
+  {
+    loading: () => (
+      <div className="space-y-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-14 w-full animate-pulse rounded-lg bg-muted" />
+        ))}
+      </div>
+    ),
+  }
+);
 
 export const metadata: Metadata = {
   title: "InterviewCoach - 面接練習を録音するだけ。AIが即座に分析・フィードバック",

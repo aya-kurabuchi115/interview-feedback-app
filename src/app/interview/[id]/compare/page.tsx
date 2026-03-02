@@ -2,8 +2,21 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { redirectToLogin } from "@/lib/auth/redirect";
 import { createClient } from "@/lib/supabase/server";
+import dynamic from "next/dynamic";
 import type { Database } from "@/types/supabase";
-import { CompareContent } from "./compare-content";
+
+// 比較コンテンツは重いクライアントコンポーネントのため遅延ロード
+const CompareContent = dynamic(
+  () => import("./compare-content").then((mod) => mod.CompareContent),
+  {
+    loading: () => (
+      <div className="container mx-auto max-w-5xl px-4 py-8">
+        <div className="h-8 w-48 animate-pulse rounded bg-muted mb-6" />
+        <div className="h-64 w-full animate-pulse rounded-lg bg-muted" />
+      </div>
+    ),
+  }
+);
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Feedback = Database["public"]["Tables"]["feedbacks"]["Row"];
