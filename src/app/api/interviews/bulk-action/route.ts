@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 /** 許可されるアクション種別 */
 const VALID_ACTIONS = ["archive", "unarchive", "soft_delete", "permanent_delete"] as const;
@@ -127,7 +128,10 @@ export async function POST(request: Request) {
         return badRequest("無効なアクションです。");
     }
   } catch (error) {
-    console.error("[bulk-action] unexpected error:", error);
+    reportApiError(error, {
+      apiRoute: "/api/interviews/bulk-action",
+      featureArea: "interview",
+    });
     return serverError();
   }
 }

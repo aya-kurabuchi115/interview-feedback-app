@@ -5,6 +5,7 @@ import { PLANS, getBaseUrl, PAID_PLAN_KEYS } from "@/lib/stripe/config";
 import type { PaidPlanKey } from "@/lib/stripe/config";
 import { getUserSubscription } from "@/lib/subscription";
 import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 interface CheckoutRequest {
   plan?: string;
@@ -82,7 +83,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("[checkout] Error:", error);
+    reportApiError(error, {
+      apiRoute: "/api/stripe/checkout",
+      featureArea: "stripe",
+    });
     return NextResponse.json(
       { error: "チェックアウトセッションの作成に失敗しました" },
       { status: 500 }

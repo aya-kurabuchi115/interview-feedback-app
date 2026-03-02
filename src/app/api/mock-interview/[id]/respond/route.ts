@@ -11,6 +11,7 @@ import type {
 } from "@/types/database";
 import { getUserSubscription, getModelForPlan } from "@/lib/subscription";
 import { unauthorized, badRequest, notFound, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 const MAX_ANSWER_LENGTH = 5000;
 
 /** 質問数の上限（この範囲内でAIが完了を判断） */
@@ -323,12 +324,12 @@ export async function POST(
       totalQuestions: MAX_QUESTIONS,
     });
   } catch (error) {
-    console.error(
-      "[mock-interview/respond] Error:",
-      error instanceof Error ? error.message : "Unknown error"
-    );
+    const errorId = reportApiError(error, {
+      apiRoute: "/api/mock-interview/[id]/respond",
+      featureArea: "mock-interview",
+    });
     return NextResponse.json(
-      { error: "応答処理中にエラーが発生しました。しばらくしてから再度お試しください。" },
+      { error: "応答処理中にエラーが発生しました。しばらくしてから再度お試しください。", error_id: errorId },
       { status: 500 }
     );
   }

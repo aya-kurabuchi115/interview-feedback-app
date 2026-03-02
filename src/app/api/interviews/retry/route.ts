@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { unauthorized, badRequest, notFound, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 /**
  * POST /api/interviews/retry
@@ -69,7 +70,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[retry] Error:", error);
+    reportApiError(error, {
+      apiRoute: "/api/interviews/retry",
+      featureArea: "interview",
+    });
     return NextResponse.json(
       { error: "リトライ処理中にエラーが発生しました" },
       { status: 500 }

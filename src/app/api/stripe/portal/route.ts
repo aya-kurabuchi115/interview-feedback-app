@@ -4,6 +4,7 @@ import { getStripe } from "@/lib/stripe/server";
 import { getUserSubscription } from "@/lib/subscription";
 import { getBaseUrl } from "@/lib/stripe/config";
 import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 export async function POST() {
   try {
@@ -31,7 +32,10 @@ export async function POST() {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("[portal] Error:", error);
+    reportApiError(error, {
+      apiRoute: "/api/stripe/portal",
+      featureArea: "stripe",
+    });
     return NextResponse.json(
       { error: "ポータルセッションの作成に失敗しました" },
       { status: 500 }

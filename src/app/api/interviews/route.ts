@@ -5,6 +5,7 @@ import type {
   InterviewRound,
 } from "@/types/database";
 import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 /** バリデーション定数 */
 const VALID_CATEGORIES: InterviewCategory[] = [
@@ -212,9 +213,14 @@ export async function POST(request: Request) {
       interview_id: interviewId,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "予期しないエラーが発生しました";
-    return NextResponse.json({ error: message }, { status: 500 });
+    reportApiError(error, {
+      apiRoute: "/api/interviews",
+      featureArea: "interview",
+    });
+    return NextResponse.json(
+      { error: "面接データの保存中にエラーが発生しました。しばらくしてから再度お試しください。" },
+      { status: 500 }
+    );
   }
 }
 

@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { unauthorized, badRequest, notFound, forbidden, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 /** 共有リンクの型 */
 interface SharedResultRow {
@@ -80,7 +81,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("共有リンク無効化エラー:", error);
+    reportApiError(error, {
+      apiRoute: "/api/share/revoke",
+      featureArea: "share",
+    });
     return NextResponse.json(
       { error: "共有リンクの無効化に失敗しました" },
       { status: 500 }

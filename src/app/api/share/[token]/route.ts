@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { CategoryScores } from "@/types/database";
 import { badRequest, notFound, gone, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 interface SharedResult {
   id: string;
@@ -136,7 +137,10 @@ export async function GET(
       expiresAt: shareData.expires_at,
     });
   } catch (error) {
-    console.error("共有データ取得エラー:", error);
+    reportApiError(error, {
+      apiRoute: "/api/share/[token]",
+      featureArea: "share",
+    });
     return NextResponse.json(
       { error: "共有データの取得に失敗しました" },
       { status: 500 }

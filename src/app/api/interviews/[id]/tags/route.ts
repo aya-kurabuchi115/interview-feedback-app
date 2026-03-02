@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { MAX_TAGS_PER_INTERVIEW } from "@/lib/constants";
 import { unauthorized, badRequest, notFound, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 export async function GET(
   _request: Request,
@@ -41,7 +42,11 @@ export async function GET(
       .filter(Boolean);
 
     return NextResponse.json({ tags });
-  } catch {
+  } catch (error) {
+    reportApiError(error, {
+      apiRoute: "/api/interviews/[id]/tags",
+      featureArea: "tags",
+    });
     return serverError(
       "タグの取得中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
     );
@@ -96,7 +101,11 @@ export async function PUT(
     }
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    reportApiError(error, {
+      apiRoute: "/api/interviews/[id]/tags",
+      featureArea: "tags",
+    });
     return serverError(
       "タグの更新中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
     );

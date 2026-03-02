@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
 import { headers } from "next/headers";
+import { reportApiError } from "@/lib/error-reporting";
 import { getStripe } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PLANS } from "@/lib/stripe/config";
@@ -211,9 +211,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("[webhook] Error:", error);
-    Sentry.captureException(error, {
-      tags: { api_route: "/api/stripe/webhook" },
+    reportApiError(error, {
+      apiRoute: "/api/stripe/webhook",
+      featureArea: "stripe",
     });
     return NextResponse.json(
       { error: "Webhook の処理に失敗しました" },

@@ -12,6 +12,7 @@ import type { SubscriptionPlan } from "@/types/database";
 import { PERSONALITY_DATA, isValidPersonalityType } from "@/lib/personality/types";
 import type { PersonalityType } from "@/lib/personality/types";
 import { unauthorized, badRequest, notFound, forbidden, conflict, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 // ============================================================
 // 定数
@@ -551,13 +552,15 @@ export async function POST(
       interview_id: interviewRecord.id,
     });
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    console.error("[mock-interview/feedback] Error:", errorMessage);
+    const errorId = reportApiError(error, {
+      apiRoute: "/api/mock-interview/[id]/feedback",
+      featureArea: "mock-interview",
+    });
     return NextResponse.json(
       {
         error:
           "フィードバック生成中にエラーが発生しました。しばらくしてから再度お試しください。",
+        error_id: errorId,
       },
       { status: 500 }
     );

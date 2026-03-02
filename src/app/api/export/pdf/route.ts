@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database, CategoryScores } from "@/types/database";
 import { CATEGORY_LABELS } from "@/lib/constants";
 import { unauthorized, badRequest, notFound, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Feedback = Database["public"]["Tables"]["feedbacks"]["Row"];
@@ -621,7 +622,11 @@ export async function GET(request: NextRequest) {
         "Content-Type": "text/html; charset=utf-8",
       },
     });
-  } catch {
+  } catch (error) {
+    reportApiError(error, {
+      apiRoute: "/api/export/pdf",
+      featureArea: "export",
+    });
     return NextResponse.json(
       { error: "エクスポート中にエラーが発生しました" },
       { status: 500 }
