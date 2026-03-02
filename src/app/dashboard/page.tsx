@@ -15,9 +15,10 @@ import { UsageNudgeBanner } from "@/components/dashboard/usage-nudge-banner";
 import { PracticeReminderBanner } from "@/components/dashboard/practice-reminder-banner";
 import { WeeklySummarySection } from "@/components/dashboard/weekly-summary-section";
 import { WeeklySummarySkeleton } from "@/components/dashboard/weekly-summary-skeleton";
+import { t } from "@/lib/i18n";
 
 export const metadata: Metadata = {
-  title: "ダッシュボード",
+  title: t("metadata.dashboardTitle"),
   robots: { index: false, follow: false },
 };
 
@@ -83,7 +84,7 @@ export default async function DashboardPage({
 
       {/* ヘッダー（即座に表示） */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">面接履歴</h1>
+        <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
         <div className="flex items-center gap-2">
           <Suspense
             fallback={
@@ -95,13 +96,13 @@ export default async function DashboardPage({
           <Button variant="outline" asChild>
             <Link href="/mock-interview">
               <MessageSquare className="mr-2 h-4 w-4" />
-              AI模擬面接
+              {t("dashboard.mockInterview")}
             </Link>
           </Button>
           <Button asChild>
             <Link href="/interview/new">
               <Plus className="mr-2 h-4 w-4" />
-              新規面接を記録
+              {t("dashboard.newInterview")}
             </Link>
           </Button>
         </div>

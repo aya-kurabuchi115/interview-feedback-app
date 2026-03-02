@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { t } from "@/lib/i18n";
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -76,18 +77,18 @@ export function Header() {
   };
 
   const publicNavItems = [
-    { href: "/questions", label: "質問集" },
-    { href: "/personality", label: "16パーソナリティ" },
+    { href: "/questions", label: t("nav.questions") },
+    { href: "/personality", label: t("nav.personality") },
   ];
 
   // オンボーディング完了後のみ表示する保護対象ナビ
   const authNavItems = user && onboardingCompleted
     ? [
-        { href: "/dashboard", label: "ダッシュボード" },
-        { href: "/mock-interview", label: "模擬面接" },
-        { href: "/es-review", label: "ES添削" },
-        { href: "/dashboard/growth", label: "成長記録" },
-        { href: "/profile", label: "プロフィール" },
+        { href: "/dashboard", label: t("nav.dashboard") },
+        { href: "/mock-interview", label: t("nav.mockInterview") },
+        { href: "/es-review", label: t("nav.esReview") },
+        { href: "/dashboard/growth", label: t("nav.growthRecord") },
+        { href: "/profile", label: t("nav.profile") },
       ]
     : [];
 
@@ -127,28 +128,28 @@ export function Header() {
                 <DropdownMenuItem asChild>
                   <Link href="/profile">
                     <UserCircle className="mr-2 h-4 w-4" />
-                    プロフィール
+                    {t("nav.profile")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings/billing">
                     <CreditCard className="mr-2 h-4 w-4" />
-                    プラン管理
+                    {t("nav.planManagement")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  ログアウト
+                  {t("auth.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <>
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/login">ログイン</Link>
+                <Link href="/login">{t("auth.login")}</Link>
               </Button>
               <Button size="sm" asChild>
-                <Link href="/signup">3分で無料体験</Link>
+                <Link href="/signup">{t("auth.freeTrialCta")}</Link>
               </Button>
             </>
           )}
@@ -185,16 +186,16 @@ export function Header() {
                       onClick={handleLogout}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
-                      ログアウト
+                      {t("auth.logout")}
                     </Button>
                   </>
                 ) : (
                   <>
                     <Button variant="ghost" size="sm" asChild>
-                      <Link href="/login">ログイン</Link>
+                      <Link href="/login">{t("auth.login")}</Link>
                     </Button>
                     <Button size="sm" asChild>
-                      <Link href="/signup">3分で無料体験</Link>
+                      <Link href="/signup">{t("auth.freeTrialCta")}</Link>
                     </Button>
                   </>
                 )}

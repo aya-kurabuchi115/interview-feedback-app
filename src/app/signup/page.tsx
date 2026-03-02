@@ -17,6 +17,7 @@ import {
 import { Loader2, Mail } from "lucide-react";
 import { PasswordStrength } from "@/components/ui/password-strength";
 import { PasswordInput } from "@/components/ui/password-input";
+import { t } from "@/lib/i18n";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -31,12 +32,12 @@ export default function SignUpPage() {
     setError("");
 
     if (!agreed) {
-      setError("利用規約とプライバシーポリシーへの同意が必要です");
+      setError(t("auth.termsRequired"));
       return;
     }
 
     if (password.length < 8) {
-      setError("パスワードは8文字以上で入力してください");
+      setError(t("auth.passwordMinLength"));
       return;
     }
 
@@ -54,16 +55,16 @@ export default function SignUpPage() {
 
       if (error) {
         if (error.message.includes("already registered")) {
-          setError("このメールアドレスは既に登録されています。ログインページからお試しください。");
+          setError(t("auth.alreadyRegistered"));
         } else {
-          setError("アカウント作成に失敗しました。入力内容を確認して再度お試しください。");
+          setError(t("auth.signupFailed"));
         }
         return;
       }
 
       setEmailSent(true);
     } catch {
-      setError("サーバーとの通信に失敗しました。時間を置いて再度お試しください。");
+      setError(t("common.networkError"));
     } finally {
       setLoading(false);
     }
@@ -78,16 +79,16 @@ export default function SignUpPage() {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
               <Mail className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl">メールを確認してください</CardTitle>
+            <CardTitle className="text-2xl">{t("auth.confirmEmail")}</CardTitle>
             <CardDescription className="mt-2 text-base">
               <span className="font-medium text-foreground">{email}</span>
-              {" "}に確認メールを送信しました。
+              {" "}{t("auth.confirmEmailSent")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-md bg-muted p-4 text-sm text-muted-foreground">
-              <p className="mb-2">メール内のリンクをクリックして、アカウントの登録を完了してください。</p>
-              <p>メールが届かない場合は、迷惑メールフォルダもご確認ください。</p>
+              <p className="mb-2">{t("auth.confirmEmailInstruction")}</p>
+              <p>{t("auth.confirmEmailSpam")}</p>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
@@ -96,12 +97,12 @@ export default function SignUpPage() {
               className="w-full"
               onClick={() => setEmailSent(false)}
             >
-              別のメールアドレスで登録する
+              {t("auth.useAnotherEmail")}
             </Button>
             <p className="text-sm text-muted-foreground">
-              すでにアカウントをお持ちですか？{" "}
+              {t("auth.hasAccount")}{" "}
               <Link href="/login" className="text-primary hover:underline">
-                ログイン
+                {t("auth.login")}
               </Link>
             </p>
           </CardFooter>
@@ -114,9 +115,9 @@ export default function SignUpPage() {
     <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">アカウント作成</CardTitle>
+          <CardTitle className="text-2xl">{t("auth.signupTitle")}</CardTitle>
           <CardDescription>
-            メールアドレスとパスワードで登録
+            {t("auth.signupDescription")}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -131,7 +132,7 @@ export default function SignUpPage() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email">メールアドレス</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -143,11 +144,11 @@ export default function SignUpPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">パスワード</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <PasswordInput
                 id="password"
                 autoComplete="new-password"
-                placeholder="8文字以上"
+                placeholder={t("auth.passwordPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -172,7 +173,7 @@ export default function SignUpPage() {
                   target="_blank"
                   className="text-primary underline underline-offset-4 hover:text-primary/80"
                 >
-                  利用規約
+                  {t("auth.termsOfService")}
                 </Link>
                 と
                 <Link
@@ -180,9 +181,9 @@ export default function SignUpPage() {
                   target="_blank"
                   className="text-primary underline underline-offset-4 hover:text-primary/80"
                 >
-                  プライバシーポリシー
+                  {t("auth.privacyPolicy")}
                 </Link>
-                に同意します
+                {t("auth.agreeTerms")}
               </Label>
             </div>
           </CardContent>
@@ -193,12 +194,12 @@ export default function SignUpPage() {
               disabled={loading || !agreed}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {loading ? "登録中..." : "サインアップ"}
+              {loading ? t("auth.signupLoading") : t("auth.signup")}
             </Button>
             <p className="text-sm text-muted-foreground">
-              すでにアカウントをお持ちですか？{" "}
+              {t("auth.hasAccount")}{" "}
               <Link href="/login" className="text-primary hover:underline">
-                ログイン
+                {t("auth.login")}
               </Link>
             </p>
           </CardFooter>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { t } from "@/lib/i18n";
 
 export function Footer() {
   return (
@@ -10,25 +11,25 @@ export function Footer() {
             href="/legal/terms"
             className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
-            利用規約
+            {t("footer.termsOfService")}
           </Link>
           <Link
             href="/legal/privacy"
             className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
-            プライバシーポリシー
+            {t("footer.privacyPolicy")}
           </Link>
           <Link
             href="/legal/cookies"
             className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
-            Cookie ポリシー
+            {t("footer.cookiePolicy")}
           </Link>
           <Link
             href="/legal/tokushoho"
             className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
-            特定商取引法に基づく表記
+            {t("footer.tokushoho")}
           </Link>
         </nav>
       </div>
