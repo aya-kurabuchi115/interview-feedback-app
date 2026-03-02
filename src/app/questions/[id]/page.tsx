@@ -18,6 +18,9 @@ import { ExampleAnswer } from "@/components/questions/example-answer";
 import { FrameworkGuide } from "@/components/questions/framework-guide";
 import { AnswerComparison } from "@/components/questions/answer-comparison";
 
+/** ISR: 24時間ごとに再検証（静的コンテンツ） */
+export const revalidate = 86400;
+
 const DIFFICULTY_COLORS: Record<Difficulty, string> = {
   easy: "bg-green-100 text-green-800",
   normal: "bg-yellow-100 text-yellow-800",

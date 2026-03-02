@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+/** ISR: 24時間ごとに再検証（静的コンテンツ） */
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "プライバシーポリシー",
   description:

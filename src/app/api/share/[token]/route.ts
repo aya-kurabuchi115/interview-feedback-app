@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { CategoryScores } from "@/types/database";
 import { badRequest, notFound, gone, serverError } from "@/lib/api/error-response";
 import { reportApiError } from "@/lib/error-reporting";
+import { CACHE_PUBLIC_MEDIUM } from "@/lib/api/cache-headers";
 
 interface SharedResult {
   id: string;
@@ -113,29 +114,32 @@ export async function GET(
 
     const feedback = feedbackRaw as SharedFeedback | null;
 
-    return NextResponse.json({
-      interview: {
-        title: interview.title,
-        companyName: interview.company_name_snapshot,
-        category: interview.interview_category,
-        round: interview.interview_round,
-        date: interview.interview_date,
-        createdAt: interview.created_at,
+    return NextResponse.json(
+      {
+        interview: {
+          title: interview.title,
+          companyName: interview.company_name_snapshot,
+          category: interview.interview_category,
+          round: interview.interview_round,
+          date: interview.interview_date,
+          createdAt: interview.created_at,
+        },
+        feedback: feedback
+          ? {
+              overallScore: feedback.overall_score,
+              summary: feedback.summary,
+              goodPoints: feedback.good_points,
+              improvementPoints: feedback.improvement_points,
+              strengths: feedback.strengths,
+              improvements: feedback.improvements,
+              overallComment: feedback.overall_comment,
+              categoryScores: feedback.category_scores as CategoryScores,
+            }
+          : null,
+        expiresAt: shareData.expires_at,
       },
-      feedback: feedback
-        ? {
-            overallScore: feedback.overall_score,
-            summary: feedback.summary,
-            goodPoints: feedback.good_points,
-            improvementPoints: feedback.improvement_points,
-            strengths: feedback.strengths,
-            improvements: feedback.improvements,
-            overallComment: feedback.overall_comment,
-            categoryScores: feedback.category_scores as CategoryScores,
-          }
-        : null,
-      expiresAt: shareData.expires_at,
-    });
+      { headers: CACHE_PUBLIC_MEDIUM }
+    );
   } catch (error) {
     reportApiError(error, {
       apiRoute: "/api/share/[token]",

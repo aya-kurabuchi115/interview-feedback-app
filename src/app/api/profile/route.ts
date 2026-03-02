@@ -4,6 +4,7 @@ import type { Database } from "@/types/database";
 import { PERSONALITY_TYPES } from "@/lib/personality/types";
 import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
 import { reportApiError } from "@/lib/error-reporting";
+import { CACHE_PRIVATE_MEDIUM } from "@/lib/api/cache-headers";
 
 type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
 
@@ -123,7 +124,10 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({ profile: data ?? null });
+    return NextResponse.json(
+      { profile: data ?? null },
+      { headers: CACHE_PRIVATE_MEDIUM }
+    );
   } catch (error) {
     reportApiError(error, {
       apiRoute: "/api/profile",

@@ -17,6 +17,9 @@ import { WeeklySummarySection } from "@/components/dashboard/weekly-summary-sect
 import { WeeklySummarySkeleton } from "@/components/dashboard/weekly-summary-skeleton";
 import { t } from "@/lib/i18n";
 
+/** ダッシュボードは常に最新データを表示（キャッシュ不可） */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: t("metadata.dashboardTitle"),
   robots: { index: false, follow: false },

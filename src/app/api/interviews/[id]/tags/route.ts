@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { MAX_TAGS_PER_INTERVIEW } from "@/lib/constants";
 import { unauthorized, badRequest, notFound, serverError } from "@/lib/api/error-response";
 import { reportApiError } from "@/lib/error-reporting";
+import { CACHE_PRIVATE_SHORT } from "@/lib/api/cache-headers";
 
 export async function GET(
   _request: Request,
@@ -41,7 +42,10 @@ export async function GET(
       })
       .filter(Boolean);
 
-    return NextResponse.json({ tags });
+    return NextResponse.json(
+      { tags },
+      { headers: CACHE_PRIVATE_SHORT }
+    );
   } catch (error) {
     reportApiError(error, {
       apiRoute: "/api/interviews/[id]/tags",

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getUserSubscription, getRemainingUsage } from "@/lib/subscription";
 import { unauthorized, serverError } from "@/lib/api/error-response";
 import { reportApiError } from "@/lib/error-reporting";
+import { CACHE_PRIVATE_SHORT } from "@/lib/api/cache-headers";
 
 export async function GET() {
   try {
@@ -19,11 +20,7 @@ export async function GET() {
 
     return NextResponse.json(
       { subscription, usage },
-      {
-        headers: {
-          "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
-        },
-      }
+      { headers: CACHE_PRIVATE_SHORT }
     );
   } catch (error) {
     reportApiError(error, {

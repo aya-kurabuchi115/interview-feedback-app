@@ -7,6 +7,9 @@ import {
   type PersonalityGroup,
 } from "@/lib/personality/types";
 
+/** ISR: 24時間ごとに再検証（静的コンテンツ） */
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "16パーソナリティ診断",
   description:
