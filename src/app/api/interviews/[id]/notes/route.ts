@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { MAX_NOTES_LENGTH } from "@/lib/constants";
 import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 export async function PUT(
   request: Request,
@@ -37,7 +38,11 @@ export async function PUT(
       );
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    reportApiError(error, {
+      apiRoute: "/api/interviews/[id]/notes",
+      featureArea: "interview",
+    });
     return serverError(
       "メモの保存中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
     );

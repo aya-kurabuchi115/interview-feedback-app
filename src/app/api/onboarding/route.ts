@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
 
@@ -172,7 +173,10 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({ profile: data });
   } catch (err) {
-    console.error("Onboarding unexpected error:", err);
+    reportApiError(err, {
+      apiRoute: "/api/onboarding",
+      featureArea: "onboarding",
+    });
     return NextResponse.json(
       { error: "サーバーとの通信に失敗しました。時間を置いて再度お試しください。" },
       { status: 500 }

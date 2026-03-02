@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { TAG_COLORS } from "@/lib/constants";
 import { unauthorized, badRequest, conflict, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 export async function GET() {
   try {
@@ -30,7 +31,11 @@ export async function GET() {
         },
       }
     );
-  } catch {
+  } catch (error) {
+    reportApiError(error, {
+      apiRoute: "/api/tags",
+      featureArea: "tags",
+    });
     return serverError(
       "タグの取得中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
     );
@@ -80,7 +85,11 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ tag: data }, { status: 201 });
-  } catch {
+  } catch (error) {
+    reportApiError(error, {
+      apiRoute: "/api/tags",
+      featureArea: "tags",
+    });
     return serverError(
       "タグの作成中にこちらの問題でエラーが発生しました。しばらくしてから再度お試しください。"
     );

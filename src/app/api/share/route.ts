@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { unauthorized, badRequest, notFound, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 /** デフォルトの有効期限: 7日間 */
 const DEFAULT_EXPIRY_DAYS = 7;
@@ -149,7 +150,10 @@ export async function POST(request: Request) {
       isNew: true,
     });
   } catch (error) {
-    console.error("共有リンク作成エラー:", error);
+    reportApiError(error, {
+      apiRoute: "/api/share",
+      featureArea: "share",
+    });
     return NextResponse.json(
       { error: "共有リンクの作成に失敗しました" },
       { status: 500 }

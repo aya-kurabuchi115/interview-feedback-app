@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { FileQuestion, Home, LayoutDashboard } from "lucide-react";
+import {
+  FileQuestion,
+  Home,
+  LayoutDashboard,
+  Mic,
+  FileText,
+  MessageSquare,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
@@ -32,6 +39,36 @@ export default function NotFound() {
             ダッシュボード
           </Link>
         </Button>
+      </div>
+
+      {/* サジェストリンク */}
+      <div className="mt-4 w-full max-w-md">
+        <p className="mb-3 text-center text-sm font-medium text-muted-foreground">
+          お探しの内容はこちらかもしれません
+        </p>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <Link
+            href="/interview/new"
+            className="flex items-center gap-2 rounded-lg border px-4 py-3 text-sm transition-colors hover:bg-muted"
+          >
+            <Mic className="h-4 w-4 text-muted-foreground" />
+            面接分析
+          </Link>
+          <Link
+            href="/es-review"
+            className="flex items-center gap-2 rounded-lg border px-4 py-3 text-sm transition-colors hover:bg-muted"
+          >
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            ES添削
+          </Link>
+          <Link
+            href="/mock-interview"
+            className="flex items-center gap-2 rounded-lg border px-4 py-3 text-sm transition-colors hover:bg-muted"
+          >
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            模擬面接
+          </Link>
+        </div>
       </div>
     </div>
   );

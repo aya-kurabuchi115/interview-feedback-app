@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { unauthorized, badRequest, notFound, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 const ASSEMBLYAI_BASE = "https://api.assemblyai.com/v2";
 
@@ -121,7 +122,13 @@ export async function POST(request: Request) {
       // ignore
     }
 
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    reportApiError(error, {
+      apiRoute: "/api/transcribe",
+      featureArea: "interview",
+    });
+    return NextResponse.json(
+      { error: "文字起こし処理中にエラーが発生しました。しばらくしてから再度お試しください。" },
+      { status: 500 }
+    );
   }
 }

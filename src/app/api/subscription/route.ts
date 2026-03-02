@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getUserSubscription, getRemainingUsage } from "@/lib/subscription";
 import { unauthorized, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 export async function GET() {
   try {
@@ -25,7 +26,10 @@ export async function GET() {
       }
     );
   } catch (error) {
-    console.error("[subscription] Error:", error);
+    reportApiError(error, {
+      apiRoute: "/api/subscription",
+      featureArea: "subscription",
+    });
     return NextResponse.json(
       { error: "サブスクリプション情報の取得に失敗しました" },
       { status: 500 }

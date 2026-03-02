@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
+import { reportApiError } from "@/lib/error-reporting";
 
 type Interview = Database["public"]["Tables"]["interviews"]["Row"];
 type Feedback = Database["public"]["Tables"]["feedbacks"]["Row"];
@@ -208,7 +209,11 @@ export async function GET(request: NextRequest) {
           'attachment; filename="interview-history.csv"',
       },
     });
-  } catch {
+  } catch (error) {
+    reportApiError(error, {
+      apiRoute: "/api/export/csv",
+      featureArea: "export",
+    });
     return NextResponse.json(
       { error: "エクスポート中にエラーが発生しました" },
       { status: 500 }

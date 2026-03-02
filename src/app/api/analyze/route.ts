@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
+import { reportApiError } from "@/lib/error-reporting";
 import Anthropic from "@anthropic-ai/sdk";
 import type { InterviewCategory, InterviewRound, SubscriptionPlan } from "@/types/database";
 import { checkUsageLimit, getModelForPlan } from "@/lib/subscription";
@@ -562,16 +562,14 @@ export async function POST(request: Request) {
       }
     }
 
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    console.error("[analyze] Error:", errorMessage);
-    Sentry.captureException(error, {
-      tags: { api_route: "/api/analyze" },
+    const errorId = reportApiError(error, {
+      apiRoute: "/api/analyze",
+      featureArea: "analyze",
       extra: { interview_id: interviewId },
     });
     // 内部エラーの詳細をクライアントに露出しない
     return NextResponse.json(
-      { error: "分析処理中にエラーが発生しました。しばらくしてから再度お試しください。" },
+      { error: "分析処理中にエラーが発生しました。しばらくしてから再度お試しください。", error_id: errorId },
       { status: 500 }
     );
   }
