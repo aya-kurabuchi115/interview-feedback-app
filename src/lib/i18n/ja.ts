@@ -246,6 +246,7 @@ export const ja = {
     privacyPolicy: "プライバシーポリシー",
     cookiePolicy: "Cookie ポリシー",
     tokushoho: "特定商取引法に基づく表記",
+    help: "ヘルプ",
   },
 
   // ============================================================

@@ -31,6 +31,12 @@ export function Footer() {
           >
             {t("footer.tokushoho")}
           </Link>
+          <Link
+            href="/help"
+            className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
+          >
+            {t("footer.help")}
+          </Link>
         </nav>
       </div>
     </footer>
