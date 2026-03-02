@@ -1,7 +1,7 @@
 import { Plus, ClipboardList, MessageSquare, BookOpen } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
-import { InterviewCard } from "@/components/interview-card";
 import { InterviewFilter, type SortOption } from "@/components/interview-filter";
+import { InterviewListClient, type InterviewItem } from "@/components/dashboard/interview-list-client";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, InterviewCategory } from "@/types/database";
 
@@ -25,6 +25,8 @@ interface InterviewListSectionProps {
   currentCategory: InterviewCategory | "all";
   currentSort: SortOption;
   tagParam: string;
+  /** "active" | "archived" — デフォルト "active" */
+  currentTab?: "active" | "archived";
 }
 
 /**
@@ -36,6 +38,7 @@ export async function InterviewListSection({
   currentCategory,
   currentSort,
   tagParam,
+  currentTab = "active",
 }: InterviewListSectionProps) {
   const supabase = await createClient();
 
@@ -44,9 +47,18 @@ export async function InterviewListSection({
   let interviewQuery = supabase
     .from("interviews")
     .select(
-      "id, title, company_name_snapshot, interview_category, interview_round, interview_date, status"
+      "id, title, company_name_snapshot, interview_category, interview_round, interview_date, status, archived_at, deleted_at"
     )
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    // ソフトデリートされたレコードは除外
+    .is("deleted_at", null);
+
+  // タブに応じてアーカイブフィルタ
+  if (currentTab === "archived") {
+    interviewQuery = interviewQuery.not("archived_at", "is", null);
+  } else {
+    interviewQuery = interviewQuery.is("archived_at", null);
+  }
 
   if (currentCategory !== "all") {
     interviewQuery = interviewQuery.eq("interview_category", currentCategory);
@@ -151,6 +163,25 @@ export async function InterviewListSection({
     });
   }
 
+  // Client Component に渡すデータを整形
+  const interviewItems: InterviewItem[] = interviewsWithScore.map((iv) => ({
+    id: iv.id,
+    companyName: iv.company_name_snapshot,
+    category: iv.interview_category,
+    round: iv.interview_round,
+    interviewDate: iv.interview_date,
+    overallScore: iv.overallScore,
+    status: iv.status,
+    tags: iv.tags.map((t) => ({ id: t.id, name: t.name, color: t.color })),
+  }));
+
+  // 面接が一件もない場合（フィルタなし・アクティブタブの初回状態）
+  const isEmptyWithoutFilters =
+    currentTab === "active" &&
+    currentCategory === "all" &&
+    !tagParam &&
+    interviewsWithScore.length === 0;
+
   return (
     <>
       {/* フィルタ・ソート */}
@@ -166,60 +197,56 @@ export async function InterviewListSection({
 
       {/* 一覧 */}
       <div className="mt-6">
-        {interviewsWithScore.length === 0 ? (
-          currentCategory !== "all" || tagParam ? (
-            <EmptyState
-              icon={ClipboardList}
-              title="条件に一致する面接がありません"
-              description="フィルタ条件を変更するか、新しい面接を記録してください。"
-              primaryAction={{
-                label: "新規面接を記録",
-                href: "/interview/new",
-                icon: Plus,
-              }}
-              variant="no-results"
-            />
-          ) : (
-            <EmptyState
-              icon={ClipboardList}
-              title="さっそく面接練習を始めましょう！"
-              description="面接を記録してAIフィードバックを受けると、ここにスコアや改善点が表示されます。"
-              primaryAction={{
-                label: "面接を記録する",
-                href: "/interview/new",
-                icon: Plus,
-              }}
-              secondaryActions={[
-                {
-                  label: "AI模擬面接を試す",
-                  href: "/mock-interview",
-                  icon: MessageSquare,
-                },
-                {
-                  label: "質問集を見る",
-                  href: "/question-bank",
-                  icon: BookOpen,
-                },
-              ]}
-            />
-          )
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {interviewsWithScore.map((interview) => (
-              <InterviewCard
-                key={interview.id}
-                id={interview.id}
-                companyName={interview.company_name_snapshot}
-                category={interview.interview_category}
-                round={interview.interview_round}
-                interviewDate={interview.interview_date}
-                overallScore={interview.overallScore}
-                status={interview.status}
-                tags={interview.tags}
+        {isEmptyWithoutFilters ? (
+          <EmptyState
+            icon={ClipboardList}
+            title="さっそく面接練習を始めましょう！"
+            description="面接を記録してAIフィードバックを受けると、ここにスコアや改善点が表示されます。"
+            primaryAction={{
+              label: "面接を記録する",
+              href: "/interview/new",
+              icon: Plus,
+            }}
+            secondaryActions={[
+              {
+                label: "AI模擬面接を試す",
+                href: "/mock-interview",
+                icon: MessageSquare,
+              },
+              {
+                label: "質問集を見る",
+                href: "/question-bank",
+                icon: BookOpen,
+              },
+            ]}
+          />
+        ) : currentCategory !== "all" || tagParam
+          ? interviewsWithScore.length === 0
+            ? (
+              <EmptyState
+                icon={ClipboardList}
+                title="条件に一致する面接がありません"
+                description="フィルタ条件を変更するか、新しい面接を記録してください。"
+                primaryAction={{
+                  label: "新規面接を記録",
+                  href: "/interview/new",
+                  icon: Plus,
+                }}
+                variant="no-results"
               />
-            ))}
-          </div>
-        )}
+            )
+            : (
+              <InterviewListClient
+                interviews={interviewItems}
+                currentTab={currentTab}
+              />
+            )
+          : (
+            <InterviewListClient
+              interviews={interviewItems}
+              currentTab={currentTab}
+            />
+          )}
       </div>
     </>
   );

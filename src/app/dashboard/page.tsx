@@ -42,6 +42,7 @@ export default async function DashboardPage({
   const categoryParam = (params.category as string) || "all";
   const sortParam = (params.sort as string) || "date_desc";
   const tagParam = (params.tag as string) || "";
+  const tabParam = (params.tab as string) || "active";
 
   const currentCategory = [
     "arubaito",
@@ -61,6 +62,8 @@ export default async function DashboardPage({
   ].includes(sortParam)
     ? (sortParam as SortOption)
     : "date_desc";
+
+  const currentTab = tabParam === "archived" ? "archived" : "active" as const;
 
   // 利用状況を取得（ナッジバナー用）
   const usage = await getRemainingUsage(user.id);
@@ -116,6 +119,7 @@ export default async function DashboardPage({
           currentCategory={currentCategory}
           currentSort={currentSort}
           tagParam={tagParam}
+          currentTab={currentTab}
         />
       </Suspense>
     </div>
