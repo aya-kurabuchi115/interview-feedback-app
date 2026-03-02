@@ -16,9 +16,18 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
-import { NotificationPrompt } from "@/components/notification-prompt";
 import { sendAnalysisCompleteNotification } from "@/lib/notifications";
+
+// 通知プロンプトは処理中のみ表示されるため遅延ロード
+const NotificationPrompt = dynamic(
+  () =>
+    import("@/components/notification-prompt").then(
+      (mod) => mod.NotificationPrompt
+    ),
+  { ssr: false }
+);
 import type { Database } from "@/types/supabase";
 
 type InterviewStatus =

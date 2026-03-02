@@ -50,6 +50,8 @@ export default withBundleAnalyzer(
     silent: !process.env.CI,
     bundleSizeOptimizations: {
       excludeDebugStatements: true,
+      excludeReplayIframe: true,
+      excludeReplayShadowDom: true,
     },
     authToken: process.env.SENTRY_AUTH_TOKEN,
     telemetry: false,

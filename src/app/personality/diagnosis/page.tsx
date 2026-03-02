@@ -2,8 +2,21 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { redirectToLogin } from "@/lib/auth/redirect";
 import { createClient } from "@/lib/supabase/server";
+import dynamic from "next/dynamic";
 import { getUserSubscription } from "@/lib/subscription";
-import { DiagnosisClient } from "./diagnosis-client";
+
+// 診断クライアントは重いインタラクティブコンポーネントのため遅延ロード
+const DiagnosisClient = dynamic(
+  () => import("./diagnosis-client").then((mod) => mod.DiagnosisClient),
+  {
+    loading: () => (
+      <div className="space-y-6">
+        <div className="h-8 w-48 animate-pulse rounded bg-muted" />
+        <div className="h-64 w-full animate-pulse rounded-lg bg-muted" />
+      </div>
+    ),
+  }
+);
 
 export const metadata: Metadata = {
   title: "パーソナリティ診断テスト",

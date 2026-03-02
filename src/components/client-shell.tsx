@@ -22,9 +22,8 @@ const CommandPalette = dynamic(
 );
 
 /**
- * レイアウトで使用するクライアントコンポーネント群
- * Next.js 16 では Server Component 内で dynamic({ ssr: false }) が禁止されたため、
- * Client Component に分離して遅延ロードを実現する
+ * レイアウトで使用するクライアントコンポーネント群。
+ * dynamic import でバンドル分割し、初期 JS サイズを削減する。
  */
 export function ClientShell() {
   return (

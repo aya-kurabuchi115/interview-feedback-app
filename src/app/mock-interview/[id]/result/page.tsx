@@ -2,8 +2,21 @@ import { redirect, notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { redirectToLogin } from "@/lib/auth/redirect";
 import { createClient } from "@/lib/supabase/server";
+import dynamic from "next/dynamic";
 import type { MockInterviewMessage, Json } from "@/types/database";
-import { MockResultContent } from "./result-content";
+
+// 結果コンテンツは重いクライアントコンポーネントのため遅延ロード
+const MockResultContent = dynamic(
+  () => import("./result-content").then((mod) => mod.MockResultContent),
+  {
+    loading: () => (
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <div className="h-8 w-48 animate-pulse rounded bg-muted mb-6" />
+        <div className="h-96 w-full animate-pulse rounded-lg bg-muted" />
+      </div>
+    ),
+  }
+);
 
 export async function generateMetadata(): Promise<Metadata> {
   return {

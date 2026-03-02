@@ -2,8 +2,20 @@ import type { Metadata } from "next";
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { redirectToLogin } from "@/lib/auth/redirect";
+import dynamic from "next/dynamic";
 import type { MockInterviewMessage } from "@/types/database";
-import { ChatInterface } from "./chat-interface";
+
+// チャットインターフェースは重いため遅延ロード
+const ChatInterface = dynamic(
+  () => import("./chat-interface").then((mod) => mod.ChatInterface),
+  {
+    loading: () => (
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    ),
+  }
+);
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
