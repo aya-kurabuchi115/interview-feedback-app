@@ -48,13 +48,17 @@ export async function POST(request: Request) {
       interview_round,
       interview_date,
       transcript,
+      audio_url,
     } = body as {
       company_name: string;
       interview_category: InterviewCategory;
       interview_round: InterviewRound | null;
       interview_date: string | null;
-      transcript: string;
+      transcript: string | null;
+      audio_url: string | null;
     };
+
+    const isAudioMode = !!audio_url;
 
     // --- バリデーション ---
 
@@ -113,29 +117,36 @@ export async function POST(request: Request) {
       }
     }
 
-    // 音声スクリプト
-    if (!transcript || typeof transcript !== "string") {
-      return NextResponse.json(
-        { error: "音声スクリプトは必須です" },
-        { status: 400 }
-      );
-    }
-    const trimmedTranscript = transcript.trim();
-    if (trimmedTranscript.length < MIN_TRANSCRIPT_LENGTH) {
-      return NextResponse.json(
-        {
-          error: `音声スクリプトは${MIN_TRANSCRIPT_LENGTH}文字以上入力してください（現在: ${trimmedTranscript.length}文字）`,
-        },
-        { status: 400 }
-      );
-    }
-    if (trimmedTranscript.length > MAX_TRANSCRIPT_LENGTH) {
-      return NextResponse.json(
-        {
-          error: `音声スクリプトは${MAX_TRANSCRIPT_LENGTH.toLocaleString()}文字以内で入力してください（現在: ${trimmedTranscript.length.toLocaleString()}文字）`,
-        },
-        { status: 400 }
-      );
+    // 音声モード: audio_url が必須、テキストモード: transcript が必須
+    let trimmedTranscript: string | null = null;
+    if (isAudioMode) {
+      if (typeof audio_url !== "string" || !audio_url.startsWith("http")) {
+        return badRequest("無効な音声URLです");
+      }
+    } else {
+      if (!transcript || typeof transcript !== "string") {
+        return NextResponse.json(
+          { error: "音声スクリプトは必須です" },
+          { status: 400 }
+        );
+      }
+      trimmedTranscript = transcript.trim();
+      if (trimmedTranscript.length < MIN_TRANSCRIPT_LENGTH) {
+        return NextResponse.json(
+          {
+            error: `音声スクリプトは${MIN_TRANSCRIPT_LENGTH}文字以上入力してください（現在: ${trimmedTranscript.length}文字）`,
+          },
+          { status: 400 }
+        );
+      }
+      if (trimmedTranscript.length > MAX_TRANSCRIPT_LENGTH) {
+        return NextResponse.json(
+          {
+            error: `音声スクリプトは${MAX_TRANSCRIPT_LENGTH.toLocaleString()}文字以内で入力してください（現在: ${trimmedTranscript.length.toLocaleString()}文字）`,
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // --- 企業の upsert ---
@@ -197,7 +208,8 @@ export async function POST(request: Request) {
           interview_category === "new_grad" ? interview_round : null,
         interview_date: interview_date || null,
         transcript: trimmedTranscript,
-        transcript_char_count: trimmedTranscript.length,
+        transcript_char_count: trimmedTranscript?.length ?? 0,
+        audio_url: isAudioMode ? audio_url : null,
         status: "uploaded",
       } as never);
 

@@ -216,6 +216,7 @@ const ONBOARDING_BYPASS_PREFIXES = [
   "/update-password",
   "/personality",
   "/questions",
+  "/help",
 ];
 
 const ONBOARDING_REQUIRED_PREFIXES = [

@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, X, CheckCircle, AlertCircle, Bell, BellOff, Clock, CalendarDays } from "lucide-react";
+import { Loader2, Save, X, CheckCircle, AlertCircle, Bell, BellOff, Clock, CalendarDays, Trash2 } from "lucide-react";
 import {
   isNotificationSupported,
   getNotificationPermission,
@@ -144,6 +144,12 @@ export default function ProfilePage() {
   const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency>("three_per_week");
   const [reminderTime, setReminderTime] = useState("20:00");
   const [reminderDays, setReminderDays] = useState<boolean[]>([false, true, false, true, false, true, false]);
+
+  // アカウント削除
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // 通知状態・リマインダーの初期化
   useEffect(() => {
@@ -310,6 +316,40 @@ export default function ProfilePage() {
     } finally {
       setSaving(false);
       savingRef.current = false;
+    }
+  };
+
+  // アカウント削除ハンドラー
+  const handleDeleteAccount = async () => {
+    if (!deletePassword.trim()) {
+      setDeleteError("パスワードを入力してください");
+      return;
+    }
+
+    setDeleting(true);
+    setDeleteError(null);
+
+    try {
+      const res = await fetch("/api/profile/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: deletePassword }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setDeleteError(data.error || "アカウントの削除に失敗しました");
+        setDeleting(false);
+        return;
+      }
+
+      // サインアウトしてトップページへリダイレクト
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push("/?deleted=true");
+    } catch {
+      setDeleteError("通信エラーが発生しました。もう一度お試しください。");
+      setDeleting(false);
     }
   };
 
@@ -1143,6 +1183,92 @@ export default function ProfilePage() {
           </Button>
         </div>
       </form>
+
+      {/* ============================================================ */}
+      {/* デンジャーゾーン — アカウント削除 */}
+      {/* ============================================================ */}
+      <Card className="mt-8 border-destructive/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-destructive">
+            <Trash2 className="h-5 w-5" />
+            アカウント削除
+          </CardTitle>
+          <CardDescription>
+            アカウントを削除すると、すべてのデータ（面接記録・分析結果・プロフィール）が完全に削除されます。この操作は取り消せません。
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!showDeleteConfirm ? (
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              退会する
+            </Button>
+          ) : (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+                <p className="text-sm font-medium text-destructive">
+                  本当にアカウントを削除しますか？
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  確認のため、パスワードを入力してください。
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="deletePassword">パスワード</Label>
+                <Input
+                  id="deletePassword"
+                  type="password"
+                  autoComplete="current-password"
+                  value={deletePassword}
+                  onChange={(e) => {
+                    setDeletePassword(e.target.value);
+                    setDeleteError(null);
+                  }}
+                  placeholder="パスワードを入力"
+                  disabled={deleting}
+                />
+              </div>
+
+              {deleteError && (
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  {deleteError}
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteAccount}
+                  disabled={deleting || !deletePassword.trim()}
+                >
+                  {deleting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-2 h-4 w-4" />
+                  )}
+                  {deleting ? "削除中..." : "完全に削除する"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setDeletePassword("");
+                    setDeleteError(null);
+                  }}
+                  disabled={deleting}
+                >
+                  キャンセル
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, FileText, Loader2, X } from "lucide-react";
+import { Upload, FileText, Loader2, X, Mic, Square, Pause, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import type { InterviewCategory, InterviewRound } from "@/types/database";
+import { useAudioRecorder } from "@/hooks/use-audio-recorder";
 
 // --- 定数 ---
 const MIN_TRANSCRIPT_LENGTH = 100;
@@ -51,7 +52,19 @@ interface DraftData {
   transcript: string;
 }
 
+/** 録音時間をフォーマット */
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+}
+
+type InputMode = "record" | "text";
+
 export default function NewInterviewPage() {
+  // 入力モード
+  const [inputMode, setInputMode] = useState<InputMode>("record");
+
   // フォーム状態
   const [companyName, setCompanyName] = useState("");
   const [category, setCategory] = useState<InterviewCategory | "">("");
@@ -60,6 +73,10 @@ export default function NewInterviewPage() {
     new Date().toISOString().split("T")[0]
   );
   const [transcript, setTranscript] = useState("");
+
+  // 録音
+  const recorder = useAudioRecorder();
+  const [uploadingAudio, setUploadingAudio] = useState(false);
 
   // 企業名サジェスト
   const [companySuggestions, setCompanySuggestions] = useState<string[]>([]);
@@ -287,14 +304,21 @@ export default function NewInterviewPage() {
       }
     }
 
-    // 音声スクリプト
-    const trimmedTranscript = transcript.trim();
-    if (!trimmedTranscript) {
-      newErrors.transcript = "音声スクリプトを入力してください";
-    } else if (trimmedTranscript.length < MIN_TRANSCRIPT_LENGTH) {
-      newErrors.transcript = `音声スクリプトは${MIN_TRANSCRIPT_LENGTH}文字以上入力してください（現在: ${trimmedTranscript.length}文字）`;
-    } else if (trimmedTranscript.length > MAX_TRANSCRIPT_LENGTH) {
-      newErrors.transcript = `音声スクリプトは${MAX_TRANSCRIPT_LENGTH.toLocaleString()}文字以内で入力してください（現在: ${trimmedTranscript.length.toLocaleString()}文字）`;
+    // 録音モード: 録音データが必要
+    if (inputMode === "record") {
+      if (!recorder.audioBlob) {
+        newErrors.audio = "面接を録音してください";
+      }
+    } else {
+      // テキストモード: 音声スクリプト
+      const trimmedTranscript = transcript.trim();
+      if (!trimmedTranscript) {
+        newErrors.transcript = "音声スクリプトを入力してください";
+      } else if (trimmedTranscript.length < MIN_TRANSCRIPT_LENGTH) {
+        newErrors.transcript = `音声スクリプトは${MIN_TRANSCRIPT_LENGTH}文字以上入力してください（現在: ${trimmedTranscript.length}文字）`;
+      } else if (trimmedTranscript.length > MAX_TRANSCRIPT_LENGTH) {
+        newErrors.transcript = `音声スクリプトは${MAX_TRANSCRIPT_LENGTH.toLocaleString()}文字以内で入力してください（現在: ${trimmedTranscript.length.toLocaleString()}文字）`;
+      }
     }
 
     setErrors(newErrors);
@@ -311,6 +335,31 @@ export default function NewInterviewPage() {
     setErrors({});
 
     try {
+      let audioUrl: string | null = null;
+
+      // 録音モード: 音声をアップロード
+      if (inputMode === "record" && recorder.audioBlob) {
+        setUploadingAudio(true);
+        const formData = new FormData();
+        formData.append("audio", recorder.audioBlob, "recording.webm");
+
+        const uploadRes = await fetch("/api/interviews/upload-audio", {
+          method: "POST",
+          body: formData,
+        });
+
+        const uploadData = await uploadRes.json();
+        setUploadingAudio(false);
+
+        if (!uploadRes.ok) {
+          setErrors({ submit: uploadData.error || "音声のアップロードに失敗しました" });
+          return;
+        }
+
+        audioUrl = uploadData.audio_url;
+      }
+
+      // 面接レコード作成
       const res = await fetch("/api/interviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -319,7 +368,8 @@ export default function NewInterviewPage() {
           interview_category: category,
           interview_round: category === "new_grad" ? round || null : null,
           interview_date: interviewDate || null,
-          transcript: transcript.trim(),
+          transcript: inputMode === "text" ? transcript.trim() : null,
+          audio_url: audioUrl,
         }),
       });
 
@@ -333,8 +383,8 @@ export default function NewInterviewPage() {
       // 下書きをクリア
       sessionStorage.removeItem(DRAFT_STORAGE_KEY);
 
-      router.push("/dashboard");
-      router.refresh();
+      // 処理ページへ遷移
+      router.push(`/interview/${data.interview_id}/processing`);
     } catch {
       setErrors({
         submit:
@@ -342,6 +392,7 @@ export default function NewInterviewPage() {
       });
     } finally {
       setSubmitting(false);
+      setUploadingAudio(false);
     }
   };
 
@@ -349,7 +400,7 @@ export default function NewInterviewPage() {
 
   return (
     <div className="container mx-auto max-w-2xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold">面接スクリプト登録</h1>
+      <h1 className="mb-6 text-2xl font-bold">面接を記録する</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* 送信エラー */}
@@ -506,125 +557,262 @@ export default function NewInterviewPage() {
           )}
         </div>
 
-        {/* 音声スクリプト */}
+        {/* 入力方法選択 */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              音声スクリプト <span className="text-destructive">*</span>
+              面接データ <span className="text-destructive">*</span>
             </CardTitle>
+            {/* タブ切替 */}
+            <div className="flex gap-1 rounded-lg bg-muted p-1">
+              <button
+                type="button"
+                onClick={() => setInputMode("record")}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  inputMode === "record"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Mic className="h-4 w-4" />
+                録音する
+              </button>
+              <button
+                type="button"
+                onClick={() => setInputMode("text")}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  inputMode === "text"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <FileText className="h-4 w-4" />
+                テキスト入力
+              </button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* ファイルアップロードエリア */}
-            <div
-              className={`relative rounded-md border-2 border-dashed p-6 text-center transition-colors ${
-                isDragging
-                  ? "border-primary bg-primary/5"
-                  : "border-muted-foreground/25 hover:border-muted-foreground/50"
-              }`}
-              onDragEnter={handleDragEnter}
-              onDragLeave={handleDragLeave}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".txt"
-                onChange={handleFileChange}
-                className="hidden"
-                aria-label="テキストファイルをアップロード"
-              />
-              <div className="flex flex-col items-center gap-2">
-                <Upload className="h-8 w-8 text-muted-foreground" />
+            {inputMode === "record" ? (
+              /* === 録音モード === */
+              <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  .txt ファイルをドラッグ&ドロップ、または
+                  面接中にマイクで録音してください。録音後、AIが自動で文字起こし・話者分離を行います。
                 </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  ファイルを選択
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  最大 1MB / UTF-8 テキストファイル
-                </p>
+
+                {/* 録音コントロール */}
+                <div className="flex flex-col items-center gap-4 rounded-lg border bg-muted/30 p-6">
+                  {/* タイマー */}
+                  <div className="text-3xl font-mono font-bold tabular-nums">
+                    {formatTime(recorder.elapsedTime)}
+                  </div>
+
+                  {/* 録音インジケーター */}
+                  {recorder.state === "recording" && (
+                    <div className="flex items-center gap-2 text-sm text-destructive">
+                      <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-destructive" />
+                      録音中...
+                    </div>
+                  )}
+                  {recorder.state === "paused" && (
+                    <div className="text-sm text-amber-600">一時停止中</div>
+                  )}
+
+                  {/* ボタン群 */}
+                  <div className="flex items-center gap-3">
+                    {recorder.state === "idle" || recorder.state === "stopped" ? (
+                      <Button
+                        type="button"
+                        size="lg"
+                        onClick={recorder.start}
+                        className="gap-2"
+                      >
+                        <Mic className="h-5 w-5" />
+                        {recorder.audioBlob ? "録り直す" : "録音開始"}
+                      </Button>
+                    ) : (
+                      <>
+                        {recorder.state === "recording" ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="lg"
+                            onClick={recorder.pause}
+                            className="gap-2"
+                          >
+                            <Pause className="h-5 w-5" />
+                            一時停止
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="lg"
+                            onClick={recorder.resume}
+                            className="gap-2"
+                          >
+                            <Play className="h-5 w-5" />
+                            再開
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="lg"
+                          onClick={recorder.stop}
+                          className="gap-2"
+                        >
+                          <Square className="h-4 w-4" />
+                          録音停止
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* 録音完了後のプレビュー */}
+                {recorder.audioBlob && recorder.state === "stopped" && (
+                  <div className="rounded-lg border bg-muted/30 p-4">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-sm font-medium">録音データ</span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatTime(recorder.elapsedTime)} / {(recorder.audioBlob.size / 1024 / 1024).toFixed(1)}MB
+                      </span>
+                    </div>
+                    <audio
+                      controls
+                      src={URL.createObjectURL(recorder.audioBlob)}
+                      className="w-full"
+                    />
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      送信後、AIが自動で文字起こしと話者分離を行います。面接官とあなたの発言を自動で識別し、あなたの発言のみフィラー分析を実施します。
+                    </p>
+                  </div>
+                )}
+
+                {/* 録音エラー */}
+                {recorder.error && (
+                  <p className="text-sm text-destructive">{recorder.error}</p>
+                )}
+                {errors.audio && (
+                  <p className="text-sm text-destructive">{errors.audio}</p>
+                )}
               </div>
-            </div>
-
-            {/* アップロードされたファイル名表示 */}
-            {fileName && (
-              <div className="flex items-center gap-2 rounded-md bg-secondary p-2 text-sm">
-                <FileText className="h-4 w-4" />
-                <span className="flex-1 truncate">{fileName}</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFileName(null);
-                    setTranscript("");
-                  }}
-                  className="rounded-full p-1 hover:bg-accent"
-                  aria-label="ファイルをクリア"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-
-            {/* ファイルエラー */}
-            {errors.file && (
-              <p className="text-sm text-destructive">{errors.file}</p>
-            )}
-
-            {/* テキストエリア */}
-            <div className="space-y-2">
-              <Label htmlFor="transcript">
-                テキストを直接貼り付けることもできます
-              </Label>
-              <Textarea
-                id="transcript"
-                placeholder="音声文字起こし結果をここに貼り付けてください..."
-                value={transcript}
-                onChange={(e) => {
-                  setTranscript(e.target.value);
-                  setFileName(null);
-                  clearError("transcript");
-                }}
-                rows={10}
-                className="min-h-[200px] resize-y"
-                aria-invalid={!!errors.transcript}
-                aria-describedby="transcript-count transcript-error"
-              />
-              <div className="flex items-center justify-between">
-                <p
-                  id="transcript-count"
-                  className={`text-xs ${
-                    transcriptCharCount > MAX_TRANSCRIPT_LENGTH
-                      ? "text-destructive"
-                      : transcriptCharCount > 0 &&
-                          transcriptCharCount < MIN_TRANSCRIPT_LENGTH
-                        ? "text-amber-600"
-                        : "text-muted-foreground"
+            ) : (
+              /* === テキストモード === */
+              <div className="space-y-4">
+                {/* ファイルアップロードエリア */}
+                <div
+                  className={`relative rounded-md border-2 border-dashed p-6 text-center transition-colors ${
+                    isDragging
+                      ? "border-primary bg-primary/5"
+                      : "border-muted-foreground/25 hover:border-muted-foreground/50"
                   }`}
+                  onDragEnter={handleDragEnter}
+                  onDragLeave={handleDragLeave}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
                 >
-                  {transcriptCharCount.toLocaleString()} /{" "}
-                  {MAX_TRANSCRIPT_LENGTH.toLocaleString()} 文字
-                  {transcriptCharCount > 0 &&
-                    transcriptCharCount < MIN_TRANSCRIPT_LENGTH &&
-                    `（最低${MIN_TRANSCRIPT_LENGTH}文字）`}
-                </p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".txt"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    aria-label="テキストファイルをアップロード"
+                  />
+                  <div className="flex flex-col items-center gap-2">
+                    <Upload className="h-8 w-8 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      .txt ファイルをドラッグ&ドロップ、または
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      ファイルを選択
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      最大 1MB / UTF-8 テキストファイル
+                    </p>
+                  </div>
+                </div>
+
+                {/* アップロードされたファイル名表示 */}
+                {fileName && (
+                  <div className="flex items-center gap-2 rounded-md bg-secondary p-2 text-sm">
+                    <FileText className="h-4 w-4" />
+                    <span className="flex-1 truncate">{fileName}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFileName(null);
+                        setTranscript("");
+                      }}
+                      className="rounded-full p-1 hover:bg-accent"
+                      aria-label="ファイルをクリア"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+
+                {/* ファイルエラー */}
+                {errors.file && (
+                  <p className="text-sm text-destructive">{errors.file}</p>
+                )}
+
+                {/* テキストエリア */}
+                <div className="space-y-2">
+                  <Label htmlFor="transcript">
+                    テキストを直接貼り付けることもできます
+                  </Label>
+                  <Textarea
+                    id="transcript"
+                    placeholder="音声文字起こし結果をここに貼り付けてください..."
+                    value={transcript}
+                    onChange={(e) => {
+                      setTranscript(e.target.value);
+                      setFileName(null);
+                      clearError("transcript");
+                    }}
+                    rows={10}
+                    className="min-h-[200px] resize-y"
+                    aria-invalid={!!errors.transcript}
+                    aria-describedby="transcript-count transcript-error"
+                  />
+                  <div className="flex items-center justify-between">
+                    <p
+                      id="transcript-count"
+                      className={`text-xs ${
+                        transcriptCharCount > MAX_TRANSCRIPT_LENGTH
+                          ? "text-destructive"
+                          : transcriptCharCount > 0 &&
+                              transcriptCharCount < MIN_TRANSCRIPT_LENGTH
+                            ? "text-amber-600"
+                            : "text-muted-foreground"
+                      }`}
+                    >
+                      {transcriptCharCount.toLocaleString()} /{" "}
+                      {MAX_TRANSCRIPT_LENGTH.toLocaleString()} 文字
+                      {transcriptCharCount > 0 &&
+                        transcriptCharCount < MIN_TRANSCRIPT_LENGTH &&
+                        `（最低${MIN_TRANSCRIPT_LENGTH}文字）`}
+                    </p>
+                  </div>
+                  {errors.transcript && (
+                    <p
+                      id="transcript-error"
+                      className="text-sm text-destructive"
+                    >
+                      {errors.transcript}
+                    </p>
+                  )}
+                </div>
               </div>
-              {errors.transcript && (
-                <p
-                  id="transcript-error"
-                  className="text-sm text-destructive"
-                >
-                  {errors.transcript}
-                </p>
-              )}
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -633,13 +821,15 @@ export default function NewInterviewPage() {
           type="submit"
           size="lg"
           className="w-full"
-          disabled={submitting}
+          disabled={submitting || recorder.state === "recording" || recorder.state === "paused"}
         >
           {submitting ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              保存中...
+              {uploadingAudio ? "音声をアップロード中..." : "保存中..."}
             </>
+          ) : inputMode === "record" ? (
+            "録音データを送信して分析する"
           ) : (
             "登録する"
           )}
