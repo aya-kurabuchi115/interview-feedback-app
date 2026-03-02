@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { ArrowLeft, CheckCircle2, AlertTriangle, Lightbulb, GitCompareArrows } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertTriangle, Lightbulb, GitCompareArrows, Timer, Pause, Activity, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -20,6 +20,7 @@ import { CATEGORY_LABELS } from "@/lib/constants";
 import { parseAnnotations } from "@/components/annotated-transcript";
 import { ProUpsellCard } from "@/components/pro-upsell-card";
 import { recordPracticeActivity } from "@/lib/reminder";
+import type { SpeechAnalysisResult, PauseInterval, WpmDataPoint } from "@/lib/speech-analysis";
 
 // 動的インポート: 初期表示に不要なインタラクティブコンポーネントを遅延ロード
 const AnnotatedTranscript = dynamic(
@@ -158,6 +159,61 @@ function parseFillerAnalysis(data: Json): FillerAnalysis {
   return { total_count: 0, filler_rate: 0, details: [], assessment: "" };
 }
 
+/** raw_response から話速・間分析データをパースする */
+function parseSpeechAnalysis(rawResponse: Json): SpeechAnalysisResult | null {
+  if (!rawResponse || typeof rawResponse !== "object" || Array.isArray(rawResponse)) return null;
+  const obj = rawResponse as Record<string, Json | undefined>;
+  if (!obj.speech_analysis || typeof obj.speech_analysis !== "object" || Array.isArray(obj.speech_analysis)) return null;
+
+  const sa = obj.speech_analysis as Record<string, Json | undefined>;
+
+  return {
+    overall_wpm: typeof sa.overall_wpm === "number" ? sa.overall_wpm : 0,
+    ideal_wpm_range: sa.ideal_wpm_range && typeof sa.ideal_wpm_range === "object" && !Array.isArray(sa.ideal_wpm_range)
+      ? {
+          min: typeof (sa.ideal_wpm_range as Record<string, unknown>).min === "number" ? (sa.ideal_wpm_range as Record<string, unknown>).min as number : 250,
+          max: typeof (sa.ideal_wpm_range as Record<string, unknown>).max === "number" ? (sa.ideal_wpm_range as Record<string, unknown>).max as number : 400,
+        }
+      : { min: 250, max: 400 },
+    wpm_assessment: typeof sa.wpm_assessment === "string" ? sa.wpm_assessment : "",
+    pauses: Array.isArray(sa.pauses)
+      ? (sa.pauses as Array<Record<string, Json | undefined>>)
+          .filter((p) => typeof p.start === "number" && typeof p.end === "number")
+          .map((p) => ({
+            start: p.start as number,
+            end: p.end as number,
+            duration: typeof p.duration === "number" ? p.duration : 0,
+            assessment: (typeof p.assessment === "string" && ["good", "long", "very_long"].includes(p.assessment))
+              ? p.assessment as PauseInterval["assessment"]
+              : "good" as const,
+          }))
+      : [],
+    pause_count: typeof sa.pause_count === "number" ? sa.pause_count : 0,
+    total_pause_duration: typeof sa.total_pause_duration === "number" ? sa.total_pause_duration : 0,
+    good_pause_count: typeof sa.good_pause_count === "number" ? sa.good_pause_count : 0,
+    long_pause_count: typeof sa.long_pause_count === "number" ? sa.long_pause_count : 0,
+    pause_assessment: typeof sa.pause_assessment === "string" ? sa.pause_assessment : "",
+    wpm_timeline: Array.isArray(sa.wpm_timeline)
+      ? (sa.wpm_timeline as Array<Record<string, Json | undefined>>)
+          .filter((p) => typeof p.time === "number" && typeof p.wpm === "number")
+          .map((p) => ({
+            time: p.time as number,
+            wpm: p.wpm as number,
+            speaker: typeof p.speaker === "string" ? p.speaker : "interviewee",
+          }))
+      : [],
+    total_duration: typeof sa.total_duration === "number" ? sa.total_duration : 0,
+    interviewee_speaking_time: typeof sa.interviewee_speaking_time === "number" ? sa.interviewee_speaking_time : 0,
+  };
+}
+
+/** raw_response から AIサマリーをパースする */
+function parseAiSummary(rawResponse: Json): string {
+  if (!rawResponse || typeof rawResponse !== "object" || Array.isArray(rawResponse)) return "";
+  const obj = rawResponse as Record<string, Json | undefined>;
+  return typeof obj.ai_summary === "string" ? obj.ai_summary : "";
+}
+
 function parseJsonArray<T>(data: Json): T[] {
   if (!Array.isArray(data)) return [];
   // null/undefined を除外してキャスト
@@ -258,6 +314,178 @@ function CategoryScoresDisplay({
 }
 
 // ============================================================
+// 話速・間分析 表示コンポーネント (Issue #218)
+// ============================================================
+
+/** WPM ゲージ表示 */
+function WpmGauge({ wpm, idealRange }: { wpm: number; idealRange: { min: number; max: number } }) {
+  const isInRange = wpm >= idealRange.min && wpm <= idealRange.max;
+  const isSlow = wpm < idealRange.min;
+  const color = isInRange ? "text-green-600" : isSlow ? "text-blue-600" : "text-orange-600";
+  const bgColor = isInRange ? "bg-green-50 dark:bg-green-950/30" : isSlow ? "bg-blue-50 dark:bg-blue-950/30" : "bg-orange-50 dark:bg-orange-950/30";
+  const label = isInRange ? "適切" : isSlow ? "遅め" : "速め";
+
+  return (
+    <div className={`flex flex-col items-center gap-2 rounded-xl p-6 ${bgColor}`}>
+      <div className="flex items-center gap-2">
+        <Timer className="h-5 w-5 text-muted-foreground" />
+        <p className="text-sm font-medium text-muted-foreground">話速</p>
+      </div>
+      <span className={`text-5xl font-bold ${color}`}>{wpm}</span>
+      <span className="text-sm text-muted-foreground">文字/分</span>
+      <Badge variant={isInRange ? "default" : "secondary"} className={isInRange ? "bg-green-600" : ""}>
+        {label}
+      </Badge>
+      <p className="text-xs text-muted-foreground text-center">
+        理想: {idealRange.min}〜{idealRange.max} 文字/分
+      </p>
+    </div>
+  );
+}
+
+/** WPM タイムライングラフ（シンプルな棒グラフ） */
+function WpmTimeline({ data, idealRange }: { data: WpmDataPoint[]; idealRange: { min: number; max: number } }) {
+  if (data.length === 0) return null;
+
+  const maxWpm = Math.max(...data.map((d) => d.wpm), idealRange.max + 50);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Activity className="h-4 w-4" />
+          話速の推移
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-1">
+          {/* 理想レンジの凡例 */}
+          <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block h-2 w-6 rounded bg-green-200 dark:bg-green-800" />
+              理想レンジ ({idealRange.min}〜{idealRange.max})
+            </span>
+          </div>
+
+          {data.map((point, i) => {
+            const barWidth = maxWpm > 0 ? Math.max((point.wpm / maxWpm) * 100, 2) : 0;
+            const isInRange = point.wpm >= idealRange.min && point.wpm <= idealRange.max;
+            const barColor = isInRange
+              ? "bg-green-500 dark:bg-green-400"
+              : point.wpm < idealRange.min
+                ? "bg-blue-400 dark:bg-blue-500"
+                : "bg-orange-400 dark:bg-orange-500";
+
+            const minutes = Math.floor(point.time / 60);
+            const seconds = point.time % 60;
+
+            return (
+              <div key={i} className="flex items-center gap-2">
+                <span className="w-12 shrink-0 text-xs text-muted-foreground text-right">
+                  {minutes}:{String(seconds).padStart(2, "0")}
+                </span>
+                <div className="relative flex-1 h-5 rounded bg-muted overflow-hidden">
+                  {/* 理想レンジの背景 */}
+                  <div
+                    className="absolute inset-y-0 bg-green-100 dark:bg-green-900/30"
+                    style={{
+                      left: `${(idealRange.min / maxWpm) * 100}%`,
+                      width: `${((idealRange.max - idealRange.min) / maxWpm) * 100}%`,
+                    }}
+                  />
+                  <div
+                    className={`absolute inset-y-0 left-0 rounded transition-all ${barColor}`}
+                    style={{ width: `${barWidth}%` }}
+                  />
+                  <span className="relative z-10 flex h-full items-center px-2 text-xs font-medium">
+                    {point.wpm}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** 沈黙区間リスト */
+function PauseList({ pauses }: { pauses: PauseInterval[] }) {
+  if (pauses.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Pause className="h-4 w-4" />
+          沈黙区間の詳細
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {pauses.map((pause, i) => {
+            const startMin = Math.floor(pause.start / 60);
+            const startSec = Math.floor(pause.start % 60);
+            const assessmentConfig = {
+              good: {
+                label: "適切な間",
+                color: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200",
+              },
+              long: {
+                label: "やや長い",
+                color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200",
+              },
+              very_long: {
+                label: "長すぎ",
+                color: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200",
+              },
+            };
+            const config = assessmentConfig[pause.assessment];
+
+            return (
+              <div
+                key={i}
+                className="flex items-center gap-3 rounded-lg border p-3"
+              >
+                <span className="text-xs text-muted-foreground w-12 shrink-0">
+                  {startMin}:{String(startSec).padStart(2, "0")}
+                </span>
+                <div className="flex-1">
+                  <span className="text-sm font-medium">{pause.duration}秒</span>
+                </div>
+                <Badge className={config.color} variant="secondary">
+                  {config.label}
+                </Badge>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** AIサマリー表示 */
+function AiSummaryCard({ summary }: { summary: string }) {
+  if (!summary) return null;
+
+  return (
+    <Card className="border-purple-200 bg-purple-50/50 dark:border-purple-900 dark:bg-purple-950/20 mb-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-purple-600">
+          <Sparkles className="h-5 w-5" />
+          AIサマリー
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm leading-relaxed whitespace-pre-wrap">{summary}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================
 // メインコンポーネント
 // ============================================================
 
@@ -306,6 +534,16 @@ export function ResultContent({
   const annotations = feedback
     ? parseAnnotations(feedback.annotations)
     : [];
+
+  // 話速・間分析データをパース（Issue #218）
+  const speechAnalysis = feedback
+    ? parseSpeechAnalysis(feedback.raw_response)
+    : null;
+
+  // AIサマリーをパース（Issue #218）
+  const aiSummary = feedback
+    ? parseAiSummary(feedback.raw_response)
+    : "";
 
   // good_points が空の場合は strengths にフォールバック
   const displayGoodPoints = goodPoints.length > 0 ? goodPoints : strengths;
@@ -371,6 +609,9 @@ export function ResultContent({
           </div>
         </CardContent>
       </Card>
+
+      {/* AIサマリー（Issue #218） */}
+      {feedback && aiSummary && <AiSummaryCard summary={aiSummary} />}
 
       {/* スコア & カテゴリ別スコア */}
       {feedback && (
@@ -501,11 +742,12 @@ export function ResultContent({
         </div>
       )}
 
-      {/* タブ: 要約・文字起こし・改善提案・フィラー */}
+      {/* タブ: 要約・文字起こし・話速/間・改善提案・フィラー */}
       <Tabs defaultValue="summary" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="summary">要約</TabsTrigger>
           <TabsTrigger value="transcript">文字起こし</TabsTrigger>
+          <TabsTrigger value="speech">話速・間</TabsTrigger>
           <TabsTrigger value="suggestions">改善提案</TabsTrigger>
           <TabsTrigger value="filler">フィラー</TabsTrigger>
         </TabsList>
@@ -577,6 +819,101 @@ export function ResultContent({
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* 話速・間分析（Issue #218） */}
+        <TabsContent value="speech">
+          {speechAnalysis ? (
+            <div className="space-y-4">
+              {/* サマリーカード: WPM・沈黙回数・発話時間 */}
+              <div className="grid gap-4 sm:grid-cols-3">
+                <WpmGauge
+                  wpm={speechAnalysis.overall_wpm}
+                  idealRange={speechAnalysis.ideal_wpm_range}
+                />
+                <Card>
+                  <CardContent className="flex flex-col items-center py-6">
+                    <div className="flex items-center gap-2">
+                      <Pause className="h-5 w-5 text-muted-foreground" />
+                      <p className="text-sm font-medium text-muted-foreground">沈黙回数</p>
+                    </div>
+                    <span className="mt-2 text-5xl font-bold">{speechAnalysis.pause_count}</span>
+                    <span className="text-sm text-muted-foreground">回（合計 {speechAnalysis.total_pause_duration}秒）</span>
+                    <div className="mt-2 flex gap-2">
+                      {speechAnalysis.good_pause_count > 0 && (
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200">
+                          良い間 {speechAnalysis.good_pause_count}
+                        </Badge>
+                      )}
+                      {speechAnalysis.long_pause_count > 0 && (
+                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200">
+                          長い沈黙 {speechAnalysis.long_pause_count}
+                        </Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="flex flex-col items-center py-6">
+                    <div className="flex items-center gap-2">
+                      <Timer className="h-5 w-5 text-muted-foreground" />
+                      <p className="text-sm font-medium text-muted-foreground">発話時間</p>
+                    </div>
+                    <span className="mt-2 text-5xl font-bold">
+                      {Math.floor(speechAnalysis.interviewee_speaking_time / 60)}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      分 {speechAnalysis.interviewee_speaking_time % 60}秒
+                    </span>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      全体 {Math.floor(speechAnalysis.total_duration / 60)}分{speechAnalysis.total_duration % 60}秒
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* 話速の評価コメント */}
+              {speechAnalysis.wpm_assessment && (
+                <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20">
+                  <CardContent className="py-4">
+                    <div className="flex items-start gap-2">
+                      <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+                      <p className="text-sm leading-relaxed">{speechAnalysis.wpm_assessment}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* 沈黙の評価コメント */}
+              {speechAnalysis.pause_assessment && (
+                <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20">
+                  <CardContent className="py-4">
+                    <div className="flex items-start gap-2">
+                      <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+                      <p className="text-sm leading-relaxed">{speechAnalysis.pause_assessment}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* 話速タイムライン */}
+              <WpmTimeline
+                data={speechAnalysis.wpm_timeline}
+                idealRange={speechAnalysis.ideal_wpm_range}
+              />
+
+              {/* 沈黙区間リスト */}
+              <PauseList pauses={speechAnalysis.pauses} />
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="py-6">
+                <p className="text-muted-foreground">
+                  話速・間分析データがありません。音声入力の面接データのみ分析可能です。
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* 改善提案 */}
