@@ -605,23 +605,23 @@ export default function Home() {
 
       {/* ========== PRICING ========== */}
       <section className="bg-background px-4 py-20 sm:py-28">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
             あなたに合ったプランを
           </h2>
           <p className="mt-4 text-center text-lg text-muted-foreground">
             無料プランだけでも、面接力は変わります。
           </p>
-          <div className="mt-16 grid gap-8 sm:grid-cols-2">
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {/* Free */}
-            <div className="flex flex-col rounded-xl border-2 border-border bg-background p-6 lg:p-8">
-              <h3 className="text-2xl font-bold">無料プラン</h3>
+            <div className="flex flex-col rounded-xl border-2 border-border bg-background p-6">
+              <h3 className="text-xl font-bold">無料プラン</h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 まずは試してみたい方へ
               </p>
               <div className="mt-4">
-                <span className="text-4xl font-bold">¥0</span>
-                <span className="text-muted-foreground">/月（税込）</span>
+                <span className="text-3xl font-bold">¥0</span>
+                <span className="text-sm text-muted-foreground">/月（税込）</span>
               </div>
               <ul className="mt-6 flex-1 space-y-3">
                 {[
@@ -658,7 +658,7 @@ export default function Home() {
             </div>
             {/* Pro */}
             <div
-              className="relative flex flex-col rounded-xl border-2 p-6 shadow-lg lg:p-8"
+              className="relative flex flex-col rounded-xl border-2 p-6 shadow-lg"
               style={{ borderColor: C.navy }}
             >
               <div
@@ -667,13 +667,13 @@ export default function Home() {
               >
                 おすすめ
               </div>
-              <h3 className="text-2xl font-bold">Pro プラン</h3>
+              <h3 className="text-xl font-bold">Pro プラン</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                本選考に向けて本気で準備したい方へ
+                本気で準備したい方へ
               </p>
               <div className="mt-4">
-                <span className="text-4xl font-bold">¥980</span>
-                <span className="text-muted-foreground">/月（税込）</span>
+                <span className="text-3xl font-bold">¥980</span>
+                <span className="text-sm text-muted-foreground">/月（税込）</span>
               </div>
               <ul className="mt-6 flex-1 space-y-3">
                 {[
@@ -701,13 +701,49 @@ export default function Home() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
+            {/* Premium */}
+            <div className="flex flex-col rounded-xl border-2 border-border bg-background p-6">
+              <h3 className="text-xl font-bold">Premium プラン</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                万全の対策で内定を掴みたい方へ
+              </p>
+              <div className="mt-4">
+                <span className="text-3xl font-bold">¥1,980</span>
+                <span className="text-sm text-muted-foreground">/月（税込）</span>
+              </div>
+              <ul className="mt-6 flex-1 space-y-3">
+                {[
+                  "無制限の面接分析",
+                  "Pro の全機能",
+                  "高精度AIモデル",
+                  "ES添削（無制限）",
+                  "優先サポート",
+                ].map((text) => (
+                  <li key={text} className="flex items-center gap-3">
+                    <Check
+                      className="h-5 w-5 shrink-0"
+                      style={{ color: C.navy }}
+                    />
+                    <span className="text-sm">{text}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/pricing"
+                className="mt-6 flex items-center justify-center gap-2 rounded-lg border-2 px-6 py-3 text-center font-semibold transition-colors hover:bg-muted"
+                style={{ borderColor: C.navy, color: C.navy }}
+              >
+                Premium ではじめる
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
           <p className="mt-6 text-center text-sm text-muted-foreground">
             <Link
               href="/pricing"
               className="underline underline-offset-4 hover:text-foreground"
             >
-              Premium プランなど、すべてのプランを比較する
+              すべてのプランを詳しく比較する
             </Link>
           </p>
         </div>
