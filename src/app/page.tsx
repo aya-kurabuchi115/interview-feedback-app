@@ -779,7 +779,7 @@ export default function Home() {
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
             さっそく無料体験を始めましょう
           </h2>
-          <p className="mt-4 text-lg text-blue-200">
+          <p className="mt-4 text-lg text-gray-300">
             今日の練習が、明日の内定につながる。
             <br className="hidden sm:block" />
             まずは無料プランで、あなたの面接力を確かめてみてください。
@@ -794,7 +794,7 @@ export default function Home() {
               <ArrowRight className="ml-2 inline h-5 w-5" />
             </Link>
           </div>
-          <p className="mt-4 text-sm text-blue-300">
+          <p className="mt-4 text-sm text-gray-400">
             クレジットカード不要・いつでも解約OK
           </p>
         </div>
