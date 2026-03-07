@@ -12,6 +12,7 @@ import { checkMockInterviewLimit, getModelForPlan } from "@/lib/subscription";
 import { PLANS } from "@/lib/stripe/config";
 import { unauthorized, badRequest } from "@/lib/api/error-response";
 import { reportApiError } from "@/lib/error-reporting";
+import { logActivity } from "@/lib/activity-log";
 
 const VALID_CATEGORIES: MockInterviewCategory[] = ["general", "behavioral", "technical", "case"];
 const VALID_ROUNDS: MockInterviewRound[] = ["first", "second", "third", "final"];
@@ -232,6 +233,15 @@ export async function POST(request: Request) {
     }
 
     const inserted = mockInterview as { id: string };
+
+    await logActivity({
+      userId: user.id,
+      action: "mock_interview_start",
+      resourceType: "mock_interview",
+      resourceId: inserted.id,
+      metadata: { category, round, difficulty, company_name: companyName },
+      request,
+    });
 
     return NextResponse.json({
       id: inserted.id,

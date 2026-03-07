@@ -576,6 +576,44 @@ export interface Database {
         Relationships: [];
       };
 
+      /** 00013: ユーザー行動ログ */
+      user_activity_log: {
+        Row: {
+          id: string;
+          user_id: string;
+          action: string;
+          resource_type: string | null;
+          resource_id: string | null;
+          metadata: Json;
+          user_agent: string | null;
+          ip_address: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          action: string;
+          resource_type?: string | null;
+          resource_id?: string | null;
+          metadata?: Json;
+          user_agent?: string | null;
+          ip_address?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          action?: string;
+          resource_type?: string | null;
+          resource_id?: string | null;
+          metadata?: Json;
+          user_agent?: string | null;
+          ip_address?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+
       /** Issue #78: 面接結果の共有リンク */
       shared_results: {
         Row: {

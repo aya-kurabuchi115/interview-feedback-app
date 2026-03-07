@@ -7,6 +7,7 @@ import { PERSONALITY_DATA, isValidPersonalityType } from "@/lib/personality/type
 import type { PersonalityType } from "@/lib/personality/types";
 import type { ESFeedback, ESReviewRequest } from "@/types/es-review";
 import { unauthorized, serverError } from "@/lib/api/error-response";
+import { logActivity } from "@/lib/activity-log";
 
 // ============================================================
 // 定数
@@ -380,6 +381,15 @@ export async function POST(request: Request) {
     if (updateError) {
       throw new Error(`フィードバック保存に失敗: ${updateError.message}`);
     }
+
+    await logActivity({
+      userId: user.id,
+      action: "es_review_submit",
+      resourceType: "es_review",
+      resourceId: reviewId,
+      metadata: { score: feedback.overall_score, char_count: answer.length },
+      request,
+    });
 
     return NextResponse.json({
       success: true,

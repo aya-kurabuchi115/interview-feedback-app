@@ -11,6 +11,7 @@ import { PERSONALITY_DATA, isValidPersonalityType } from "@/lib/personality/type
 import type { PersonalityType } from "@/lib/personality/types";
 import { unauthorized } from "@/lib/api/error-response";
 import { reportApiError } from "@/lib/error-reporting";
+import { logActivity } from "@/lib/activity-log";
 
 const MAX_RETRIES = 3;
 
@@ -242,7 +243,7 @@ async function callGeminiWithRetry(
 }
 
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -414,6 +415,15 @@ export async function POST(
       .update(updatePayload)
       .eq("id", id)
       .eq("user_id", user.id);
+
+    await logActivity({
+      userId: user.id,
+      action: "mock_interview_complete",
+      resourceType: "mock_interview",
+      resourceId: id,
+      metadata: { feedback_id: feedbackRecord.id, overall_score: feedback.overall_score },
+      request,
+    });
 
     return NextResponse.json({
       success: true,
