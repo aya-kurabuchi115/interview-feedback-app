@@ -168,7 +168,7 @@ export default function Home() {
                 style={{ backgroundColor: C.orange }}
               >
                 無料で面接練習を始める
-                <svg className="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <svg className="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
@@ -580,9 +580,9 @@ export default function Home() {
                 className="rounded-xl border border-border bg-background p-6 shadow-sm"
               >
                 {/* 星評価 */}
-                <div className="flex gap-0.5">
+                <div className="flex gap-0.5" role="img" aria-label="5つ星評価">
                   {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="h-5 w-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg key={i} className="h-5 w-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   ))}
@@ -625,11 +625,11 @@ export default function Home() {
               </div>
               <ul className="mt-6 flex-1 space-y-3">
                 {[
-                  { text: "月3回まで面接分析", ok: true },
+                  { text: "模擬面接 月1回", ok: true },
                   { text: "AIフィードバック", ok: true },
                   { text: "スコア表示", ok: true },
+                  { text: "ES添削・質問集", ok: false },
                   { text: "成長トラッキング", ok: false },
-                  { text: "模擬面接・ES添削", ok: false },
                 ].map((item) => (
                   <li key={item.text} className="flex items-center gap-3">
                     {item.ok ? (
@@ -677,18 +677,26 @@ export default function Home() {
               </div>
               <ul className="mt-6 flex-1 space-y-3">
                 {[
-                  "月30回の面接分析",
-                  "成長トラッキング",
-                  "模擬面接（AI面接官）",
-                  "ES添削",
-                  "パーソナリティ連動分析",
-                ].map((text) => (
-                  <li key={text} className="flex items-center gap-3">
-                    <Check
-                      className="h-5 w-5 shrink-0"
-                      style={{ color: C.navy }}
-                    />
-                    <span className="text-sm">{text}</span>
+                  { text: "模擬面接 月5回", ok: true },
+                  { text: "詳細なAIフィードバック", ok: true },
+                  { text: "成長トラッキング", ok: true },
+                  { text: "パーソナライズ分析", ok: true },
+                  { text: "ES添削・質問集", ok: false },
+                ].map((item) => (
+                  <li key={item.text} className="flex items-center gap-3">
+                    {item.ok ? (
+                      <Check
+                        className="h-5 w-5 shrink-0"
+                        style={{ color: C.navy }}
+                      />
+                    ) : (
+                      <X className="h-5 w-5 shrink-0 text-muted-foreground/50" />
+                    )}
+                    <span
+                      className={`text-sm ${item.ok ? "" : "text-muted-foreground/70"}`}
+                    >
+                      {item.text}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -713,11 +721,11 @@ export default function Home() {
               </div>
               <ul className="mt-6 flex-1 space-y-3">
                 {[
-                  "無制限の面接分析",
-                  "Pro の全機能",
+                  "模擬面接 月30回",
+                  "ES添削 月30回",
+                  "AI質問集で面接対策",
                   "高精度AIモデル",
-                  "ES添削（無制限）",
-                  "優先サポート",
+                  "優先処理",
                 ].map((text) => (
                   <li key={text} className="flex items-center gap-3">
                     <Check

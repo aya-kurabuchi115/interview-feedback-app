@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -27,15 +27,17 @@ export function ScrollFadeIn({
   duration = 0.6,
 }: Props) {
   return (
-    <motion.div
-      initial={{ opacity: 0, ...directionOffset[direction] }}
-      whileInView={{ opacity: 1, x: 0, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration, delay, ease: "easeOut" }}
-      className={className}
-    >
-      {children}
-    </motion.div>
+    <LazyMotion features={domAnimation}>
+      <m.div
+        initial={{ opacity: 0, ...directionOffset[direction] }}
+        whileInView={{ opacity: 1, x: 0, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration, delay, ease: "easeOut" }}
+        className={className}
+      >
+        {children}
+      </m.div>
+    </LazyMotion>
   );
 }
 
@@ -49,17 +51,19 @@ export function StaggerChildren({
   stagger?: number;
 }) {
   return (
-    <motion.div
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-80px" }}
-      variants={{
-        visible: { transition: { staggerChildren: stagger } },
-      }}
-      className={className}
-    >
-      {children}
-    </motion.div>
+    <LazyMotion features={domAnimation}>
+      <m.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-80px" }}
+        variants={{
+          visible: { transition: { staggerChildren: stagger } },
+        }}
+        className={className}
+      >
+        {children}
+      </m.div>
+    </LazyMotion>
   );
 }
 
@@ -73,7 +77,7 @@ export function StaggerItem({
   direction?: "up" | "left" | "right";
 }) {
   return (
-    <motion.div
+    <m.div
       variants={{
         hidden: { opacity: 0, ...directionOffset[direction] },
         visible: { opacity: 1, x: 0, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
@@ -81,6 +85,6 @@ export function StaggerItem({
       className={className}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }

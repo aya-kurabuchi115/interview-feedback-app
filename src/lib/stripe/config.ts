@@ -9,8 +9,8 @@ type PlanLimits = Record<Exclude<SubscriptionPlan, "enterprise">, number | null>
 /** 模擬面接の月間利用上限（null = 無制限, 0 = 利用不可） */
 export const MOCK_INTERVIEW_LIMITS: PlanLimits = {
   free: 1,
-  pro: 30,
-  premium: null,
+  pro: 5,
+  premium: 30,
 };
 
 /** ES添削の月間利用上限（0 = 利用不可） */
@@ -63,7 +63,7 @@ export const PLANS: Record<Exclude<SubscriptionPlan, "enterprise">, PlanConfig> 
     priceMonthly: 980,
     stripePriceId: process.env.STRIPE_PRO_PRICE_ID ?? null,
     features: [
-      "模擬面接 月30回",
+      "模擬面接 月5回",
       "詳細なAIフィードバック",
       "スコア表示",
       "成長トラッキング",
@@ -77,7 +77,7 @@ export const PLANS: Record<Exclude<SubscriptionPlan, "enterprise">, PlanConfig> 
     priceMonthly: 1980,
     stripePriceId: process.env.STRIPE_PREMIUM_PRICE_ID ?? null,
     features: [
-      "模擬面接 無制限",
+      "模擬面接 月30回",
       "AI質問集で面接対策",
       "面接履歴を活用したES添削 月30回",
       "詳細なAIフィードバック",

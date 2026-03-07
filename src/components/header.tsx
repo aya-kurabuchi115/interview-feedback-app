@@ -22,13 +22,12 @@ export function Header() {
   const [loading, setLoading] = useState(true);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const router = useRouter();
+  const supabase = createClient();
 
   useEffect(() => {
     let subscription: { unsubscribe: () => void } | undefined;
 
     try {
-      const supabase = createClient();
-
       const getUser = async () => {
         const {
           data: { user },
@@ -67,7 +66,6 @@ export function Header() {
 
   const handleLogout = async () => {
     try {
-      const supabase = createClient();
       await supabase.auth.signOut();
     } catch {
       // ignore

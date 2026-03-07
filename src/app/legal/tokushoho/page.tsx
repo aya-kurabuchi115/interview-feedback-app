@@ -40,7 +40,7 @@ const items = [
   },
   {
     label: "販売価格",
-    content: "無料プラン: 0円/月\nPro プラン: 980円/月（税込）",
+    content: "無料プラン: 0円/月\nPro プラン: 980円/月（税込）\nPremium プラン: 1,980円/月（税込）",
   },
   {
     label: "支払方法",
