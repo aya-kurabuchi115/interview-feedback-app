@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   description:
     "16パーソナリティタイプから自分の面接スタイルを知ろう！各タイプの特徴・面接での強み弱み・相性の良い業界を解説。就活に役立つ自己分析ツール。",
   openGraph: {
-    title: "16パーソナリティ診断 | InterviewCoach",
+    title: "16パーソナリティ診断 | Menpass",
     description:
       "16パーソナリティタイプから自分の面接スタイルを知ろう！各タイプの特徴と面接戦略を解説。",
   },

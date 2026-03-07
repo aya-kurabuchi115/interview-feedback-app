@@ -7,19 +7,19 @@ export const revalidate = 86400;
 export const metadata: Metadata = {
   title: "特定商取引法に基づく表記",
   description:
-    "InterviewCoach の特定商取引法に基づく表記。事業者情報・販売条件等を記載しています。",
+    "Menpass の特定商取引法に基づく表記。事業者情報・販売条件等を記載しています。",
   openGraph: {
-    title: "特定商取引法に基づく表記 | InterviewCoach",
+    title: "特定商取引法に基づく表記 | Menpass",
     description:
-      "InterviewCoach の特定商取引法に基づく表記。事業者情報・販売条件等を記載しています。",
-    url: "https://interview-ai-coach.com/legal/tokushoho",
+      "Menpass の特定商取引法に基づく表記。事業者情報・販売条件等を記載しています。",
+    url: "https://menpass.jp/legal/tokushoho",
   },
 };
 
 const items = [
   {
     label: "販売業者",
-    content: "InterviewCoach（個人運営）",
+    content: "Menpass（個人運営）",
   },
   {
     label: "運営統括責任者",
@@ -35,7 +35,7 @@ const items = [
   },
   {
     label: "メールアドレス",
-    content: "support@interview-ai-coach.com",
+    content: "support@menpass.jp",
     isEmail: true,
   },
   {
@@ -118,14 +118,14 @@ export default function TokushohoPage() {
             事業者情報の開示請求やサービスに関するお問い合わせは、以下の連絡先までお願いいたします。
           </p>
           <div className="mt-4 rounded-lg border bg-muted/40 p-4">
-            <p className="font-medium">InterviewCoach 運営事務局</p>
+            <p className="font-medium">Menpass 運営事務局</p>
             <p className="mt-1">
               メール:{" "}
               <a
-                href="mailto:support@interview-ai-coach.com"
+                href="mailto:support@menpass.jp"
                 className="text-primary underline underline-offset-4"
               >
-                support@interview-ai-coach.com
+                support@menpass.jp
               </a>
             </p>
           </div>

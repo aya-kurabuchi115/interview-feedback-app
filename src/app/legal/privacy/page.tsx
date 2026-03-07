@@ -7,12 +7,12 @@ export const revalidate = 86400;
 export const metadata: Metadata = {
   title: "プライバシーポリシー",
   description:
-    "InterviewCoach のプライバシーポリシー。個人情報の取り扱いについてご説明します。",
+    "Menpass のプライバシーポリシー。個人情報の取り扱いについてご説明します。",
   openGraph: {
-    title: "プライバシーポリシー | InterviewCoach",
+    title: "プライバシーポリシー | Menpass",
     description:
-      "InterviewCoach のプライバシーポリシー。個人情報の取り扱いについてご説明します。",
-    url: "https://interview-ai-coach.com/legal/privacy",
+      "Menpass のプライバシーポリシー。個人情報の取り扱いについてご説明します。",
+    url: "https://menpass.jp/legal/privacy",
   },
 };
 
@@ -75,7 +75,7 @@ export default function PrivacyPolicyPage() {
         <section id="introduction">
           <h2 className="text-xl font-semibold">1. はじめに</h2>
           <p>
-            InterviewCoach（以下「本サービス」）は、ユーザーの皆さまの個人情報を適切に保護することが重要な責務であると考えています。本プライバシーポリシー（以下「本ポリシー」）は、本サービスにおける個人情報の取り扱いについて定めるものです。
+            Menpass（以下「本サービス」）は、ユーザーの皆さまの個人情報を適切に保護することが重要な責務であると考えています。本プライバシーポリシー（以下「本ポリシー」）は、本サービスにおける個人情報の取り扱いについて定めるものです。
           </p>
           <p>
             本サービスをご利用いただくことにより、本ポリシーに同意いただいたものとみなします。
@@ -383,7 +383,7 @@ export default function PrivacyPolicyPage() {
             </li>
             <li>
               <span className="font-medium">メールでのリクエスト:</span>{" "}
-              上記の方法で対応できない場合は、下記お問い合わせ先（support@interview-ai-coach.com）まで削除リクエストをお送りください。ご本人確認のうえ、30日以内に対応いたします
+              上記の方法で対応できない場合は、下記お問い合わせ先（support@menpass.jp）まで削除リクエストをお送りください。ご本人確認のうえ、30日以内に対応いたします
             </li>
           </ul>
         </section>
@@ -498,14 +498,14 @@ export default function PrivacyPolicyPage() {
             本ポリシーに関するお問い合わせ、個人情報の開示・訂正・削除・利用停止の請求については、以下の連絡先までお願いいたします。
           </p>
           <div className="mt-4 rounded-lg border bg-muted/40 p-4">
-            <p className="font-medium">InterviewCoach 運営事務局</p>
+            <p className="font-medium">Menpass 運営事務局</p>
             <p className="mt-1">
               メール:{" "}
               <a
-                href="mailto:support@interview-ai-coach.com"
+                href="mailto:support@menpass.jp"
                 className="text-primary underline underline-offset-4"
               >
-                support@interview-ai-coach.com
+                support@menpass.jp
               </a>
             </p>
           </div>

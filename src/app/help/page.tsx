@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "ヘルプ | InterviewCoach",
+  title: "ヘルプ | Menpass",
   robots: { index: false, follow: false },
 };
 
@@ -88,7 +88,7 @@ export default function HelpPage() {
           </h1>
         </div>
         <p className="text-muted-foreground">
-          InterviewCoach の使い方やよくある質問をまとめています
+          Menpass の使い方やよくある質問をまとめています
         </p>
       </div>
 

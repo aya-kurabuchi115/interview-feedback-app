@@ -7,7 +7,7 @@ import { GrowthContent } from "@/components/dashboard/growth-content";
 import { GrowthStatsSkeleton } from "@/components/dashboard/growth-skeleton";
 
 export const metadata = {
-  title: "成長記録 | InterviewCoach",
+  title: "成長記録 | Menpass",
 };
 
 export default async function GrowthPage() {

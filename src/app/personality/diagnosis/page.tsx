@@ -15,7 +15,7 @@ const DiagnosisClient = dynamic(
 );
 
 export const metadata: Metadata = {
-  title: "パーソナリティ診断テスト | InterviewCoach",
+  title: "パーソナリティ診断テスト | Menpass",
   description:
     "10問の簡単なテストであなたの16パーソナリティタイプを診断。面接での強み・弱みを把握して就活に活かそう。",
 };

@@ -58,7 +58,7 @@ export async function generateMetadata({
     title,
     description,
     openGraph: {
-      title: `${title} | InterviewCoach`,
+      title: `${title} | Menpass`,
       description,
     },
   };

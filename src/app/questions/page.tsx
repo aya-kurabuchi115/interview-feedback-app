@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description:
     "面接でよく聞かれる質問90問を業界別・ラウンド別・タイプ別に整理。回答のポイントと模範解答付きで面接対策に最適です。",
   openGraph: {
-    title: "面接質問集 | InterviewCoach",
+    title: "面接質問集 | Menpass",
     description:
       "面接でよく聞かれる質問90問を業界別・ラウンド別・タイプ別に整理。回答のポイントと模範解答付きで面接対策に最適です。",
   },

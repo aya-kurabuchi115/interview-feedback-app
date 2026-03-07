@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { UpgradeButton } from "./upgrade-button";
 import type { SubscriptionPlan } from "@/types/database";
 
-export const metadata = { title: "料金プラン | InterviewCoach" };
+export const metadata = { title: "料金プラン | Menpass" };
 
 /** Free プランで利用不可の機能一覧 */
 const FREE_EXCLUDED_FEATURES = [

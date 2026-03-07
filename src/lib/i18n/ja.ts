@@ -30,16 +30,16 @@ export const ja = {
   // メタデータ
   // ============================================================
   metadata: {
-    siteTitle: "InterviewCoach",
+    siteTitle: "Menpass",
     siteDescription:
       "面接練習の録音をAIが分析し、回答内容・話し方の両面からフィードバックを自動生成。新卒就活を成功に導くAI面接コーチ。",
-    ogAlt: "InterviewCoach - AI面接フィードバック",
+    ogAlt: "Menpass - AI面接フィードバック",
     lpTitle:
-      "InterviewCoach - 面接練習を録音するだけ。AIが即座に分析・フィードバック",
+      "Menpass - 面接練習を録音するだけ。AIが即座に分析・フィードバック",
     lpDescription:
       "面接練習を録音するだけで、回答内容・話し方をAIが即座に分析。スコア表示と成長トラッキングで、確実に面接力を伸ばせる就活支援アプリ。無料プランあり。",
     dashboardTitle: "ダッシュボード",
-    pricingTitle: "料金プラン | InterviewCoach",
+    pricingTitle: "料金プラン | Menpass",
   },
 
   // ============================================================

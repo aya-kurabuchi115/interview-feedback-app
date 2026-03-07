@@ -3,7 +3,7 @@ import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const metadata = { title: "決済完了 | InterviewCoach" };
+export const metadata = { title: "決済完了 | Menpass" };
 
 export default function PricingSuccessPage() {
   return (

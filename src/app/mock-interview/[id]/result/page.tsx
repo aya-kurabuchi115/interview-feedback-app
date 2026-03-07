@@ -20,7 +20,7 @@ const MockResultContent = dynamic(
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "模擬面接結果 | InterviewCoach",
+    title: "模擬面接結果 | Menpass",
     robots: { index: false },
   };
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "パスワード更新 | InterviewCoach",
+  title: "パスワード更新 | Menpass",
   robots: { index: false, follow: false },
 };
 

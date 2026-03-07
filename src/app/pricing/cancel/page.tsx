@@ -3,7 +3,7 @@ import { XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const metadata = { title: "決済キャンセル | InterviewCoach" };
+export const metadata = { title: "決済キャンセル | Menpass" };
 
 export default function PricingCancelPage() {
   return (

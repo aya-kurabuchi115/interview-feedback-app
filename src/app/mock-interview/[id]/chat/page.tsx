@@ -19,7 +19,7 @@ const ChatInterface = dynamic(
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "模擬面接中 | InterviewCoach",
+    title: "模擬面接中 | Menpass",
     robots: { index: false, follow: false },
   };
 }

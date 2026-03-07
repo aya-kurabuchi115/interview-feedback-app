@@ -7,12 +7,12 @@ export const revalidate = 86400;
 export const metadata: Metadata = {
   title: "利用規約",
   description:
-    "InterviewCoach の利用規約。サービスのご利用条件について定めています。",
+    "Menpass の利用規約。サービスのご利用条件について定めています。",
   openGraph: {
-    title: "利用規約 | InterviewCoach",
+    title: "利用規約 | Menpass",
     description:
-      "InterviewCoach の利用規約。サービスのご利用条件について定めています。",
-    url: "https://interview-ai-coach.com/legal/terms",
+      "Menpass の利用規約。サービスのご利用条件について定めています。",
+    url: "https://menpass.jp/legal/terms",
   },
 };
 
@@ -74,7 +74,7 @@ export default function TermsOfServicePage() {
         <section id="general">
           <h2 className="text-xl font-semibold">第1条 総則</h2>
           <p>
-            本利用規約（以下「本規約」）は、InterviewCoach（以下「本サービス」）の利用に関する条件を定めるものです。本サービスは、就職活動中の大学生を主な対象とした AI
+            本利用規約（以下「本規約」）は、Menpass（以下「本サービス」）の利用に関する条件を定めるものです。本サービスは、就職活動中の大学生を主な対象とした AI
             面接フィードバックサービスであり、面接練習の音声スクリプトを AI
             が分析し、改善点やアドバイスをフィードバックとして提供します。
           </p>
@@ -417,7 +417,7 @@ export default function TermsOfServicePage() {
           <ul className="list-disc space-y-1 pl-5">
             <li>初回サブスクリプション開始から7日以内にサポートへご連絡いただいた場合、全額返金に対応します</li>
             <li>7日経過後の返金は原則として行いません</li>
-            <li>返金のお手続きは support@interview-ai-coach.com までご連絡ください</li>
+            <li>返金のお手続きは support@menpass.jp までご連絡ください</li>
           </ul>
         </section>
 
@@ -465,14 +465,14 @@ export default function TermsOfServicePage() {
 
           <h3 className="mt-4 text-base font-medium">お問い合わせ</h3>
           <div className="mt-2 rounded-lg border bg-muted/40 p-4">
-            <p className="font-medium">InterviewCoach 運営事務局</p>
+            <p className="font-medium">Menpass 運営事務局</p>
             <p className="mt-1">
               メール:{" "}
               <a
-                href="mailto:support@interview-ai-coach.com"
+                href="mailto:support@menpass.jp"
                 className="text-primary underline underline-offset-4"
               >
-                support@interview-ai-coach.com
+                support@menpass.jp
               </a>
             </p>
           </div>

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { questions } from "@/lib/questions/data";
 
-const siteUrl = "https://interview-ai-coach.com";
+const siteUrl = "https://menpass.jp";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const questionPages: MetadataRoute.Sitemap = questions.map((q) => ({

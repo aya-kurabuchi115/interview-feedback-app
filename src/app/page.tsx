@@ -40,21 +40,21 @@ const FaqSection = dynamic(
 
 export const metadata: Metadata = {
   title:
-    "InterviewCoach - 面接の答え合わせ、始めよう。",
+    "Menpass - 面接の答え合わせ、始めよう。",
   description:
     "\"なんとなく不安\"を\"具体的な自信\"に。回答内容・話し方・論理構成をAIが分析し、改善アクションを提示。スコアで成長を実感できる就活支援アプリ。無料プランあり。",
   openGraph: {
     title:
-      "InterviewCoach - 面接の答え合わせ、始めよう。",
+      "Menpass - 面接の答え合わせ、始めよう。",
     description:
       "\"なんとなく不安\"を\"具体的な自信\"に。回答内容・話し方・論理構成をAIが分析し、改善アクションを提示。スコアで成長を実感できる就活支援アプリ。無料プランあり。",
-    url: "https://interview-ai-coach.com",
+    url: "https://menpass.jp",
     images: [
       {
         url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "InterviewCoach - AI面接フィードバック",
+        alt: "Menpass - AI面接フィードバック",
       },
     ],
   },
@@ -65,10 +65,10 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "WebApplication",
-      name: "InterviewCoach",
-      url: "https://interview-ai-coach.com",
+      name: "Menpass",
+      url: "https://menpass.jp",
       description:
-        "InterviewCoachは、面接練習の録音をAIが多角的に分析し、回答内容・話し方の両面から具体的なフィードバックを提供する就活支援アプリです。",
+        "Menpassは、面接練習の録音をAIが多角的に分析し、回答内容・話し方の両面から具体的なフィードバックを提供する就活支援アプリです。",
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web",
       offers: [
@@ -242,7 +242,7 @@ export default function Home() {
       <section className="px-4 py-20 sm:py-28" style={{ backgroundColor: C.sectionBg }}>
         <div className="mx-auto max-w-[1120px]">
           <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
-            InterviewCoach が解決します
+            Menpass が解決します
           </h2>
           <div className="mt-14 grid gap-6 sm:grid-cols-2">
             <div className="rounded-xl border-2 border-red-200 bg-red-50 p-6 lg:p-8">
@@ -495,7 +495,7 @@ export default function Home() {
             利用者の声
           </h2>
           <p className="mt-4 text-center text-lg text-muted-foreground">
-            InterviewCoach で面接力を伸ばした先輩たちのリアルな声。
+            Menpass で面接力を伸ばした先輩たちのリアルな声。
           </p>
           <div className="mt-14 grid gap-6 sm:grid-cols-3">
             {[
@@ -503,7 +503,7 @@ export default function Home() {
                 initials: "T.S",
                 name: "T.S さん",
                 label: "26卒 / 文系",
-                text: "一人で面接練習しても、何がダメなのか分からなかった。InterviewCoach を使い始めてから、具体的に何を直せばいいかが明確になって、面接への自信がつきました。",
+                text: "一人で面接練習しても、何がダメなのか分からなかった。Menpass を使い始めてから、具体的に何を直せばいいかが明確になって、面接への自信がつきました。",
               },
               {
                 initials: "M.K",

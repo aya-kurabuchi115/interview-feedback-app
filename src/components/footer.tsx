@@ -5,7 +5,7 @@ export function Footer() {
   return (
     <footer className="border-t py-6">
       <div className="container mx-auto flex flex-col items-center gap-2 px-4 text-center text-sm text-muted-foreground md:flex-row md:justify-between">
-        <p>&copy; {new Date().getFullYear()} InterviewCoach. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Menpass. All rights reserved.</p>
         <nav className="flex flex-wrap justify-center gap-4">
           <Link
             href="/legal/terms"

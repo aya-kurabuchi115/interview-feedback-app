@@ -194,14 +194,14 @@ export default function GlobalError({
               問題が解決しない場合は、エラーIDを添えてお問い合わせください。
             </p>
             <a
-              href="mailto:support@interview-ai-coach.com"
+              href="mailto:support@menpass.jp"
               style={{
                 fontSize: "0.8rem",
                 color: "#2563eb",
                 textDecoration: "none",
               }}
             >
-              support@interview-ai-coach.com
+              support@menpass.jp
             </a>
           </div>
         </div>

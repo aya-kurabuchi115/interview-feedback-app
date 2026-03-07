@@ -17,7 +17,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
-  title: "模擬面接履歴 | InterviewCoach",
+  title: "模擬面接履歴 | Menpass",
   robots: { index: false },
 };
 

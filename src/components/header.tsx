@@ -92,7 +92,7 @@ export function Header() {
       <div className="container mx-auto flex h-14 items-center px-4">
         <Link href="/" className="mr-6 flex items-center gap-2 font-bold">
           <Mic className="h-5 w-5" />
-          InterviewCoach
+          Menpass
         </Link>
 
         {/* Desktop Nav */}

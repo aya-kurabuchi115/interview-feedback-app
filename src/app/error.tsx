@@ -93,11 +93,11 @@ export default function Error({
           {t("error.supportGuide")}
         </p>
         <a
-          href="mailto:support@interview-ai-coach.com"
+          href="mailto:support@menpass.jp"
           className="mt-2 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
         >
           <Mail className="h-3.5 w-3.5" />
-          support@interview-ai-coach.com
+          support@menpass.jp
         </a>
       </div>
     </div>

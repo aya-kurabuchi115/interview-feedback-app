@@ -17,7 +17,7 @@ const BillingClient = dynamic(
   }
 );
 
-export const metadata = { title: "プラン管理 | InterviewCoach" };
+export const metadata = { title: "プラン管理 | Menpass" };
 
 export default async function BillingPage() {
   const supabase = await createClient();

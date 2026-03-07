@@ -7,12 +7,12 @@ export const revalidate = 86400;
 export const metadata: Metadata = {
   title: "Cookie ポリシー",
   description:
-    "InterviewCoach の Cookie ポリシー。Cookie の使用目的と管理方法についてご説明します。",
+    "Menpass の Cookie ポリシー。Cookie の使用目的と管理方法についてご説明します。",
   openGraph: {
-    title: "Cookie ポリシー | InterviewCoach",
+    title: "Cookie ポリシー | Menpass",
     description:
-      "InterviewCoach の Cookie ポリシー。Cookie の使用目的と管理方法についてご説明します。",
-    url: "https://interview-ai-coach.com/legal/cookies",
+      "Menpass の Cookie ポリシー。Cookie の使用目的と管理方法についてご説明します。",
+    url: "https://menpass.jp/legal/cookies",
   },
 };
 
@@ -69,7 +69,7 @@ export default function CookiePolicyPage() {
             Cookie とは、ウェブサイトがユーザーのブラウザに保存する小さなテキストファイルです。Cookie は、ユーザーの設定を記憶したり、ログイン状態を維持したり、サービスの利用状況を分析したりするために使用されます。
           </p>
           <p>
-            本サービス（InterviewCoach）では、サービスの提供・改善に必要な範囲で Cookie およびこれに類する技術（ローカルストレージ等）を使用しています。
+            本サービス（Menpass）では、サービスの提供・改善に必要な範囲で Cookie およびこれに類する技術（ローカルストレージ等）を使用しています。
           </p>
         </section>
 
@@ -198,14 +198,14 @@ export default function CookiePolicyPage() {
             本 Cookie ポリシーに関するお問い合わせは、以下の連絡先までお願いいたします。
           </p>
           <div className="mt-4 rounded-lg border bg-muted/40 p-4">
-            <p className="font-medium">InterviewCoach 運営事務局</p>
+            <p className="font-medium">Menpass 運営事務局</p>
             <p className="mt-1">
               メール:{" "}
               <a
-                href="mailto:support@interview-ai-coach.com"
+                href="mailto:support@menpass.jp"
                 className="text-primary underline underline-offset-4"
               >
-                support@interview-ai-coach.com
+                support@menpass.jp
               </a>
             </p>
           </div>

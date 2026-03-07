@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: `「${question.question}」の回答のポイントと模範解答。${question.type}カテゴリの面接対策。`,
     keywords: question.keywords,
     openGraph: {
-      title: `${question.question} | InterviewCoach 面接質問集`,
+      title: `${question.question} | Menpass 面接質問集`,
       description: `「${question.question}」の回答のポイントと模範解答。面接対策に役立つ具体的なアドバイス付き。`,
     },
   };

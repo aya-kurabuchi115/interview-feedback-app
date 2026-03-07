@@ -74,7 +74,7 @@ function setSecurityHeaders(response: NextResponse): void {
 
 /** 許可するオリジンのリスト */
 function getAllowedOrigins(): string[] {
-  const origins = ["https://interview-ai-coach.com"];
+  const origins = ["https://menpass.jp"];
   // 開発環境
   if (process.env.NODE_ENV !== "production") {
     origins.push("http://localhost:3000");

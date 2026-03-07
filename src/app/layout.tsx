@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const siteUrl = "https://interview-ai-coach.com";
-const siteName = "InterviewCoach";
+const siteUrl = "https://menpass.jp";
+const siteName = "Menpass";
 const defaultDescription =
   "面接練習の録音をAIが分析し、回答内容・話し方の両面からフィードバックを自動生成。新卒就活を成功に導くAI面接コーチ。";
 
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
         url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "InterviewCoach - AI面接フィードバック",
+        alt: "Menpass - AI面接フィードバック",
       },
     ],
   },
