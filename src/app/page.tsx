@@ -18,7 +18,6 @@ import {
   Zap,
   TrendingUp,
   Target,
-  ChevronDown,
 } from "lucide-react";
 import { CountUp } from "@/components/lp/count-up";
 import { ScrollFadeIn, StaggerChildren, StaggerItem } from "@/components/scroll-fade-in";
@@ -174,7 +173,7 @@ export default function Home() {
                 </svg>
               </Link>
               <p className="mt-3 text-sm text-gray-400">
-                30秒で登録完了 / クレジットカード不要
+                3分で登録完了 / クレジットカード不要
               </p>
             </div>
 
@@ -191,7 +190,7 @@ export default function Home() {
             { end: 92, suffix: "%", label: "利用者満足度 *" },
             { end: 3, suffix: "倍", label: "練習効率の向上 *" },
             { end: 90, suffix: "+", label: "面接質問を収録" },
-            { end: 30, suffix: "秒", label: "で登録完了" },
+            { end: 3, suffix: "分", label: "で登録完了" },
           ].map((item) => (
             <div key={item.label} className="text-center">
               <p
@@ -470,7 +469,7 @@ export default function Home() {
                 step: 1,
                 icon: <Users className="h-6 w-6" />,
                 title: "無料登録",
-                desc: "メールアドレスだけで30秒で完了。カード不要。",
+                desc: "メールアドレスだけで3分で完了。カード不要。",
               },
               {
                 step: 2,
@@ -622,7 +621,7 @@ export default function Home() {
               </p>
               <div className="mt-4">
                 <span className="text-4xl font-bold">¥0</span>
-                <span className="text-muted-foreground">/月</span>
+                <span className="text-muted-foreground">/月（税込）</span>
               </div>
               <ul className="mt-6 flex-1 space-y-3">
                 {[
@@ -674,7 +673,7 @@ export default function Home() {
               </p>
               <div className="mt-4">
                 <span className="text-4xl font-bold">¥980</span>
-                <span className="text-muted-foreground">/月</span>
+                <span className="text-muted-foreground">/月（税込）</span>
               </div>
               <ul className="mt-6 flex-1 space-y-3">
                 {[

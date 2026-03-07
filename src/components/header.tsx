@@ -115,7 +115,7 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <ThemeToggle />
+          {user && <ThemeToggle />}
           {loading ? null : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -156,10 +156,10 @@ export function Header() {
 
         {/* Mobile Nav */}
         <div className="flex flex-1 items-center justify-end gap-1 md:hidden">
-          <ThemeToggle />
+          {user && <ThemeToggle />}
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="メニューを開く">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>

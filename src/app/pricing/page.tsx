@@ -79,7 +79,7 @@ export default async function PricingPage() {
               </CardDescription>
               <div className="mt-4">
                 <span className="text-4xl font-bold">¥0</span>
-                <span className="text-muted-foreground">/月</span>
+                <span className="text-muted-foreground">/月（税込）</span>
               </div>
             </CardHeader>
             <CardContent className="flex-1">
@@ -127,7 +127,7 @@ export default async function PricingPage() {
                 <span className="text-4xl font-bold">
                   ¥{PLANS.pro.priceMonthly.toLocaleString()}
                 </span>
-                <span className="text-muted-foreground">/月</span>
+                <span className="text-muted-foreground">/月（税込）</span>
               </div>
             </CardHeader>
             <CardContent className="flex-1">
@@ -179,7 +179,7 @@ export default async function PricingPage() {
                 <span className="text-4xl font-bold">
                   ¥{PLANS.premium.priceMonthly.toLocaleString()}
                 </span>
-                <span className="text-muted-foreground">/月</span>
+                <span className="text-muted-foreground">/月（税込）</span>
               </div>
             </CardHeader>
             <CardContent className="flex-1">

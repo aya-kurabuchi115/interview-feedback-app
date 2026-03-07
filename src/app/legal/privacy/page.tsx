@@ -149,7 +149,7 @@ export default function PrivacyPolicyPage() {
             </li>
             <li>
               <span className="font-medium">AI フィードバックの生成:</span>{" "}
-              面接音声スクリプトを AI（Anthropic Claude API）に送信し、回答内容・話し方に関するフィードバックを生成するため
+              面接音声スクリプトを AI（Google Gemini API）に送信し、回答内容・話し方に関するフィードバックを生成するため
             </li>
             <li>
               <span className="font-medium">サービスの提供・運営:</span>{" "}
@@ -198,19 +198,19 @@ export default function PrivacyPolicyPage() {
           </p>
 
           <h3 className="mt-4 text-base font-medium">
-            5-2. Anthropic（AI フィードバック生成）
+            5-2. Google（AI フィードバック生成）
           </h3>
           <p>
-            面接練習の音声スクリプトを Anthropic, PBC が提供する Claude
-            API に送信し、AI フィードバックを生成します。送信されるデータには面接スクリプトのテキスト、面接カテゴリ、企業名が含まれます。Anthropic の API 利用においては、送信データが AI モデルのトレーニングに使用されることはありません。Anthropic
+            面接練習の音声スクリプトを Google が提供する Gemini
+            API に送信し、AI フィードバックを生成します。送信されるデータには面接スクリプトのテキスト、面接カテゴリ、企業名が含まれます。Google の API 利用においては、有料 API 経由で送信されたデータが AI モデルのトレーニングに使用されることはありません。Google
             のプライバシーポリシーについては{" "}
             <a
-              href="https://www.anthropic.com/privacy"
+              href="https://policies.google.com/privacy"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary underline underline-offset-4"
             >
-              Anthropic Privacy Policy
+              Google Privacy Policy
             </a>{" "}
             をご確認ください。
           </p>

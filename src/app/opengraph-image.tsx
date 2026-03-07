@@ -71,7 +71,7 @@ export default function Image() {
               fontWeight: 700,
             }}
           >
-            IC
+            M
           </div>
           <span
             style={{

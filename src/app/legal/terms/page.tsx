@@ -135,7 +135,7 @@ export default function TermsOfServicePage() {
             </li>
             <li>
               <span className="font-medium">AI フィードバック:</span>{" "}
-              文字起こしされたスクリプトを AI（Anthropic Claude
+              文字起こしされたスクリプトを AI（Google Gemini
               API）が分析し、回答内容・構成・話し方に関するフィードバックを生成する機能
             </li>
             <li>
@@ -329,7 +329,7 @@ export default function TermsOfServicePage() {
               面接音声ファイルは、文字起こし処理のために AssemblyAI API に送信され、処理完了後に削除されます
             </li>
             <li>
-              面接スクリプトは、フィードバック生成のために Anthropic Claude API
+              面接スクリプトは、フィードバック生成のために Google Gemini API
               に送信されます
             </li>
             <li>

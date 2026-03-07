@@ -23,7 +23,7 @@ const UPGRADE_FEATURES = [
   {
     icon: Brain,
     label: "高精度 AI モデル",
-    description: "Claude Sonnet によるより的確なフィードバック",
+    description: "高精度AIによるより的確なフィードバック",
   },
   {
     icon: Zap,
