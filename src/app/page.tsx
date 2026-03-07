@@ -48,7 +48,7 @@ export const metadata: Metadata = {
       "InterviewCoach - 面接の答え合わせ、始めよう。",
     description:
       "\"なんとなく不安\"を\"具体的な自信\"に。回答内容・話し方・論理構成をAIが分析し、改善アクションを提示。スコアで成長を実感できる就活支援アプリ。無料プランあり。",
-    url: "https://interviewcoach.jp",
+    url: "https://interview-ai-coach.com",
     images: [
       {
         url: "/opengraph-image.png",
@@ -66,7 +66,7 @@ const jsonLd = {
     {
       "@type": "WebApplication",
       name: "InterviewCoach",
-      url: "https://interviewcoach.jp",
+      url: "https://interview-ai-coach.com",
       description:
         "InterviewCoachは、面接練習の録音をAIが多角的に分析し、回答内容・話し方の両面から具体的なフィードバックを提供する就活支援アプリです。",
       applicationCategory: "BusinessApplication",

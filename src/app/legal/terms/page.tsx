@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     title: "利用規約 | InterviewCoach",
     description:
       "InterviewCoach の利用規約。サービスのご利用条件について定めています。",
-    url: "https://interviewcoach.jp/legal/terms",
+    url: "https://interview-ai-coach.com/legal/terms",
   },
 };
 
@@ -417,7 +417,7 @@ export default function TermsOfServicePage() {
           <ul className="list-disc space-y-1 pl-5">
             <li>初回サブスクリプション開始から7日以内にサポートへご連絡いただいた場合、全額返金に対応します</li>
             <li>7日経過後の返金は原則として行いません</li>
-            <li>返金のお手続きは support@interviewcoach.jp までご連絡ください</li>
+            <li>返金のお手続きは support@interview-ai-coach.com までご連絡ください</li>
           </ul>
         </section>
 
@@ -469,10 +469,10 @@ export default function TermsOfServicePage() {
             <p className="mt-1">
               メール:{" "}
               <a
-                href="mailto:support@interviewcoach.jp"
+                href="mailto:support@interview-ai-coach.com"
                 className="text-primary underline underline-offset-4"
               >
-                support@interviewcoach.jp
+                support@interview-ai-coach.com
               </a>
             </p>
           </div>

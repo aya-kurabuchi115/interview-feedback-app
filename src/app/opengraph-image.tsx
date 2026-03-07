@@ -139,7 +139,7 @@ export default function Image() {
             display: "flex",
           }}
         >
-          interviewcoach.jp
+          interview-ai-coach.com
         </div>
       </div>
     ),

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     title: "特定商取引法に基づく表記 | InterviewCoach",
     description:
       "InterviewCoach の特定商取引法に基づく表記。事業者情報・販売条件等を記載しています。",
-    url: "https://interviewcoach.jp/legal/tokushoho",
+    url: "https://interview-ai-coach.com/legal/tokushoho",
   },
 };
 
@@ -35,7 +35,7 @@ const items = [
   },
   {
     label: "メールアドレス",
-    content: "support@interviewcoach.jp",
+    content: "support@interview-ai-coach.com",
     isEmail: true,
   },
   {
@@ -122,10 +122,10 @@ export default function TokushohoPage() {
             <p className="mt-1">
               メール:{" "}
               <a
-                href="mailto:support@interviewcoach.jp"
+                href="mailto:support@interview-ai-coach.com"
                 className="text-primary underline underline-offset-4"
               >
-                support@interviewcoach.jp
+                support@interview-ai-coach.com
               </a>
             </p>
           </div>

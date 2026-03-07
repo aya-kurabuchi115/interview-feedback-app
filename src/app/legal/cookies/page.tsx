@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     title: "Cookie ポリシー | InterviewCoach",
     description:
       "InterviewCoach の Cookie ポリシー。Cookie の使用目的と管理方法についてご説明します。",
-    url: "https://interviewcoach.jp/legal/cookies",
+    url: "https://interview-ai-coach.com/legal/cookies",
   },
 };
 
@@ -202,10 +202,10 @@ export default function CookiePolicyPage() {
             <p className="mt-1">
               メール:{" "}
               <a
-                href="mailto:support@interviewcoach.jp"
+                href="mailto:support@interview-ai-coach.com"
                 className="text-primary underline underline-offset-4"
               >
-                support@interviewcoach.jp
+                support@interview-ai-coach.com
               </a>
             </p>
           </div>

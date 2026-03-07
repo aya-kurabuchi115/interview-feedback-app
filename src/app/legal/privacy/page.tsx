@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     title: "プライバシーポリシー | InterviewCoach",
     description:
       "InterviewCoach のプライバシーポリシー。個人情報の取り扱いについてご説明します。",
-    url: "https://interviewcoach.jp/legal/privacy",
+    url: "https://interview-ai-coach.com/legal/privacy",
   },
 };
 
@@ -383,7 +383,7 @@ export default function PrivacyPolicyPage() {
             </li>
             <li>
               <span className="font-medium">メールでのリクエスト:</span>{" "}
-              上記の方法で対応できない場合は、下記お問い合わせ先（support@interviewcoach.jp）まで削除リクエストをお送りください。ご本人確認のうえ、30日以内に対応いたします
+              上記の方法で対応できない場合は、下記お問い合わせ先（support@interview-ai-coach.com）まで削除リクエストをお送りください。ご本人確認のうえ、30日以内に対応いたします
             </li>
           </ul>
         </section>
@@ -502,10 +502,10 @@ export default function PrivacyPolicyPage() {
             <p className="mt-1">
               メール:{" "}
               <a
-                href="mailto:support@interviewcoach.jp"
+                href="mailto:support@interview-ai-coach.com"
                 className="text-primary underline underline-offset-4"
               >
-                support@interviewcoach.jp
+                support@interview-ai-coach.com
               </a>
             </p>
           </div>

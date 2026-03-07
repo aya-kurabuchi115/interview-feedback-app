@@ -13,6 +13,6 @@ export default function robots(): MetadataRoute.Robots {
         "/api",
       ],
     },
-    sitemap: "https://interviewcoach.jp/sitemap.xml",
+    sitemap: "https://interview-ai-coach.com/sitemap.xml",
   };
 }

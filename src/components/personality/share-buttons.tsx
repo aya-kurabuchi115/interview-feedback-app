@@ -14,7 +14,7 @@ export function ShareButtons({ type, name }: ShareButtonsProps) {
   const shareText = `私は${type}（${name}）タイプ！面接での強み・弱みを知って対策しよう 🧠`;
   const shareUrl = typeof window !== "undefined"
     ? window.location.href
-    : `https://interviewcoach.jp/personality/${type.toLowerCase()}`;
+    : `https://interview-ai-coach.com/personality/${type.toLowerCase()}`;
 
   const handleCopyLink = async () => {
     try {
