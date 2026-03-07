@@ -5,7 +5,6 @@ import {
   ArrowLeft,
   CheckCircle,
   Lightbulb,
-  Mic,
   Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ import type { Difficulty } from "@/lib/questions/types";
 import { ExampleAnswer } from "@/components/questions/example-answer";
 import { FrameworkGuide } from "@/components/questions/framework-guide";
 import { AnswerComparison } from "@/components/questions/answer-comparison";
+import { PremiumMockCta } from "@/components/questions/premium-mock-cta";
 
 /** ISR: 24時間ごとに再検証（静的コンテンツ） */
 export const revalidate = 86400;
@@ -153,22 +153,7 @@ export default async function QuestionDetailPage({ params }: PageProps) {
           <AnswerComparison questionId={question.id} />
 
           {/* この質問で練習する */}
-          <Card className="border-primary">
-            <CardContent className="flex flex-col items-center gap-4 py-8 sm:flex-row sm:justify-between">
-              <div>
-                <h3 className="font-semibold">この質問で模擬面接を練習する</h3>
-                <p className="text-sm text-muted-foreground">
-                  AIと一緒に面接練習をして、フィードバックを受けましょう
-                </p>
-              </div>
-              <Button asChild size="lg">
-                <Link href="/mock-interview">
-                  <Mic className="mr-2 size-4" />
-                  模擬面接を始める
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <PremiumMockCta />
         </div>
 
         {/* サイドバー */}

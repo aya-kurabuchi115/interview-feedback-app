@@ -113,7 +113,7 @@ export default async function PersonalityTypePage({
               style={{ backgroundColor: "white" }}
             >
               <Image
-                src={`/images/personality/${p.type.toLowerCase()}.svg`}
+                src={`/images/personality/${p.type.toLowerCase()}.png`}
                 alt={`${p.name}のキャラクター`}
                 width={180}
                 height={180}
@@ -311,7 +311,7 @@ export default async function PersonalityTypePage({
                 style={{ backgroundColor: ot.colorLight }}
               >
                 <Image
-                  src={`/images/personality/${ot.type.toLowerCase()}.svg`}
+                  src={`/images/personality/${ot.type.toLowerCase()}.png`}
                   alt={ot.name}
                   width={40}
                   height={40}

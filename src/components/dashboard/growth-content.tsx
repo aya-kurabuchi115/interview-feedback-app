@@ -250,7 +250,7 @@ export async function GrowthContent({ userId }: GrowthContentProps) {
         description="面接を記録してフィードバックを受けると、ここにスコア推移や分析結果が表示されます。まず1回面接を登録してみましょう。"
         primaryAction={{
           label: "面接を記録する",
-          href: "/interview/new",
+          href: "/mock-interview",
           icon: Plus,
         }}
         secondaryActions={[

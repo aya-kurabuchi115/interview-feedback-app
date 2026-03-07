@@ -84,15 +84,10 @@ export function CommandPalette() {
 
           {/* ナビゲーション */}
           <CommandGroup heading="ナビゲーション">
-            <CommandItem onSelect={() => handleNavigate("/interview/new")}>
-              <Mic className="mr-2 h-4 w-4" />
-              面接を記録する
-              <CommandShortcut>N</CommandShortcut>
-            </CommandItem>
             <CommandItem onSelect={() => handleNavigate("/mock-interview")}>
               <MessageSquare className="mr-2 h-4 w-4" />
-              AI模擬面接
-              <CommandShortcut>M</CommandShortcut>
+              AI面接を始める
+              <CommandShortcut>N</CommandShortcut>
             </CommandItem>
             <CommandItem onSelect={() => handleNavigate("/es-review")}>
               <FileText className="mr-2 h-4 w-4" />

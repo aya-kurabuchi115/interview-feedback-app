@@ -9,9 +9,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -76,23 +76,16 @@ export function Header() {
     router.refresh();
   };
 
-  const publicNavItems = [
-    { href: "/questions", label: t("nav.questions") },
-    { href: "/personality", label: t("nav.personality") },
-  ];
+  const pathname = usePathname();
 
-  // オンボーディング完了後のみ表示する保護対象ナビ
-  const authNavItems = user && onboardingCompleted
+  // オンボーディング完了後のみ表示するナビ
+  const navItems = user && onboardingCompleted
     ? [
         { href: "/dashboard", label: t("nav.dashboard") },
-        { href: "/mock-interview", label: t("nav.mockInterview") },
-        { href: "/es-review", label: t("nav.esReview") },
         { href: "/dashboard/growth", label: t("nav.growthRecord") },
-        { href: "/profile", label: t("nav.profile") },
+        { href: "/help", label: "ヘルプ" },
       ]
     : [];
-
-  const navItems = [...publicNavItems, ...authNavItems];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -104,15 +97,22 @@ export function Header() {
 
         {/* Desktop Nav */}
         <nav className="hidden flex-1 items-center gap-4 md:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`text-sm font-medium transition-colors hover:text-foreground ${
+                  isActive
+                    ? "text-foreground border-b-2 border-[var(--brand-orange)] pb-0.5"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
@@ -164,39 +164,62 @@ export function Header() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-64">
-              <nav className="mt-8 flex flex-col gap-4">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="text-sm font-medium"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+            <SheetContent side="right" className="w-72 p-6">
+              <SheetTitle className="sr-only">メニュー</SheetTitle>
+              <nav className="mt-6 flex flex-col gap-4">
+                {navItems.map((item) => {
+                  const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                  return (
+                    <SheetClose key={item.href} asChild>
+                      <Link
+                        href={item.href}
+                        className={`text-sm font-medium transition-colors hover:text-primary ${
+                          isActive ? "text-[var(--brand-orange)] font-bold" : ""
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    </SheetClose>
+                  );
+                })}
+                <div className="my-2 border-t" />
                 {loading ? null : user ? (
                   <>
-                    <p className="text-sm text-muted-foreground">
+                    <SheetClose asChild>
+                      <Link
+                        href="/settings/billing"
+                        className="text-sm font-medium transition-colors hover:text-primary"
+                      >
+                        {t("nav.planManagement")}
+                      </Link>
+                    </SheetClose>
+                    <div className="my-2 border-t" />
+                    <p className="truncate text-sm text-muted-foreground">
                       {user.email}
                     </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleLogout}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      {t("auth.logout")}
-                    </Button>
+                    <SheetClose asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        {t("auth.logout")}
+                      </Button>
+                    </SheetClose>
                   </>
                 ) : (
                   <>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href="/login">{t("auth.login")}</Link>
-                    </Button>
-                    <Button size="sm" asChild>
-                      <Link href="/signup">{t("auth.freeTrialCta")}</Link>
-                    </Button>
+                    <SheetClose asChild>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href="/login">{t("auth.login")}</Link>
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button size="sm" asChild>
+                        <Link href="/signup">{t("auth.freeTrialCta")}</Link>
+                      </Button>
+                    </SheetClose>
                   </>
                 )}
               </nav>

@@ -116,6 +116,20 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+:root {
+  --brand-navy: #1E3A5F;
+  --brand-navy-dark: #0F2440;
+  --brand-orange: #F97316;
+  --brand-orange-dark: #EA580C;
+  --brand-section-bg: #EFF6FF;
+  --brand-navy-light: rgba(30, 58, 95, 0.06);
+  --lp-section-bg: #EFF6FF;
+}
+
+.dark {
+  --lp-section-bg: #1a2332;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -123,4 +137,30 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* 共通ページヘッダー */
+.page-header {
+  @apply mb-8;
+}
+.page-header h1 {
+  @apply text-2xl font-bold tracking-tight sm:text-3xl;
+}
+.page-header p {
+  @apply mt-2 text-muted-foreground;
+}
+
+/* 統一カードスタイル */
+.card-elevated {
+  @apply rounded-xl border bg-card p-5 shadow-sm transition-shadow hover:shadow-md;
+}
+
+/* アクセントグラデーション（カード上部に薄いライン） */
+.card-accent-top {
+  @apply relative overflow-hidden;
+}
+.card-accent-top::before {
+  content: "";
+  @apply absolute inset-x-0 top-0 h-1;
+  background: linear-gradient(to right, var(--brand-navy), var(--brand-orange));
 }

@@ -472,6 +472,11 @@ export function MockResultContent({
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 409) {
+          // 既に生成済み → リロード
+          router.refresh();
+          return;
+        }
         setError(data.error || "フィードバック生成に失敗しました");
         setGenerating(false);
         return;
@@ -487,6 +492,14 @@ export function MockResultContent({
       setGenerating(false);
     }
   }, [mockInterview.id, router]);
+
+  // フィードバック未生成 → 自動で生成開始
+  // （status が in_progress でも結果ページに来ている場合はフィードバック生成を試みる）
+  useEffect(() => {
+    if (!feedback && !generating && !error) {
+      handleGenerateFeedback();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // カテゴリスコアのラベルマッピング
   // raw_response に元の category_scores があればそちらを使う
@@ -575,30 +588,35 @@ export function MockResultContent({
                   フィードバックを生成中...
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  AIが面接内容を分析しています。1-2分ほどお待ちください。
+                  AIが面接内容を分析しています。1〜2分ほどお待ちください。
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  このページを離れないでください
                 </p>
               </>
-            ) : (
+            ) : error ? (
               <>
                 <Lightbulb className="mb-4 h-12 w-12 text-muted-foreground" />
                 <p className="text-lg font-medium text-muted-foreground">
-                  フィードバックはまだ生成されていません
+                  フィードバック生成に失敗しました
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  ボタンを押してAIフィードバックを生成しましょう
+                  もう一度お試しください
                 </p>
                 <Button
                   className="mt-4"
                   onClick={handleGenerateFeedback}
                   disabled={generating || mockInterview.status !== "completed"}
                 >
-                  フィードバックを生成する
+                  再試行する
                 </Button>
-                {mockInterview.status !== "completed" && (
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    面接が完了するとフィードバックを生成できます
-                  </p>
-                )}
+              </>
+            ) : (
+              <>
+                <Loader2 className="mb-4 h-12 w-12 animate-spin text-muted-foreground" />
+                <p className="text-lg font-medium text-muted-foreground">
+                  フィードバック生成を準備中...
+                </p>
               </>
             )}
           </CardContent>

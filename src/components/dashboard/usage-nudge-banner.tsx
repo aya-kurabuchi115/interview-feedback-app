@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { SubscriptionPlan } from "@/types/database";
+import type { FeatureUsage } from "@/lib/subscription";
 
 /** localStorage に保存する dismiss キー */
 const DISMISS_KEY = "usage_nudge_dismissed";
@@ -19,24 +20,22 @@ function getMonthlyDismissKey(): string {
 
 interface UsageNudgeBannerProps {
   plan: SubscriptionPlan;
-  remaining: number | null;
-  limit: number | null;
-  used: number;
+  mockInterview: FeatureUsage;
+  esReview: FeatureUsage;
 }
 
 /**
  * 利用上限ナッジバナー
  *
- * - Free プランで残り1回: 黄色の注意バナー
- * - Free プランで残り0回: 赤色の警告バナー
+ * - Free プランでいずれかの機能の残り1回以下: 黄色の注意バナー
+ * - Free プランでいずれかの機能の残り0回: 赤色の警告バナー
  * - Pro/Premium/enterprise: 表示しない
  * - 「今月は表示しない」で localStorage に保存
  */
 export function UsageNudgeBanner({
   plan,
-  remaining,
-  limit,
-  used,
+  mockInterview,
+  esReview,
 }: UsageNudgeBannerProps) {
   const [dismissed, setDismissed] = useState(true); // 初期値は非表示（SSR対策）
 
@@ -49,14 +48,26 @@ export function UsageNudgeBanner({
   // Free プラン以外は表示しない
   if (plan !== "free") return null;
 
-  // 上限なし or 残り2回以上は表示しない
-  if (remaining === null || limit === null) return null;
-  if (remaining > 1) return null;
+  // いずれかの機能で残り1回以下かチェック
+  const mockRemaining = mockInterview.remaining;
+  const esRemaining = esReview.remaining;
+
+  const shouldShow =
+    (mockRemaining !== null && mockRemaining <= 1) ||
+    (esRemaining !== null && esRemaining <= 1);
+
+  if (!shouldShow) return null;
 
   // dismiss 済みなら表示しない
   if (dismissed) return null;
 
-  const isExhausted = remaining === 0;
+  const isExhausted =
+    (mockRemaining !== null && mockRemaining === 0) ||
+    (esRemaining !== null && esRemaining === 0);
+
+  const exhaustedFeatures: string[] = [];
+  if (mockRemaining === 0) exhaustedFeatures.push("模擬面接");
+  if (esRemaining === 0) exhaustedFeatures.push("ES添削");
 
   function handleDismiss() {
     const key = getMonthlyDismissKey();
@@ -91,8 +102,8 @@ export function UsageNudgeBanner({
             }`}
           >
             {isExhausted
-              ? "今月の無料枠を使い切りました"
-              : `今月の残り利用回数: ${remaining}回（${used}/${limit}回使用済み）`}
+              ? `今月の無料枠を使い切りました（${exhaustedFeatures.join("・")}）`
+              : `残りわずか: 模擬面接 ${mockRemaining}回 / ES添削 ${esRemaining}回`}
           </p>
           <p
             className={`mt-1 text-sm ${
@@ -102,8 +113,8 @@ export function UsageNudgeBanner({
             }`}
           >
             {isExhausted
-              ? "Pro プランにアップグレードすると、月30回まで分析できます。"
-              : "Pro プランなら月30回まで。もっと面接対策を進めませんか？"}
+              ? "Pro プランにアップグレードすると、模擬面接30回・ES添削5回まで利用できます。"
+              : "Pro プランなら模擬面接30回・ES添削5回まで。もっと面接対策を進めませんか？"}
           </p>
 
           <div className="mt-3 flex items-center gap-3">

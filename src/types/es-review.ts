@@ -30,6 +30,7 @@ export interface ESFeedback {
   suggestions: ESSuggestion[];
   rewritten_answer: string;
   personality_advice?: string;
+  interview_based_advice?: string;
 }
 
 /** ES添削 API リクエスト */

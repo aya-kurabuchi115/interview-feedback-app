@@ -62,7 +62,7 @@ export function useKeyboardShortcuts({
         case "n":
         case "N":
           e.preventDefault();
-          onNavigate("/interview/new");
+          onNavigate("/mock-interview");
           break;
         case "m":
         case "M":

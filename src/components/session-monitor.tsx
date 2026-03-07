@@ -24,7 +24,7 @@ export function SessionMonitor() {
       if (event === "SIGNED_OUT" && !isRedirecting.current) {
         const currentPath = window.location.pathname;
         // ログインページ・サインアップページ・公開ページではリダイレクト不要
-        const publicPaths = ["/login", "/signup", "/reset-password", "/", "/legal", "/share", "/personality", "/questions"];
+        const publicPaths = ["/login", "/signup", "/reset-password", "/", "/legal", "/personality", "/questions"];
         const isPublicPage = publicPaths.some(
           (path) => currentPath === path || currentPath.startsWith(path + "/")
         );

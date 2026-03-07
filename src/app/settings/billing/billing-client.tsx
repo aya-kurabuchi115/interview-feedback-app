@@ -1,17 +1,20 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { CreditCard, ExternalLink, Loader2 } from "lucide-react";
+import { CreditCard, ExternalLink, Loader2, MessageSquare, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { SubscriptionPlan, SubscriptionStatus } from "@/types/database";
+import type { FeatureUsage } from "@/lib/subscription";
 
 interface BillingClientProps {
   plan: SubscriptionPlan; status: SubscriptionStatus; planName: string; priceMonthly: number;
   currentPeriodEnd: string | null; cancelAt: string | null; canceledAt: string | null;
-  hasStripeCustomer: boolean; usageUsed: number; usageLimit: number | null; usageRemaining: number | null;
+  hasStripeCustomer: boolean;
+  mockInterview: FeatureUsage;
+  esReview: FeatureUsage;
 }
 
 function formatDate(dateStr: string): string {
@@ -29,18 +32,31 @@ function getStatusBadge(status: SubscriptionStatus) {
   return <Badge variant={config.variant}>{config.label}</Badge>;
 }
 
-/** アップグレードの案内文を返す */
-function getUpgradeMessage(plan: SubscriptionPlan): string {
-  if (plan === "free") {
-    return "上位プランにアップグレードすると、より多くの分析をご利用いただけます。";
-  }
-  if (plan === "pro") {
-    return "Premium プランにアップグレードすると無制限でご利用いただけます。";
-  }
-  return "";
+function FeatureUsageRow({ label, icon, usage }: { label: string; icon: React.ReactNode; usage: FeatureUsage }) {
+  const percent = usage.limit !== null ? Math.min(100, (usage.used / usage.limit) * 100) : 0;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        {icon}
+        {label}
+      </div>
+      {usage.limit !== null ? (
+        <>
+          <div className="flex items-center justify-between text-sm">
+            <span>{usage.used} / {usage.limit} 回使用</span>
+            <span className="text-muted-foreground">残り {usage.remaining} 回</span>
+          </div>
+          <Progress value={percent} className="h-2" />
+        </>
+      ) : (
+        <p className="text-sm text-muted-foreground">今月 {usage.used} 回使用（無制限）</p>
+      )}
+    </div>
+  );
 }
 
-export function BillingClient({ plan, status, planName, priceMonthly, currentPeriodEnd, cancelAt, canceledAt, hasStripeCustomer, usageUsed, usageLimit, usageRemaining }: BillingClientProps) {
+export function BillingClient({ plan, status, planName, priceMonthly, currentPeriodEnd, cancelAt, canceledAt, hasStripeCustomer, mockInterview, esReview }: BillingClientProps) {
   const [portalLoading, setPortalLoading] = useState(false);
   const handleOpenPortal = async () => {
     try {
@@ -57,8 +73,11 @@ export function BillingClient({ plan, status, planName, priceMonthly, currentPer
   };
 
   const isCanceled = !!canceledAt || !!cancelAt;
-  const usagePercent = usageLimit !== null ? Math.min(100, (usageUsed / usageLimit) * 100) : 0;
   const canUpgrade = plan === "free" || plan === "pro";
+
+  const anyExhausted =
+    (mockInterview.remaining !== null && mockInterview.remaining === 0) ||
+    (esReview.remaining !== null && esReview.remaining === 0);
 
   return (
     <div className="mt-8 space-y-6">
@@ -99,27 +118,25 @@ export function BillingClient({ plan, status, planName, priceMonthly, currentPer
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">今月の利用状況</CardTitle>
-          <CardDescription>{usageLimit !== null ? `月間 ${usageLimit} 回まで利用可能` : "無制限"}</CardDescription>
         </CardHeader>
-        <CardContent>
-          {usageLimit !== null ? (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span>{usageUsed} / {usageLimit} 回使用</span>
-                <span className="text-muted-foreground">残り {usageRemaining} 回</span>
-              </div>
-              <Progress value={usagePercent} className="h-2" />
-              {usageRemaining === 0 && (
-                <p className="text-sm text-destructive" role="alert" aria-live="assertive">
-                  今月の利用回数に達しました。
-                  <Link href="/pricing" className="ml-1 font-medium underline underline-offset-4">
-                    {getUpgradeMessage(plan) ? "上位プランにアップグレード" : "プランを確認"}
-                  </Link>
-                </p>
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">今月 {usageUsed} 回使用しました（無制限）</p>
+        <CardContent className="space-y-6">
+          <FeatureUsageRow
+            label="模擬面接"
+            icon={<MessageSquare className="h-4 w-4" />}
+            usage={mockInterview}
+          />
+          <FeatureUsageRow
+            label="ES添削"
+            icon={<FileText className="h-4 w-4" />}
+            usage={esReview}
+          />
+          {anyExhausted && (
+            <p className="text-sm text-destructive" role="alert" aria-live="assertive">
+              一部の機能が今月の利用上限に達しました。
+              <Link href="/pricing" className="ml-1 font-medium underline underline-offset-4">
+                上位プランにアップグレード
+              </Link>
+            </p>
           )}
         </CardContent>
       </Card>

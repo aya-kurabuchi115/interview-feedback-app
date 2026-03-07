@@ -1,114 +1,170 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 
-export type RecorderState = "idle" | "recording" | "paused" | "stopped";
+// ============================================================
+// Types
+// ============================================================
+
+export type RecordingState = "idle" | "recording" | "processing";
 
 interface UseAudioRecorderReturn {
-  state: RecorderState;
-  elapsedTime: number;
-  audioBlob: Blob | null;
+  /** 現在の録音状態 */
+  state: RecordingState;
+  /** 録音開始 */
+  startRecording: () => Promise<void>;
+  /** 録音停止 → Blob を返す */
+  stopRecording: () => Promise<Blob | null>;
+  /** エラーメッセージ */
   error: string | null;
-  start: () => Promise<void>;
-  pause: () => void;
-  resume: () => void;
-  stop: () => void;
+  /** エラーをクリア */
+  clearError: () => void;
+  /** 録音時間（秒） */
+  duration: number;
+  /** 録音中の MediaStream（波形表示用） */
+  stream: MediaStream | null;
 }
 
+// ============================================================
+// Hook
+// ============================================================
+
 export function useAudioRecorder(): UseAudioRecorderReturn {
-  const [state, setState] = useState<RecorderState>("idle");
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [state, setState] = useState<RecordingState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [duration, setDuration] = useState(0);
+  const [stream, setStream] = useState<MediaStream | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const resolveRef = useRef<((blob: Blob | null) => void) | null>(null);
 
-  const clearTimer = useCallback(() => {
+  const cleanup = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    setStream(null);
+    mediaRecorderRef.current = null;
+    chunksRef.current = [];
   }, []);
 
-  const startTimer = useCallback(() => {
-    clearTimer();
-    timerRef.current = setInterval(() => {
-      setElapsedTime((prev) => prev + 1);
-    }, 1000);
-  }, [clearTimer]);
-
-  const start = useCallback(async () => {
-    setError(null);
-    setAudioBlob(null);
-    setElapsedTime(0);
-    chunksRef.current = [];
-
+  const startRecording = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
+      setError(null);
+      setDuration(0);
 
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: "audio/webm;codecs=opus",
+      // マイクアクセスを取得
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100,
+        },
       });
+      streamRef.current = mediaStream;
+      setStream(mediaStream);
 
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunksRef.current.push(e.data);
+      // MediaRecorder のフォーマットを決定
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/mp4")
+          ? "audio/mp4"
+          : "";
+
+      const recorder = new MediaRecorder(mediaStream, mimeType ? { mimeType } : {});
+      mediaRecorderRef.current = recorder;
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
         }
       };
 
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-        setAudioBlob(blob);
-        setState("stopped");
-        clearTimer();
-        stream.getTracks().forEach((track) => track.stop());
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, {
+          type: recorder.mimeType || "audio/webm",
+        });
+        resolveRef.current?.(blob);
+        resolveRef.current = null;
       };
 
-      mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start(1000);
+      recorder.onerror = () => {
+        setError("録音中にエラーが発生しました");
+        setState("idle");
+        cleanup();
+        resolveRef.current?.(null);
+        resolveRef.current = null;
+      };
+
+      // 250ms ごとにデータを取得
+      recorder.start(250);
       setState("recording");
-      startTimer();
-    } catch {
-      setError("マイクにアクセスできません。ブラウザの設定を確認してください。");
+
+      // 録音時間カウンター
+      timerRef.current = setInterval(() => {
+        setDuration((prev) => prev + 1);
+      }, 1000);
+    } catch (err) {
+      cleanup();
+      if (err instanceof DOMException && err.name === "NotAllowedError") {
+        setError("マイクへのアクセスが許可されていません。ブラウザの設定を確認してください。");
+      } else if (err instanceof DOMException && err.name === "NotFoundError") {
+        setError("マイクが見つかりません。デバイスを接続してください。");
+      } else {
+        setError("マイクの起動に失敗しました。");
+      }
       setState("idle");
     }
-  }, [startTimer, clearTimer]);
+  }, [cleanup]);
 
-  const pause = useCallback(() => {
-    if (mediaRecorderRef.current?.state === "recording") {
-      mediaRecorderRef.current.pause();
-      setState("paused");
-      clearTimer();
-    }
-  }, [clearTimer]);
+  const stopRecording = useCallback(async (): Promise<Blob | null> => {
+    return new Promise((resolve) => {
+      const recorder = mediaRecorderRef.current;
 
-  const resume = useCallback(() => {
-    if (mediaRecorderRef.current?.state === "paused") {
-      mediaRecorderRef.current.resume();
-      setState("recording");
-      startTimer();
-    }
-  }, [startTimer]);
+      if (!recorder || recorder.state === "inactive") {
+        cleanup();
+        setState("idle");
+        resolve(null);
+        return;
+      }
 
-  const stop = useCallback(() => {
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state !== "inactive"
-    ) {
-      mediaRecorderRef.current.stop();
-    }
-  }, []);
+      resolveRef.current = resolve;
 
-  useEffect(() => {
-    return () => {
-      clearTimer();
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-    };
-  }, [clearTimer]);
+      // タイマー停止
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
 
-  return { state, elapsedTime, audioBlob, error, start, pause, resume, stop };
+      // ストリーム停止
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+      setStream(null);
+
+      recorder.stop();
+      setState("idle");
+    });
+  }, [cleanup]);
+
+  const clearError = useCallback(() => setError(null), []);
+
+  return {
+    state,
+    startRecording,
+    stopRecording,
+    error,
+    clearError,
+    duration,
+    stream,
+  };
 }

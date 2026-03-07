@@ -63,7 +63,8 @@ export function OnboardingWizard() {
   const savingRef = useRef(false);
 
   // ステップ1: 基本情報
-  const [displayName, setDisplayName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState("");
   const [university, setUniversity] = useState("");
   const [faculty, setFaculty] = useState("");
 
@@ -97,7 +98,7 @@ export function OnboardingWizard() {
       const body = skipData
         ? { skip: true }
         : {
-            display_name: displayName.trim() || null,
+            display_name: `${lastName.trim()} ${firstName.trim()}`.trim() || null,
             university: university.trim() || null,
             faculty: faculty.trim() || null,
             target_industry: targetIndustry,
@@ -130,8 +131,12 @@ export function OnboardingWizard() {
   // 「次へ」ボタン
   const handleNext = () => {
     if (currentStep === 1) {
-      if (displayName.trim().length > 0 && displayName.trim().length > 50) {
-        setError("表示名は1~50文字で入力してください");
+      if (lastName.trim().length > 15) {
+        setError("苗字は15文字以内で入力してください");
+        return;
+      }
+      if (firstName.trim().length > 15) {
+        setError("名前は15文字以内で入力してください");
         return;
       }
       setError("");
@@ -206,23 +211,33 @@ export function OnboardingWizard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="displayName">表示名</Label>
-              <Input
-                id="displayName"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="山田 太郎"
-                maxLength={50}
-                aria-describedby="displayName-hint"
-              />
-              <p
-                id="displayName-hint"
-                className="text-xs text-muted-foreground"
-              >
-                1~50文字（任意）
-              </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="lastName">苗字</Label>
+                <Input
+                  id="lastName"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="山田"
+                  maxLength={15}
+                  autoComplete="family-name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="firstName">名前</Label>
+                <Input
+                  id="firstName"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="太郎"
+                  maxLength={15}
+                  autoComplete="given-name"
+                />
+              </div>
             </div>
+            <p className="text-xs text-muted-foreground">
+              苗字は模擬面接で面接官がお呼びする名前に使われます（任意）
+            </p>
 
             <div className="space-y-2">
               <Label htmlFor="university">大学名</Label>

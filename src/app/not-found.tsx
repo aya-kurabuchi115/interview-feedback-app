@@ -49,11 +49,11 @@ export default function NotFound() {
         </p>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <Link
-            href="/interview/new"
+            href="/mock-interview"
             className="flex items-center gap-2 rounded-lg border px-4 py-3 text-sm transition-colors hover:bg-muted"
           >
             <Mic className="h-4 w-4 text-muted-foreground" />
-            {t("notFound.interviewAnalysis")}
+            AI面接
           </Link>
           <Link
             href="/es-review"

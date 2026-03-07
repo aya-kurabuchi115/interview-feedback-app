@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, X, CheckCircle, AlertCircle, Bell, BellOff, Clock, CalendarDays, Trash2 } from "lucide-react";
+import { Loader2, Save, X, CheckCircle, AlertCircle, Bell, BellOff, Clock, CalendarDays } from "lucide-react";
 import {
   isNotificationSupported,
   getNotificationPermission,
@@ -79,15 +79,15 @@ const JOB_HUNTING_STATUSES = [
   { value: "other", label: "その他" },
 ] as const;
 
-const WORK_LOCATIONS = [
+const PREFECTURES = [
   "北海道",
-  "東北",
-  "関東",
-  "中部",
-  "関西",
-  "中国",
-  "四国",
-  "九州",
+  "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
+  "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
+  "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県",
+  "三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県",
+  "鳥取県", "島根県", "岡山県", "広島県", "山口県",
+  "徳島県", "香川県", "愛媛県", "高知県",
+  "福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県",
   "海外",
 ] as const;
 
@@ -120,11 +120,12 @@ export default function ProfilePage() {
   const savingRef = useRef(false);
 
   // フォームステート
-  const [displayName, setDisplayName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState("");
   const [university, setUniversity] = useState("");
   const [faculty, setFaculty] = useState("");
   const [graduationYear, setGraduationYear] = useState<number | "">("");
-  const [graduationMonth, setGraduationMonth] = useState<number | "">("");
+  const [graduationMonth, setGraduationMonth] = useState<number | "">(3);
   const [targetIndustry, setTargetIndustry] = useState<string[]>([]);
   const [targetJobType, setTargetJobType] = useState<string[]>([]);
   const [jobHuntingStatus, setJobHuntingStatus] = useState("not_started");
@@ -145,11 +146,6 @@ export default function ProfilePage() {
   const [reminderTime, setReminderTime] = useState("20:00");
   const [reminderDays, setReminderDays] = useState<boolean[]>([false, true, false, true, false, true, false]);
 
-  // アカウント削除
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deletePassword, setDeletePassword] = useState("");
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // 通知状態・リマインダーの初期化
   useEffect(() => {
@@ -199,7 +195,9 @@ export default function ProfilePage() {
 
       const { profile } = (await res.json()) as { profile: Profile | null };
       if (profile) {
-        setDisplayName(profile.display_name ?? "");
+        const nameParts = (profile.display_name ?? "").split(" ");
+        setLastName(nameParts[0] ?? "");
+        setFirstName(nameParts.slice(1).join(" ") ?? "");
         setUniversity(profile.university ?? "");
         setFaculty(profile.faculty ?? "");
         setGraduationYear(profile.graduation_year ?? "");
@@ -241,13 +239,19 @@ export default function ProfilePage() {
   // クライアントサイドバリデーション
   const validateForm = (): Record<string, string> => {
     const errors: Record<string, string> = {};
-    const trimmedName = displayName.trim();
-    if (trimmedName.length === 0) {
-      errors.displayName = "フルネームを入力してください（1〜30文字）";
-    } else if (trimmedName.length > 30) {
-      errors.displayName = "フルネームは30文字以内で入力してください";
+    if (lastName.trim().length === 0) {
+      errors.lastName = "苗字を入力してください";
+    } else if (lastName.trim().length > 15) {
+      errors.lastName = "苗字は15文字以内で入力してください";
     }
-    if (university.trim().length > 100) {
+    if (firstName.trim().length === 0) {
+      errors.firstName = "名前を入力してください";
+    } else if (firstName.trim().length > 15) {
+      errors.firstName = "名前は15文字以内で入力してください";
+    }
+    if (university.trim().length === 0) {
+      errors.university = "大学名を入力してください";
+    } else if (university.trim().length > 100) {
       errors.university = "大学名は100文字以内で入力してください";
     }
     if (faculty.trim().length > 100) {
@@ -286,7 +290,7 @@ export default function ProfilePage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          display_name: displayName.trim() || null,
+          display_name: `${lastName.trim()} ${firstName.trim()}`.trim() || null,
           university: university.trim() || null,
           faculty: faculty.trim() || null,
           graduation_year: graduationYear || null,
@@ -319,39 +323,6 @@ export default function ProfilePage() {
     }
   };
 
-  // アカウント削除ハンドラー
-  const handleDeleteAccount = async () => {
-    if (!deletePassword.trim()) {
-      setDeleteError("パスワードを入力してください");
-      return;
-    }
-
-    setDeleting(true);
-    setDeleteError(null);
-
-    try {
-      const res = await fetch("/api/profile/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: deletePassword }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        setDeleteError(data.error || "アカウントの削除に失敗しました");
-        setDeleting(false);
-        return;
-      }
-
-      // サインアウトしてトップページへリダイレクト
-      const supabase = createClient();
-      await supabase.auth.signOut();
-      router.push("/?deleted=true");
-    } catch {
-      setDeleteError("通信エラーが発生しました。もう一度お試しください。");
-      setDeleting(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -455,45 +426,70 @@ export default function ProfilePage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="displayName">
-                フルネーム<span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="displayName"
-                value={displayName}
-                onChange={(e) => {
-                  setDisplayName(e.target.value);
-                  if (fieldErrors.displayName) {
-                    setFieldErrors((prev) => {
-                      const next = { ...prev };
-                      delete next.displayName;
-                      return next;
-                    });
-                  }
-                }}
-                placeholder="山田 太郎"
-                maxLength={30}
-                autoComplete="name"
-                aria-describedby="displayName-hint"
-                aria-invalid={!!fieldErrors.displayName}
-                aria-errormessage={fieldErrors.displayName ? "displayName-error" : undefined}
-                required
-              />
-              {fieldErrors.displayName ? (
-                <p id="displayName-error" className="text-xs text-destructive" role="alert">
-                  {fieldErrors.displayName}
-                </p>
-              ) : (
-                <p id="displayName-hint" className="text-xs text-muted-foreground">
-                  1〜30文字（必須）
-                </p>
-              )}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="lastName">
+                  苗字<span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="lastName"
+                  value={lastName}
+                  onChange={(e) => {
+                    setLastName(e.target.value);
+                    if (fieldErrors.lastName) {
+                      setFieldErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.lastName;
+                        return next;
+                      });
+                    }
+                  }}
+                  placeholder="山田"
+                  maxLength={15}
+                  autoComplete="family-name"
+                  aria-invalid={!!fieldErrors.lastName}
+                  required
+                />
+                {fieldErrors.lastName && (
+                  <p className="text-xs text-destructive" role="alert">
+                    {fieldErrors.lastName}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="firstName">
+                  名前<span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="firstName"
+                  value={firstName}
+                  onChange={(e) => {
+                    setFirstName(e.target.value);
+                    if (fieldErrors.firstName) {
+                      setFieldErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.firstName;
+                        return next;
+                      });
+                    }
+                  }}
+                  placeholder="太郎"
+                  maxLength={15}
+                  autoComplete="given-name"
+                  aria-invalid={!!fieldErrors.firstName}
+                  required
+                />
+                {fieldErrors.firstName && (
+                  <p className="text-xs text-destructive" role="alert">
+                    {fieldErrors.firstName}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="university">
-                大学名<span className="ml-1 text-xs text-muted-foreground">（任意）</span>
+                大学名<span className="text-destructive">*</span>
               </Label>
               <Input
                 id="university"
@@ -512,6 +508,7 @@ export default function ProfilePage() {
                 maxLength={100}
                 autoComplete="organization"
                 aria-invalid={!!fieldErrors.university}
+                required
               />
               {fieldErrors.university && (
                 <p className="text-xs text-destructive" role="alert">
@@ -717,36 +714,41 @@ export default function ProfilePage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>
-                希望勤務地<span className="ml-1 text-xs text-muted-foreground">（任意）</span>
+                希望勤務地<span className="ml-1 text-xs text-muted-foreground">（任意・最大10箇所）</span>
               </Label>
-              <div className="flex flex-wrap gap-2">
-                {WORK_LOCATIONS.map((location) => {
-                  const selected = preferredWorkLocation.includes(location);
+              <div className="flex flex-wrap gap-1.5">
+                {PREFECTURES.map((pref) => {
+                  const selected = preferredWorkLocation.includes(pref);
                   return (
                     <button
-                      key={location}
+                      key={pref}
                       type="button"
                       onClick={() =>
                         toggleSelection(
                           preferredWorkLocation,
                           setPreferredWorkLocation,
-                          location,
-                          9
+                          pref,
+                          10
                         )
                       }
                       aria-pressed={selected}
-                      className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium transition-colors ${
+                      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors ${
                         selected
                           ? "border-primary bg-primary text-primary-foreground"
                           : "border-border bg-background text-foreground hover:bg-accent"
                       }`}
                     >
-                      {location}
-                      {selected && <X className="ml-1 h-3 w-3" />}
+                      {pref}
+                      {selected && <X className="ml-0.5 h-2.5 w-2.5" />}
                     </button>
                   );
                 })}
               </div>
+              {preferredWorkLocation.length >= 10 && (
+                <p className="text-xs text-destructive">
+                  最大10箇所まで選択できます
+                </p>
+              )}
             </div>
 
             {/* 選択中の項目表示 */}
@@ -1184,91 +1186,15 @@ export default function ProfilePage() {
         </div>
       </form>
 
-      {/* ============================================================ */}
-      {/* デンジャーゾーン — アカウント削除 */}
-      {/* ============================================================ */}
-      <Card className="mt-8 border-destructive/50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <Trash2 className="h-5 w-5" />
-            アカウント削除
-          </CardTitle>
-          <CardDescription>
-            アカウントを削除すると、すべてのデータ（面接記録・分析結果・プロフィール）が完全に削除されます。この操作は取り消せません。
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!showDeleteConfirm ? (
-            <Button
-              variant="destructive"
-              onClick={() => setShowDeleteConfirm(true)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              退会する
-            </Button>
-          ) : (
-            <div className="space-y-4">
-              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-                <p className="text-sm font-medium text-destructive">
-                  本当にアカウントを削除しますか？
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  確認のため、パスワードを入力してください。
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="deletePassword">パスワード</Label>
-                <Input
-                  id="deletePassword"
-                  type="password"
-                  autoComplete="current-password"
-                  value={deletePassword}
-                  onChange={(e) => {
-                    setDeletePassword(e.target.value);
-                    setDeleteError(null);
-                  }}
-                  placeholder="パスワードを入力"
-                  disabled={deleting}
-                />
-              </div>
-
-              {deleteError && (
-                <div className="flex items-center gap-2 text-sm text-destructive">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  {deleteError}
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteAccount}
-                  disabled={deleting || !deletePassword.trim()}
-                >
-                  {deleting ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="mr-2 h-4 w-4" />
-                  )}
-                  {deleting ? "削除中..." : "完全に削除する"}
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setShowDeleteConfirm(false);
-                    setDeletePassword("");
-                    setDeleteError(null);
-                  }}
-                  disabled={deleting}
-                >
-                  キャンセル
-                </Button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* 退会リンク */}
+      <div className="mt-8 text-center">
+        <Link
+          href="/settings/delete-account"
+          className="text-sm text-muted-foreground hover:text-destructive hover:underline"
+        >
+          アカウントを削除する
+        </Link>
+      </div>
     </div>
   );
 }

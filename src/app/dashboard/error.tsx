@@ -17,7 +17,7 @@ export default function DashboardError({
 
   useEffect(() => {
     const id = reportClientError(error, {
-      featureArea: "interview",
+      featureArea: "profile",
       componentName: "DashboardErrorBoundary",
     });
     setErrorId(id);

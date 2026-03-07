@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, FileText, Sparkles } from "lucide-react";
+import { Loader2, FileText, Sparkles, Lock, Crown } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -36,11 +36,14 @@ const QUESTION_EXAMPLES = [
 export default function ESReviewPage() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [plan, setPlan] = useState<string>("free");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const router = useRouter();
+
+  const isPremium = plan === "premium" || plan === "enterprise";
 
   // 認証チェック
   useEffect(() => {
@@ -50,10 +53,22 @@ export default function ESReviewPage() {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
-      setAuthLoading(false);
       if (!user) {
+        setAuthLoading(false);
         router.push(`/login?expired=true&redirect=${encodeURIComponent("/es-review")}`);
+        return;
       }
+      // プラン取得
+      try {
+        const res = await fetch("/api/subscription");
+        if (res.ok) {
+          const data = await res.json();
+          setPlan(data.subscription?.plan ?? "free");
+        }
+      } catch {
+        // ignore
+      }
+      setAuthLoading(false);
     };
     getUser();
   }, [router]);
@@ -135,7 +150,7 @@ export default function ESReviewPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        if (data.code === "USAGE_LIMIT_EXCEEDED") {
+        if (data.code === "USAGE_LIMIT_EXCEEDED" || data.code === "PREMIUM_REQUIRED") {
           setErrors({
             submit: data.error,
             upgrade: data.upgrade_url || "/pricing",
@@ -363,24 +378,55 @@ export default function ESReviewPage() {
         </Card>
 
         {/* 添削ボタン */}
-        <Button
-          type="submit"
-          size="lg"
-          className="w-full"
-          disabled={submitting}
-        >
-          {submitting ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              添削中...（30秒ほどかかります）
-            </>
-          ) : (
-            <>
-              <Sparkles className="mr-2 h-5 w-5" />
+        {isPremium ? (
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            disabled={submitting}
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                添削中...（30秒ほどかかります）
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-5 w-5" />
+                添削してもらう
+              </>
+            )}
+          </Button>
+        ) : (
+          <div className="space-y-3">
+            <Button
+              type="button"
+              size="lg"
+              className="w-full"
+              disabled
+            >
+              <Lock className="mr-2 h-5 w-5" />
               添削してもらう
-            </>
-          )}
-        </Button>
+            </Button>
+            <div className="rounded-lg border border-[var(--brand-orange)]/30 bg-[var(--brand-orange)]/5 p-4 text-center">
+              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--brand-orange)] px-3 py-1 text-xs font-semibold text-white">
+                <Crown className="h-3.5 w-3.5" />
+                Premium 限定機能
+              </div>
+              <p className="text-sm text-muted-foreground">
+                ES添削は Premium プランでご利用いただけます。
+                <br />
+                過去の面接履歴も踏まえた詳細なフィードバックを提供します。
+              </p>
+              <Button asChild size="sm" className="mt-3 bg-[var(--brand-orange)] text-white hover:bg-[var(--brand-orange)]/90">
+                <Link href="/pricing">
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Premium にアップグレード
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );

@@ -1,6 +1,6 @@
 import { redirectToLogin } from "@/lib/auth/redirect";
 import { createClient } from "@/lib/supabase/server";
-import { getUserSubscription, getRemainingUsage } from "@/lib/subscription";
+import { getUserSubscription, getRemainingUsageByFeature } from "@/lib/subscription";
 import dynamic from "next/dynamic";
 import { PLANS } from "@/lib/stripe/config";
 
@@ -25,7 +25,7 @@ export default async function BillingPage() {
   if (!user) { await redirectToLogin(); return null; }
 
   const subscription = await getUserSubscription(user.id);
-  const usage = await getRemainingUsage(user.id);
+  const usage = await getRemainingUsageByFeature(user.id);
   const planConfig = PLANS[subscription.plan === "enterprise" ? "premium" : subscription.plan];
 
   return (
@@ -39,7 +39,8 @@ export default async function BillingPage() {
           currentPeriodEnd={subscription.currentPeriodEnd}
           cancelAt={subscription.cancelAt} canceledAt={subscription.canceledAt}
           hasStripeCustomer={!!subscription.stripeCustomerId}
-          usageUsed={usage.used} usageLimit={usage.limit} usageRemaining={usage.remaining}
+          mockInterview={usage.mockInterview}
+          esReview={usage.esReview}
         />
       </div>
     </div>

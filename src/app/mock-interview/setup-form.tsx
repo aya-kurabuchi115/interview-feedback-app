@@ -59,11 +59,11 @@ const ROUND_OPTIONS: { value: MockInterviewRound; label: string }[] = [
   { value: "final", label: "最終面接" },
 ];
 
-const DURATION_OPTIONS = [
-  { value: 10, label: "10分（短め）" },
-  { value: 15, label: "15分（標準）" },
-  { value: 20, label: "20分（やや長め）" },
-  { value: 30, label: "30分（じっくり）" },
+const QUESTION_COUNT_OPTIONS = [
+  { value: 3, label: "3問（お試し）" },
+  { value: 5, label: "5問（サクッと）" },
+  { value: 8, label: "8問（標準）" },
+  { value: 12, label: "12問（じっくり）" },
 ] as const;
 
 const DIFFICULTY_OPTIONS: { value: MockInterviewDifficulty; label: string; description: string }[] = [
@@ -83,7 +83,7 @@ export function SetupForm({ defaultIndustry, personalityType }: SetupFormProps) 
   const [industry, setIndustry] = useState(defaultIndustry);
   const [category, setCategory] = useState<MockInterviewCategory>("general");
   const [round, setRound] = useState<MockInterviewRound>("first");
-  const [duration, setDuration] = useState(15);
+  const [questionCount, setQuestionCount] = useState(5);
   const [difficulty, setDifficulty] = useState<MockInterviewDifficulty>("normal");
 
   // 企業名サジェスト
@@ -98,9 +98,12 @@ export function SetupForm({ defaultIndustry, personalityType }: SetupFormProps) 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // --- 企業名サジェスト ---
+  const suggestionsDataRef = useRef<{ name: string; industry: string | null }[]>([]);
+
   const fetchCompanySuggestions = useCallback(async (query: string) => {
     if (query.trim().length < 1) {
       setCompanySuggestions([]);
+      suggestionsDataRef.current = [];
       setShowSuggestions(false);
       return;
     }
@@ -110,15 +113,17 @@ export function SetupForm({ defaultIndustry, personalityType }: SetupFormProps) 
       const escaped = query.replace(/[%_\\]/g, "\\$&");
       const { data } = await supabase
         .from("companies")
-        .select("name")
+        .select("name, industry")
         .ilike("name", `%${escaped}%`)
         .limit(5);
 
-      const companies = data as { name: string }[] | null;
+      const companies = data as { name: string; industry: string | null }[] | null;
       if (companies && companies.length > 0) {
+        suggestionsDataRef.current = companies;
         setCompanySuggestions(companies.map((c) => c.name));
         setShowSuggestions(true);
       } else {
+        suggestionsDataRef.current = [];
         setCompanySuggestions([]);
         setShowSuggestions(false);
       }
@@ -134,14 +139,34 @@ export function SetupForm({ defaultIndustry, personalityType }: SetupFormProps) 
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
-    debounceTimerRef.current = setTimeout(() => {
-      fetchCompanySuggestions(value);
+    debounceTimerRef.current = setTimeout(async () => {
+      await fetchCompanySuggestions(value);
+      // 完全一致する企業があれば業界を自動設定
+      const exact = suggestionsDataRef.current.find(
+        (c) => c.name === value.trim()
+      );
+      if (exact?.industry) {
+        const matchedOption = INDUSTRY_OPTIONS.find((opt) => opt.value === exact.industry);
+        if (matchedOption) {
+          setIndustry(matchedOption.value);
+        }
+      }
     }, 300);
   };
 
   const selectSuggestion = (name: string) => {
     setCompanyName(name);
     setShowSuggestions(false);
+
+    // 企業のデータから業界を自動設定
+    const matched = suggestionsDataRef.current.find((c) => c.name === name);
+    if (matched?.industry) {
+      // INDUSTRY_OPTIONS に該当する値があればセット
+      const matchedOption = INDUSTRY_OPTIONS.find((opt) => opt.value === matched.industry);
+      if (matchedOption) {
+        setIndustry(matchedOption.value);
+      }
+    }
   };
 
   // --- 送信 ---
@@ -161,7 +186,7 @@ export function SetupForm({ defaultIndustry, personalityType }: SetupFormProps) 
           industry: industry || null,
           category,
           round,
-          duration_minutes: duration,
+          max_questions: questionCount,
           difficulty,
         }),
       });
@@ -185,6 +210,27 @@ export function SetupForm({ defaultIndustry, personalityType }: SetupFormProps) 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* パーソナリティタイプ（コンパクト表示） */}
+      {personalityType && isValidPersonalityType(personalityType) ? (() => {
+        const pData = PERSONALITY_DATA[personalityType.toUpperCase() as PersonalityType];
+        return (
+          <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+            <span>{pData.animalEmoji}</span>
+            <span className="font-medium">{pData.type}</span>
+            <span className="text-muted-foreground">- {pData.name}</span>
+            <Sparkles className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
+          </div>
+        );
+      })() : (
+        <Link
+          href="/personality"
+          className="flex items-center gap-2 rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          パーソナリティ診断を受けると、タイプに合ったフィードバックが得られます
+        </Link>
+      )}
+
       {/* エラー表示 */}
       {error && (
         <div
@@ -200,7 +246,7 @@ export function SetupForm({ defaultIndustry, personalityType }: SetupFormProps) 
       <div className="space-y-2">
         <Label htmlFor="company-name">企業名（任意）</Label>
         <p className="text-xs text-muted-foreground">
-          企業名を入力すると、その企業に合わせた質問が生成されます
+          企業名を入力すると、AIがその企業の事業内容や業界特性をもとに面接質問を生成します。有名企業ほどより具体的な質問が出やすくなります
         </p>
         <div className="relative">
           <Input
@@ -297,18 +343,18 @@ export function SetupForm({ defaultIndustry, personalityType }: SetupFormProps) 
         </Select>
       </div>
 
-      {/* 面接時間 */}
+      {/* 質問数 */}
       <div className="space-y-2">
-        <Label htmlFor="duration">面接時間</Label>
+        <Label htmlFor="question-count">質問数</Label>
         <Select
-          value={String(duration)}
-          onValueChange={(v) => setDuration(Number(v))}
+          value={String(questionCount)}
+          onValueChange={(v) => setQuestionCount(Number(v))}
         >
-          <SelectTrigger id="duration" className="w-full">
-            <SelectValue placeholder="時間を選択" />
+          <SelectTrigger id="question-count" className="w-full">
+            <SelectValue placeholder="質問数を選択" />
           </SelectTrigger>
           <SelectContent>
-            {DURATION_OPTIONS.map((opt) => (
+            {QUESTION_COUNT_OPTIONS.map((opt) => (
               <SelectItem key={opt.value} value={String(opt.value)}>
                 {opt.label}
               </SelectItem>
@@ -342,48 +388,6 @@ export function SetupForm({ defaultIndustry, personalityType }: SetupFormProps) 
               </button>
             ))}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* パーソナリティタイプ */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="h-4 w-4" />
-            パーソナリティタイプ
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {personalityType && isValidPersonalityType(personalityType) ? (() => {
-            const pData = PERSONALITY_DATA[personalityType.toUpperCase() as PersonalityType];
-            return (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{pData.animalEmoji}</span>
-                  <span className="font-medium">{pData.type} - {pData.name}</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  あなたのパーソナリティに基づいた面接練習ができます。フィードバックにタイプ固有のアドバイスが含まれます。
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  面接での強み: {pData.interviewStrengths.join("、")}
-                </p>
-              </div>
-            );
-          })() : (
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                パーソナリティタイプを設定すると、あなたに合ったフィードバックが得られます。
-              </p>
-              <Link
-                href="/personality"
-                className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                パーソナリティ診断を受ける
-              </Link>
-            </div>
-          )}
         </CardContent>
       </Card>
 

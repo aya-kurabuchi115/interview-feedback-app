@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PersonalityCard } from "@/components/personality/personality-card";
+import { PersonalityHero } from "@/components/personality/personality-hero";
 import {
   PERSONALITY_DATA,
   PERSONALITY_GROUPS,
@@ -31,30 +32,8 @@ const GROUP_ORDER: PersonalityGroup[] = [
 export default function PersonalityPage() {
   return (
     <div className="container mx-auto px-4 py-12">
-      {/* ヒーローセクション */}
-      <div className="mx-auto max-w-3xl text-center">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          🧠 16パーソナリティ診断
-        </h1>
-        <p className="mt-4 text-lg text-muted-foreground">
-          あなたの性格タイプを知って、面接力をアップしよう！
-        </p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          16タイプそれぞれの面接での強み・弱みと、ピッタリの業界を紹介します
-        </p>
-
-        <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <Link
-            href="/signup"
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-          >
-            無料で診断してみる
-          </Link>
-          <span className="text-xs text-muted-foreground">
-            ※ 詳しい診断にはアカウント登録が必要です
-          </span>
-        </div>
-      </div>
+      {/* ヒーローセクション（診断済みなら結果表示） */}
+      <PersonalityHero />
 
       {/* グループ別タイプ一覧 */}
       <div className="mt-16 space-y-16">
@@ -97,23 +76,17 @@ export default function PersonalityPage() {
       {/* CTA セクション */}
       <div className="mt-20 rounded-2xl bg-gradient-to-r from-purple-50 via-green-50 to-blue-50 p-8 text-center dark:from-purple-950/20 dark:via-green-950/20 dark:to-blue-950/20">
         <h2 className="text-2xl font-bold">
-          あなたはどのタイプ？
+          自分のタイプを知ろう
         </h2>
         <p className="mt-2 text-muted-foreground">
           性格タイプに合わせた面接アドバイスで、自分らしい面接対策を始めよう
         </p>
         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <Link
-            href="/signup"
+            href="/personality/diagnosis"
             className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-8 text-sm font-medium text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl"
           >
-            今すぐ診断する（無料登録）
-          </Link>
-          <Link
-            href="/pricing"
-            className="inline-flex h-11 items-center justify-center rounded-lg border bg-background px-8 text-sm font-medium transition-colors hover:bg-accent"
-          >
-            料金プランを見る
+            診断する
           </Link>
         </div>
       </div>

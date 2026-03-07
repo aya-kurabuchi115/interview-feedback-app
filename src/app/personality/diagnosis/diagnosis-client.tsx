@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import {
   DIAGNOSIS_QUESTIONS,
@@ -18,17 +17,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, ArrowRight, ArrowLeft, CheckCircle, RotateCcw } from "lucide-react";
+import { Loader2, ArrowRight, ArrowLeft, CheckCircle, RotateCcw, Lock } from "lucide-react";
 
 type Phase = "intro" | "questions" | "result";
 
 export function DiagnosisClient() {
-  const router = useRouter();
   const [phase, setPhase] = useState<Phase>("intro");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   const totalQuestions = DIAGNOSIS_QUESTIONS.length;
   const currentQuestion = DIAGNOSIS_QUESTIONS[currentIndex];
@@ -44,6 +43,40 @@ export function DiagnosisClient() {
     result ? PERSONALITY_DATA[result.type] : null;
   const groupInfo =
     result ? getGroupForType(result.type) : null;
+
+  // 結果フェーズに入ったらログイン状態をチェック
+  useEffect(() => {
+    if (phase === "result") {
+      fetch("/api/auth/status")
+        .then((res) => res.json())
+        .then((data) => setIsLoggedIn(!!data.user))
+        .catch(() => setIsLoggedIn(false));
+    }
+  }, [phase]);
+
+  // 結果を sessionStorage に保存（ログイン後に戻ってきた時用）
+  useEffect(() => {
+    if (phase === "result" && result) {
+      sessionStorage.setItem("diagnosis_result_type", result.type);
+    }
+  }, [phase, result]);
+
+  // ページ読み込み時に sessionStorage から結果を復元
+  useEffect(() => {
+    const savedType = sessionStorage.getItem("diagnosis_result_type");
+    if (savedType && phase === "intro" && Object.keys(answers).length === 0) {
+      // ログイン後に戻ってきたケース: 保存済み結果から復元
+      const validType = Object.keys(PERSONALITY_DATA).find(
+        (t) => t === savedType
+      );
+      if (validType) {
+        // answers を空にしたまま result フェーズに遷移するため、
+        // calculatePersonalityType を使わず直接型を設定
+        setPhase("result");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 回答を選択
   const handleAnswer = useCallback(
@@ -80,6 +113,7 @@ export function DiagnosisClient() {
       });
       if (res.ok) {
         setSaved(true);
+        sessionStorage.removeItem("diagnosis_result_type");
       }
     } catch {
       // 静かに失敗
@@ -94,7 +128,20 @@ export function DiagnosisClient() {
     setCurrentIndex(0);
     setAnswers({});
     setSaved(false);
+    setIsLoggedIn(null);
+    sessionStorage.removeItem("diagnosis_result_type");
   }, []);
+
+  // sessionStorage から復元した結果型を取得
+  const getResultType = () => {
+    if (result) return result.type;
+    const savedType = sessionStorage.getItem("diagnosis_result_type");
+    return savedType || null;
+  };
+
+  const resultType = phase === "result" ? getResultType() : null;
+  const resultPersonalityInfo = resultType ? PERSONALITY_DATA[resultType as keyof typeof PERSONALITY_DATA] : null;
+  const resultGroupInfo = resultType ? getGroupForType(resultType as keyof typeof PERSONALITY_DATA) : null;
 
   // ── イントロ画面 ──
   if (phase === "intro") {
@@ -204,7 +251,10 @@ export function DiagnosisClient() {
   }
 
   // ── 結果画面 ──
-  if (phase === "result" && result && personalityInfo && groupInfo) {
+  if (phase === "result" && resultPersonalityInfo && resultGroupInfo) {
+    const showFullResult = isLoggedIn === true;
+    const isCheckingAuth = isLoggedIn === null;
+
     return (
       <div className="space-y-6">
         <div className="text-center">
@@ -222,93 +272,146 @@ export function DiagnosisClient() {
         {/* 結果カード */}
         <Card
           className="overflow-hidden"
-          style={{ borderColor: `${personalityInfo.color}40` }}
+          style={{ borderColor: `${resultPersonalityInfo.color}40` }}
         >
           <div
             className="p-6 text-center"
-            style={{ backgroundColor: personalityInfo.colorLight }}
+            style={{ backgroundColor: resultPersonalityInfo.colorLight }}
           >
             <div className="mb-3 text-5xl">
-              {personalityInfo.animalEmoji}
+              {resultPersonalityInfo.animalEmoji}
             </div>
             <span
               className="inline-block rounded-full px-4 py-1 text-sm font-bold text-white"
-              style={{ backgroundColor: personalityInfo.color }}
+              style={{ backgroundColor: resultPersonalityInfo.color }}
             >
-              {personalityInfo.type}
+              {resultPersonalityInfo.type}
             </span>
             <h2 className="mt-2 text-xl font-bold">
-              {personalityInfo.name}
+              {resultPersonalityInfo.name}
               <span className="ml-2 text-sm font-normal text-muted-foreground">
-                {personalityInfo.nameEn}
+                {resultPersonalityInfo.nameEn}
               </span>
             </h2>
-            <p className="mt-1 text-sm" style={{ color: groupInfo.color }}>
-              {groupInfo.name}グループ
+            <p className="mt-1 text-sm" style={{ color: resultGroupInfo.color }}>
+              {resultGroupInfo.name}グループ
             </p>
           </div>
 
           <CardContent className="space-y-4 pt-6">
             <p className="text-sm leading-relaxed text-muted-foreground">
-              {personalityInfo.tagline}
-            </p>
-            <p className="text-sm leading-relaxed">
-              {personalityInfo.description}
+              {resultPersonalityInfo.tagline}
             </p>
 
-            {/* 面接での強み */}
-            <div>
-              <h3 className="mb-2 text-sm font-bold text-green-700 dark:text-green-400">
-                面接での強み
-              </h3>
-              <ul className="ml-4 list-disc space-y-1 text-sm text-muted-foreground">
-                {personalityInfo.interviewStrengths.map((s) => (
-                  <li key={s}>{s}</li>
-                ))}
-              </ul>
-            </div>
+            {showFullResult ? (
+              <>
+                <p className="text-sm leading-relaxed">
+                  {resultPersonalityInfo.description}
+                </p>
 
-            {/* 面接での課題 */}
-            <div>
-              <h3 className="mb-2 text-sm font-bold text-orange-700 dark:text-orange-400">
-                面接での課題
-              </h3>
-              <ul className="ml-4 list-disc space-y-1 text-sm text-muted-foreground">
-                {personalityInfo.interviewWeaknesses.map((w) => (
-                  <li key={w}>{w}</li>
-                ))}
-              </ul>
-            </div>
+                {/* 面接での強み */}
+                <div>
+                  <h3 className="mb-2 text-sm font-bold text-green-700 dark:text-green-400">
+                    面接での強み
+                  </h3>
+                  <ul className="ml-4 list-disc space-y-1 text-sm text-muted-foreground">
+                    {resultPersonalityInfo.interviewStrengths.map((s) => (
+                      <li key={s}>{s}</li>
+                    ))}
+                  </ul>
+                </div>
 
-            {/* アドバイス */}
-            <div
-              className="rounded-lg p-4"
-              style={{ backgroundColor: `${personalityInfo.color}10` }}
-            >
-              <h3 className="mb-1 text-sm font-bold">面接アドバイス</h3>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {personalityInfo.adviceTip}
-              </p>
-            </div>
+                {/* 面接での課題 */}
+                <div>
+                  <h3 className="mb-2 text-sm font-bold text-orange-700 dark:text-orange-400">
+                    面接での課題
+                  </h3>
+                  <ul className="ml-4 list-disc space-y-1 text-sm text-muted-foreground">
+                    {resultPersonalityInfo.interviewWeaknesses.map((w) => (
+                      <li key={w}>{w}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* アドバイス */}
+                <div
+                  className="rounded-lg p-4"
+                  style={{ backgroundColor: `${resultPersonalityInfo.color}10` }}
+                >
+                  <h3 className="mb-1 text-sm font-bold">面接アドバイス</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {resultPersonalityInfo.adviceTip}
+                  </p>
+                </div>
+              </>
+            ) : (
+              /* 未ログイン: ぼかし表示 */
+              <div className="relative">
+                <div className="pointer-events-none select-none blur-md" aria-hidden="true">
+                  <p className="text-sm leading-relaxed">
+                    {resultPersonalityInfo.description}
+                  </p>
+                  <div className="mt-4">
+                    <h3 className="mb-2 text-sm font-bold text-green-700">面接での強み</h3>
+                    <ul className="ml-4 list-disc space-y-1 text-sm text-muted-foreground">
+                      {resultPersonalityInfo.interviewStrengths.map((s) => (
+                        <li key={s}>{s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="mt-4">
+                    <h3 className="mb-2 text-sm font-bold text-orange-700">面接での課題</h3>
+                    <ul className="ml-4 list-disc space-y-1 text-sm text-muted-foreground">
+                      {resultPersonalityInfo.interviewWeaknesses.map((w) => (
+                        <li key={w}>{w}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                {!isCheckingAuth && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <Lock className="mb-3 h-8 w-8 text-muted-foreground" />
+                    <p className="mb-4 text-center text-sm font-medium">
+                      無料アカウントを作成すると
+                      <br />
+                      詳細な診断結果をすべて見られます
+                    </p>
+                    <Button asChild size="lg">
+                      <Link href={`/signup?redirect=/personality/diagnosis`}>
+                        アカウント登録して結果を見る
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      登録は30秒。無料です。
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* アクションボタン */}
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-          {!saved ? (
-            <Button onClick={handleSave} disabled={saving} size="lg">
-              {saving ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          {showFullResult && (
+            <>
+              {!saved ? (
+                <Button onClick={handleSave} disabled={saving} size="lg">
+                  {saving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                  )}
+                  {saving ? "保存中..." : "プロフィールに保存する"}
+                </Button>
               ) : (
-                <CheckCircle className="mr-2 h-4 w-4" />
+                <Button disabled size="lg" variant="outline" className="text-green-600 border-green-300">
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  保存しました
+                </Button>
               )}
-              {saving ? "保存中..." : "プロフィールに保存する"}
-            </Button>
-          ) : (
-            <Button disabled size="lg" variant="outline" className="text-green-600 border-green-300">
-              <CheckCircle className="mr-2 h-4 w-4" />
-              保存しました
-            </Button>
+            </>
           )}
 
           <Button variant="outline" size="lg" onClick={handleRetry}>
@@ -318,20 +421,22 @@ export function DiagnosisClient() {
         </div>
 
         {/* リンク */}
-        <div className="flex flex-col items-center gap-2 text-sm">
-          <Link
-            href={`/personality/${personalityInfo.type.toLowerCase()}`}
-            className="text-primary hover:underline"
-          >
-            {personalityInfo.type} の詳細ページを見る
-          </Link>
-          <Link
-            href="/profile"
-            className="text-muted-foreground hover:underline"
-          >
-            プロフィール設定に戻る
-          </Link>
-        </div>
+        {showFullResult && (
+          <div className="flex flex-col items-center gap-2 text-sm">
+            <Link
+              href={`/personality/${resultPersonalityInfo.type.toLowerCase()}`}
+              className="text-primary hover:underline"
+            >
+              {resultPersonalityInfo.type} の詳細ページを見る
+            </Link>
+            <Link
+              href="/profile"
+              className="text-muted-foreground hover:underline"
+            >
+              プロフィール設定に戻る
+            </Link>
+          </div>
+        )}
       </div>
     );
   }

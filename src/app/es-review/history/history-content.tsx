@@ -76,7 +76,7 @@ export function ESReviewHistoryContent({
           secondaryActions={[
             {
               label: "面接を記録する",
-              href: "/interview/new",
+              href: "/mock-interview",
               icon: ClipboardList,
             },
           ]}

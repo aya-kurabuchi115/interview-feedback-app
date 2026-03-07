@@ -13,7 +13,7 @@ export default function PricingSuccessPage() {
           <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-green-100">
             <CheckCircle className="size-8 text-green-600" />
           </div>
-          <CardTitle className="text-2xl">Pro プランへようこそ!</CardTitle>
+          <CardTitle className="text-2xl">プランのアップグレード完了!</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">お支払いが正常に完了しました。すべての機能が利用可能になりました。</p>

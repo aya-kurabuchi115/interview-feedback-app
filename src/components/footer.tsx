@@ -37,6 +37,12 @@ export function Footer() {
           >
             {t("footer.help")}
           </Link>
+          <Link
+            href="/contact"
+            className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
+          >
+            お問い合わせ
+          </Link>
         </nav>
       </div>
     </footer>

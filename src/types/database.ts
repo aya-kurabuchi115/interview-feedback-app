@@ -177,6 +177,40 @@ export interface Database {
         Relationships: [];
       };
 
+      contact_requests: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          name: string;
+          email: string;
+          category: string;
+          message: string;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          name: string;
+          email: string;
+          category?: string;
+          message: string;
+          status?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          name?: string;
+          email?: string;
+          category?: string;
+          message?: string;
+          status?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+
       companies: {
         Row: {
           id: string;

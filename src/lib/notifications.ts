@@ -83,7 +83,7 @@ export function sendAnalysisCompleteNotification(
     body: "面接フィードバックの準備ができました。クリックして結果を確認しましょう。",
     tag: `analysis-complete-${interviewId}`,
     onClick: () => {
-      onNavigate(`/interview/${interviewId}/result`);
+      onNavigate(`/mock-interview/${interviewId}/result`);
     },
   });
 

@@ -14,20 +14,17 @@ import * as Sentry from "@sentry/nextjs";
 // ============================================================
 
 export type FeatureArea =
-  | "interview"
-  | "analyze"
   | "es-review"
   | "mock-interview"
   | "personality"
-  | "share"
   | "subscription"
   | "stripe"
   | "auth"
   | "profile"
   | "onboarding"
-  | "export"
-  | "tags"
-  | "questions";
+  | "questions"
+  | "stt"
+  | "contact";
 
 // ============================================================
 // エラーID生成
@@ -75,7 +72,7 @@ export function clearSentryUserContext(): void {
 // ============================================================
 
 export interface ReportApiErrorOptions {
-  /** API ルートのパス (例: "/api/analyze") */
+  /** API ルートのパス (例: "/api/mock-interview") */
   apiRoute: string;
   /** 機能領域タグ */
   featureArea: FeatureArea;
@@ -94,11 +91,11 @@ export interface ReportApiErrorOptions {
  * ```ts
  * catch (error) {
  *   const errorId = reportApiError(error, {
- *     apiRoute: "/api/analyze",
- *     featureArea: "analyze",
+ *     apiRoute: "/api/mock-interview",
+ *     featureArea: "mock-interview",
  *     userId: user?.id,
  *     plan: subscription.plan,
- *     extra: { interview_id: interviewId },
+ *     extra: { session_id: sessionId },
  *   });
  *   return serverError(`エラーが発生しました（ID: ${errorId}）`);
  * }

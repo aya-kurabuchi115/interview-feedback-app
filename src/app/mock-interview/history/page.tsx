@@ -175,7 +175,7 @@ export default async function MockInterviewHistoryPage() {
           secondaryActions={[
             {
               label: "面接を記録する",
-              href: "/interview/new",
+              href: "/mock-interview",
               icon: ClipboardList,
             },
           ]}
@@ -189,12 +189,14 @@ export default async function MockInterviewHistoryPage() {
                 : null;
             const isCompleted = mi.status === "completed";
             const hasFeedback = mi.feedback_id !== null;
+            // 完了済みまたはフィードバックがある場合は結果画面へ
+            const shouldShowResult = isCompleted || hasFeedback;
 
             return (
               <Link
                 key={mi.id}
                 href={
-                  isCompleted
+                  shouldShowResult
                     ? `/mock-interview/${mi.id}/result`
                     : `/mock-interview/${mi.id}/chat`
                 }
@@ -229,12 +231,12 @@ export default async function MockInterviewHistoryPage() {
                         <Badge variant="outline" className="text-xs">
                           {DIFFICULTY_LABELS[mi.difficulty] || mi.difficulty}
                         </Badge>
-                        {!isCompleted && (
+                        {isCompleted && hasFeedback && (
                           <Badge
                             variant="outline"
-                            className="border-yellow-300 text-yellow-700 text-xs dark:border-yellow-700 dark:text-yellow-400"
+                            className="border-green-300 text-green-700 text-xs dark:border-green-700 dark:text-green-400"
                           >
-                            進行中
+                            分析済み
                           </Badge>
                         )}
                         {isCompleted && !hasFeedback && (
@@ -242,7 +244,15 @@ export default async function MockInterviewHistoryPage() {
                             variant="outline"
                             className="border-blue-300 text-blue-700 text-xs dark:border-blue-700 dark:text-blue-400"
                           >
-                            未分析
+                            フィードバック待ち
+                          </Badge>
+                        )}
+                        {!isCompleted && (
+                          <Badge
+                            variant="outline"
+                            className="border-yellow-300 text-yellow-700 text-xs dark:border-yellow-700 dark:text-yellow-400"
+                          >
+                            面接中
                           </Badge>
                         )}
                       </div>

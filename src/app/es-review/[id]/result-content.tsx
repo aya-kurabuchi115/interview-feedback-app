@@ -237,6 +237,23 @@ export function ESReviewResultContent({ review }: { review: ReviewData }) {
         </Card>
       )}
 
+      {/* 面接履歴を踏まえたアドバイス */}
+      {feedback.interview_based_advice && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Sparkles className="h-5 w-5 text-[var(--brand-orange)]" />
+              面接履歴を踏まえたアドバイス
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm leading-relaxed">
+              {feedback.interview_based_advice}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* 元の回答 */}
       <Card className="mb-6">
         <CardHeader>

@@ -19,7 +19,7 @@ export function PersonalityCard({ personality }: PersonalityCardProps) {
         style={{ backgroundColor: personality.colorLight }}
       >
         <Image
-          src={`/images/personality/${personality.type.toLowerCase()}.svg`}
+          src={`/images/personality/${personality.type.toLowerCase()}.png`}
           alt={`${personality.name}のキャラクター`}
           width={80}
           height={80}
