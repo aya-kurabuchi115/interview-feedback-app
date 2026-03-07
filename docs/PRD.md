@@ -14,7 +14,7 @@ InterviewCoach
 - 録音しても自分で聞き返すだけでは具体的な改善策が得られない
 
 ### ソリューション
-ブラウザで面接を録音 → AI が文字起こし（話者分離付き） → 回答内容・話し方の両面からフィードバックを自動生成
+AI 模擬面接・ES 添削・パーソナリティ診断・面接質問集をワンストップで提供し、面接準備を総合的にサポート
 
 ---
 
@@ -104,13 +104,15 @@ graph TD
 
 | レイヤー | 技術 | 備考 |
 |----------|------|------|
-| フロントエンド | Next.js 15 (App Router) + TypeScript + Tailwind CSS + shadcn/ui | |
+| フロントエンド | Next.js 16 (App Router) + TypeScript + Tailwind CSS + shadcn/ui | |
 | バックエンド | Next.js Server Actions + API Routes | |
 | 認証 | Supabase Auth | メール/パスワード |
 | データベース | Supabase PostgreSQL | RLS 必須 |
-| ストレージ | Supabase Storage | 音声ファイル保存 |
-| 文字起こし | AssemblyAI | 話者分離 + 日本語対応 |
-| AI分析 | Claude API (Sonnet) | フィードバック生成 |
+| ストレージ | Supabase Storage | |
+| AI | Gemini API | 模擬面接・ES 添削・診断フィードバック |
+| 決済 | Stripe | サブスクリプション管理（Free/Pro/Premium） |
+| 監視 | Sentry | エラートラッキング |
+| テスト | Vitest + Playwright | ユニット + E2E |
 | デプロイ | Vercel | 自動デプロイ |
 
 ---

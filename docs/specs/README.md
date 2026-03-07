@@ -10,7 +10,20 @@ InterviewCoach プロジェクトの機能仕様書をまとめたディレク�
 | [spec-questions.md](./spec-questions.md) | 面接質問集 | Approved | 面接頻出質問 90 問（8 カテゴリ）、4 種フィルタ、SSG 対応 |
 | [spec-personality.md](./spec-personality.md) | 16パーソナリティ診断 | Approved | 16 タイプ（4 グループ）、10 問診断テスト、Pro/Premium 制限 |
 
-## Sprint 2026-03-01 対象の仕様書
+## Sprint 5-8 で追加された機能（仕様書作成予定）
+
+| ファイル | Issue | 機能 | ステータス |
+|----------|-------|------|------------|
+| spec-98-cookie-consent.md | [#98](https://github.com/aya-kurabuchi115/interview-feedback-app/issues/98) | Cookie 同意バナー | Placeholder |
+| spec-102-password-reset.md | [#102](https://github.com/aya-kurabuchi115/interview-feedback-app/issues/102) | パスワードリセット | Placeholder |
+| spec-80-feedback-comparison.md | [#80](https://github.com/aya-kurabuchi115/interview-feedback-app/issues/80) | フィードバック比較 | Placeholder |
+| spec-105-filler-analysis.md | [#105](https://github.com/aya-kurabuchi115/interview-feedback-app/issues/105) | フィラー分析 | Placeholder |
+| spec-106-annotated-transcript.md | [#106](https://github.com/aya-kurabuchi115/interview-feedback-app/issues/106) | 注釈付きトランスクリプト | Placeholder |
+| spec-129-mock-interview.md | [#129](https://github.com/aya-kurabuchi115/interview-feedback-app/issues/129) | AI 模擬面接 | Placeholder |
+| spec-131-pricing-improvement.md | [#131](https://github.com/aya-kurabuchi115/interview-feedback-app/issues/131) | 料金プラン改善 | Placeholder |
+| spec-133-es-review.md | [#133](https://github.com/aya-kurabuchi115/interview-feedback-app/issues/133) | ES 添削機能 | Placeholder |
+
+## Sprint 1-4 (MVP) の仕様書
 
 | ファイル | Issue | タイトル | ステータス |
 |----------|-------|----------|------------|
@@ -40,6 +53,9 @@ graph LR
     D["#24 プライバシーポリシー"] -.共有コンポーネント.-> E["#25 利用規約"]
     F["#172 リダイレクト改善"] -.エラーパラメータ整合性.-> G["#176 エラーメッセージ改善"]
     H["#160 フィードバックUI"] -.関連.-> I["#174 スケルトンスクリーン"]
+    J["#129 AI模擬面接"] -.Gemini API.-> K["#133 ES添削"]
+    L["#138 16パーソナリティ診断"] -.AI統合.-> J
+    M["#130 面接質問集"] -.質問データ.-> J
 ```
 
 ## 仕様書のステータス

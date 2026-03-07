@@ -1,22 +1,25 @@
 # InterviewCoach
 
-面接練習の録音を AI が分析し、回答内容・話し方の両面からフィードバックを自動生成する Web アプリケーション。
+AI を活用した面接対策 Web アプリケーション。AI 模擬面接・ES 添削・16 パーソナリティ診断・面接質問集など、面接準備に必要な機能をワンストップで提供します。
 
-## 機能
+## 主要機能
 
-- メール/パスワードによるユーザー認証（Supabase Auth）
-- ブラウザ上での面接録音（MediaRecorder API）
-- 音声の文字起こし + 話者分離（AssemblyAI）
-- AI による回答分析・フィードバック生成（Claude API）
-- 総合スコア・改善提案・フィラーワード検出などの結果表示
+- **AI 模擬面接** — AI 面接官とリアルタイムで面接練習
+- **ES 添削** — エントリーシートを AI が添削・改善提案
+- **16 パーソナリティ診断** — 16 タイプ診断テスト + AI による面接アドバイス
+- **面接質問集** — 頻出質問 90 問（8 カテゴリ）+ フィルタ検索
+- **課金プラン** — Stripe 連携（Free / Pro / Premium）
+- **ユーザー認証** — メール/パスワード認証（Supabase Auth）
+- **その他** — お問い合わせ、ヘルプ、法的ページ（利用規約・プライバシーポリシー）
 
 ## 技術スタック
 
-- **フロントエンド**: Next.js 15 (App Router) + TypeScript + Tailwind CSS + shadcn/ui
+- **フロントエンド**: Next.js 16 (App Router) + TypeScript + Tailwind CSS + shadcn/ui
 - **バックエンド**: Next.js Server Actions + API Routes
 - **認証・DB・ストレージ**: Supabase (Auth / PostgreSQL / Storage)
-- **文字起こし**: AssemblyAI（話者分離 + 日本語対応）
-- **AI 分析**: Claude API (Sonnet)
+- **AI**: Gemini API（模擬面接・ES 添削・診断フィードバック）
+- **決済**: Stripe（サブスクリプション管理）
+- **監視**: Sentry（エラートラッキング）
 - **デプロイ**: Vercel
 
 ## セットアップ
@@ -40,8 +43,10 @@ npm run dev
 |--------|------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase プロジェクトの URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase の匿名キー |
-| `ASSEMBLYAI_API_KEY` | AssemblyAI の API キー |
-| `ANTHROPIC_API_KEY` | Anthropic (Claude) の API キー |
+| `GEMINI_API_KEY` | Google Gemini の API キー |
+| `STRIPE_SECRET_KEY` | Stripe のシークレットキー |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe の公開キー |
+| `SENTRY_DSN` | Sentry の DSN |
 
 ## ディレクトリ構成
 

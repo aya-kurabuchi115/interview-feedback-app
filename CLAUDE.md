@@ -1,10 +1,9 @@
 # Interview Feedback App
 
 ## アーキテクチャ
-- Next.js 15 (App Router) + TypeScript + Tailwind CSS
+- Next.js 16 (App Router) + TypeScript + Tailwind CSS
 - Supabase (Auth, Database, Storage)
-- AssemblyAI (Speech-to-Text + Speaker Diarization)
-- Claude API (AI分析・フィードバック生成)
+- Gemini API (AI分析・フィードバック生成)
 - Deploy: Vercel
 
 ## プロジェクト構成
