@@ -18,7 +18,12 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn().mockResolvedValue(mockSupabase),
 }));
 
-import { getModelForPlan, checkUsageLimit, getRemainingUsage } from "./subscription";
+import {
+  getModelForPlan,
+  checkMockInterviewLimit,
+  checkEsReviewLimit,
+  getRemainingUsageByFeature,
+} from "./subscription";
 
 // ============================================================
 // ヘルパー: テーブル別にモッククエリビルダーを返す
@@ -40,8 +45,8 @@ function createSubsBuilder(planData: Record<string, unknown> | null) {
   };
 }
 
-/** feedbacks テーブル用のモッククエリビルダー（count のみ） */
-function createFeedbacksBuilder(count: number) {
+/** count クエリ用のモッククエリビルダー */
+function createCountBuilder(count: number) {
   return {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
@@ -59,24 +64,24 @@ describe("subscription", () => {
   });
 
   describe("getModelForPlan", () => {
-    it("free プランは haiku モデルを返す", () => {
-      expect(getModelForPlan("free")).toContain("haiku");
+    it("free プランは flash モデルを返す", () => {
+      expect(getModelForPlan("free")).toContain("flash");
     });
 
-    it("pro プランは sonnet モデルを返す", () => {
-      expect(getModelForPlan("pro")).toContain("sonnet");
+    it("pro プランは pro モデルを返す", () => {
+      expect(getModelForPlan("pro")).toContain("pro");
     });
 
-    it("premium プランは sonnet モデルを返す", () => {
-      expect(getModelForPlan("premium")).toContain("sonnet");
+    it("premium プランは pro モデルを返す", () => {
+      expect(getModelForPlan("premium")).toContain("pro");
     });
 
-    it("enterprise プランは premium と同じ sonnet モデルを返す", () => {
-      expect(getModelForPlan("enterprise")).toContain("sonnet");
+    it("enterprise プランは premium と同じ pro モデルを返す", () => {
+      expect(getModelForPlan("enterprise")).toContain("pro");
     });
   });
 
-  describe("checkUsageLimit", () => {
+  describe("checkMockInterviewLimit", () => {
     it("無料プランで利用回数が上限未満の場合は allowed: true を返す", async () => {
       setupFromMock({
         subscriptions: createSubsBuilder({
@@ -84,15 +89,15 @@ describe("subscription", () => {
           stripe_customer_id: null, current_period_end: null,
           cancel_at: null, canceled_at: null,
         }),
-        feedbacks: createFeedbacksBuilder(1),
+        mock_interviews: createCountBuilder(0),
       });
 
-      const result = await checkUsageLimit("test-user-id");
+      const result = await checkMockInterviewLimit("test-user-id");
 
       expect(result.allowed).toBe(true);
       expect(result.plan).toBe("free");
-      expect(result.used).toBe(1);
-      expect(result.limit).toBe(3);
+      expect(result.used).toBe(0);
+      expect(result.limit).toBe(1);
     });
 
     it("無料プランで利用回数が上限に達した場合は allowed: false を返す", async () => {
@@ -102,14 +107,14 @@ describe("subscription", () => {
           stripe_customer_id: null, current_period_end: null,
           cancel_at: null, canceled_at: null,
         }),
-        feedbacks: createFeedbacksBuilder(3),
+        mock_interviews: createCountBuilder(1),
       });
 
-      const result = await checkUsageLimit("test-user-id");
+      const result = await checkMockInterviewLimit("test-user-id");
 
       expect(result.allowed).toBe(false);
-      expect(result.used).toBe(3);
-      expect(result.limit).toBe(3);
+      expect(result.used).toBe(1);
+      expect(result.limit).toBe(1);
     });
 
     it("pro プランで利用回数が上限未満の場合は allowed: true を返す", async () => {
@@ -119,10 +124,10 @@ describe("subscription", () => {
           stripe_customer_id: "cus_123", current_period_end: "2026-04-01",
           cancel_at: null, canceled_at: null,
         }),
-        feedbacks: createFeedbacksBuilder(15),
+        mock_interviews: createCountBuilder(15),
       });
 
-      const result = await checkUsageLimit("test-user-id");
+      const result = await checkMockInterviewLimit("test-user-id");
 
       expect(result.allowed).toBe(true);
       expect(result.plan).toBe("pro");
@@ -137,10 +142,10 @@ describe("subscription", () => {
           stripe_customer_id: "cus_456", current_period_end: "2026-04-01",
           cancel_at: null, canceled_at: null,
         }),
-        feedbacks: createFeedbacksBuilder(100),
+        mock_interviews: createCountBuilder(100),
       });
 
-      const result = await checkUsageLimit("test-user-id");
+      const result = await checkMockInterviewLimit("test-user-id");
 
       expect(result.allowed).toBe(true);
       expect(result.plan).toBe("premium");
@@ -150,50 +155,120 @@ describe("subscription", () => {
     it("サブスクリプションがない場合は free プランとして扱う", async () => {
       setupFromMock({
         subscriptions: createSubsBuilder(null),
-        feedbacks: createFeedbacksBuilder(0),
+        mock_interviews: createCountBuilder(0),
       });
 
-      const result = await checkUsageLimit("test-user-id");
+      const result = await checkMockInterviewLimit("test-user-id");
 
       expect(result.plan).toBe("free");
-      expect(result.limit).toBe(3);
+      expect(result.limit).toBe(1);
     });
   });
 
-  describe("getRemainingUsage", () => {
-    it("無料プランで2回使用済みの場合、remaining: 1 を返す", async () => {
+  describe("checkEsReviewLimit", () => {
+    it("無料プランは利用不可（上限0）なので allowed: false を返す", async () => {
       setupFromMock({
         subscriptions: createSubsBuilder({
           plan: "free", status: "active",
           stripe_customer_id: null, current_period_end: null,
           cancel_at: null, canceled_at: null,
         }),
-        feedbacks: createFeedbacksBuilder(2),
+        es_reviews: createCountBuilder(0),
       });
 
-      const result = await getRemainingUsage("test-user-id");
+      const result = await checkEsReviewLimit("test-user-id");
 
+      expect(result.allowed).toBe(false);
       expect(result.plan).toBe("free");
-      expect(result.used).toBe(2);
-      expect(result.limit).toBe(3);
-      expect(result.remaining).toBe(1);
+      expect(result.used).toBe(0);
+      expect(result.limit).toBe(0);
     });
 
-    it("premium プランでは remaining: null（無制限）を返す", async () => {
+    it("無料プランで利用回数が1の場合も allowed: false を返す", async () => {
+      setupFromMock({
+        subscriptions: createSubsBuilder({
+          plan: "free", status: "active",
+          stripe_customer_id: null, current_period_end: null,
+          cancel_at: null, canceled_at: null,
+        }),
+        es_reviews: createCountBuilder(1),
+      });
+
+      const result = await checkEsReviewLimit("test-user-id");
+
+      expect(result.allowed).toBe(false);
+      expect(result.used).toBe(1);
+      expect(result.limit).toBe(0);
+    });
+
+    it("pro プランは利用不可（上限0）なので allowed: false を返す", async () => {
+      setupFromMock({
+        subscriptions: createSubsBuilder({
+          plan: "pro", status: "active",
+          stripe_customer_id: "cus_123", current_period_end: "2026-04-01",
+          cancel_at: null, canceled_at: null,
+        }),
+        es_reviews: createCountBuilder(0),
+      });
+
+      const result = await checkEsReviewLimit("test-user-id");
+
+      expect(result.allowed).toBe(false);
+      expect(result.limit).toBe(0);
+    });
+
+    it("premium プランでは月30回まで利用可能", async () => {
+      setupFromMock({
+        subscriptions: createSubsBuilder({
+          plan: "premium", status: "active",
+          stripe_customer_id: "cus_456", current_period_end: "2026-04-01",
+          cancel_at: null, canceled_at: null,
+        }),
+        es_reviews: createCountBuilder(10),
+      });
+
+      const result = await checkEsReviewLimit("test-user-id");
+
+      expect(result.allowed).toBe(true);
+      expect(result.limit).toBe(30);
+    });
+  });
+
+  describe("getRemainingUsageByFeature", () => {
+    it("無料プランで各機能の残り回数を正しく返す", async () => {
+      setupFromMock({
+        subscriptions: createSubsBuilder({
+          plan: "free", status: "active",
+          stripe_customer_id: null, current_period_end: null,
+          cancel_at: null, canceled_at: null,
+        }),
+        mock_interviews: createCountBuilder(0),
+        es_reviews: createCountBuilder(0),
+      });
+
+      const result = await getRemainingUsageByFeature("test-user-id");
+
+      expect(result.plan).toBe("free");
+      expect(result.mockInterview).toEqual({ used: 0, limit: 1, remaining: 1 });
+      expect(result.esReview).toEqual({ used: 0, limit: 0, remaining: 0 });
+    });
+
+    it("premium プランでは模擬面接が無制限、ES添削は30回", async () => {
       setupFromMock({
         subscriptions: createSubsBuilder({
           plan: "premium", status: "active",
           stripe_customer_id: "cus_123", current_period_end: "2026-04-01",
           cancel_at: null, canceled_at: null,
         }),
-        feedbacks: createFeedbacksBuilder(50),
+        mock_interviews: createCountBuilder(50),
+        es_reviews: createCountBuilder(10),
       });
 
-      const result = await getRemainingUsage("test-user-id");
+      const result = await getRemainingUsageByFeature("test-user-id");
 
       expect(result.plan).toBe("premium");
-      expect(result.limit).toBeNull();
-      expect(result.remaining).toBeNull();
+      expect(result.mockInterview).toEqual({ used: 50, limit: null, remaining: null });
+      expect(result.esReview).toEqual({ used: 10, limit: 30, remaining: 20 });
     });
 
     it("利用回数が上限を超えても remaining は 0 以上を返す", async () => {
@@ -203,12 +278,14 @@ describe("subscription", () => {
           stripe_customer_id: null, current_period_end: null,
           cancel_at: null, canceled_at: null,
         }),
-        feedbacks: createFeedbacksBuilder(5),
+        mock_interviews: createCountBuilder(3),
+        es_reviews: createCountBuilder(2),
       });
 
-      const result = await getRemainingUsage("test-user-id");
+      const result = await getRemainingUsageByFeature("test-user-id");
 
-      expect(result.remaining).toBe(0);
+      expect(result.mockInterview.remaining).toBe(0);
+      expect(result.esReview.remaining).toBe(0);
     });
   });
 });

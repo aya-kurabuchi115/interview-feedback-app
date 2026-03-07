@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { PLAN_MONTHLY_LIMITS, PLAN_MODELS } from "@/lib/stripe/config";
+import { MOCK_INTERVIEW_LIMITS, ES_REVIEW_LIMITS, PLAN_MODELS } from "@/lib/stripe/config";
 import type { Row, SubscriptionPlan, SubscriptionStatus } from "@/types/database";
 
 export interface UserSubscription {
@@ -49,30 +49,49 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
   };
 }
 
-/**
- * 今月のフィードバック利用回数を返す
- */
-async function getMonthlyUsageCount(userId: string): Promise<number> {
-  const supabase = await createClient();
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+// ============================================================
+// 機能別カウント
+// ============================================================
 
+function getMonthStartISO(): string {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+}
+
+/** 今月の模擬面接回数を返す */
+export async function getMonthlyMockInterviewCount(userId: string): Promise<number> {
+  const supabase = await createClient();
   const { count } = await supabase
-    .from("feedbacks")
+    .from("mock_interviews")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
-    .gte("created_at", monthStart);
-
+    .gte("created_at", getMonthStartISO());
   return count ?? 0;
 }
 
-/**
- * プラン別の月間利用上限を取得する。
- * enterprise は無制限として扱う。
- */
-function getPlanLimit(plan: SubscriptionPlan): number | null {
+/** 今月のES添削回数を返す */
+export async function getMonthlyEsReviewCount(userId: string): Promise<number> {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("es_reviews")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("created_at", getMonthStartISO());
+  return count ?? 0;
+}
+
+// ============================================================
+// リミット取得
+// ============================================================
+
+function getMockInterviewLimit(plan: SubscriptionPlan): number | null {
   if (plan === "enterprise") return null;
-  return PLAN_MONTHLY_LIMITS[plan];
+  return MOCK_INTERVIEW_LIMITS[plan];
+}
+
+function getEsReviewLimit(plan: SubscriptionPlan): number | null {
+  if (plan === "enterprise") return null;
+  return ES_REVIEW_LIMITS[plan];
 }
 
 /**
@@ -84,54 +103,76 @@ export function getModelForPlan(plan: SubscriptionPlan): string {
   return PLAN_MODELS[plan];
 }
 
-/**
- * ユーザーが分析を実行可能か判定する。
- * 各プランの月間利用上限をチェックする（null = 無制限）。
- */
-export async function checkUsageLimit(userId: string): Promise<{
+// ============================================================
+// 利用制限チェック
+// ============================================================
+
+interface UsageLimitResult {
   allowed: boolean;
   plan: SubscriptionPlan;
   used: number;
   limit: number | null;
-}> {
-  const sub = await getUserSubscription(userId);
-  const limit = getPlanLimit(sub.plan);
-  const used = await getMonthlyUsageCount(userId);
+}
 
-  // 上限が null のプランは無制限
+/** 模擬面接の利用制限チェック */
+export async function checkMockInterviewLimit(userId: string): Promise<UsageLimitResult> {
+  const sub = await getUserSubscription(userId);
+  const limit = getMockInterviewLimit(sub.plan);
+  const used = await getMonthlyMockInterviewCount(userId);
+
   if (limit === null) {
     return { allowed: true, plan: sub.plan, used, limit };
   }
-
-  return {
-    allowed: used < limit,
-    plan: sub.plan,
-    used,
-    limit,
-  };
+  return { allowed: used < limit, plan: sub.plan, used, limit };
 }
 
-/**
- * 残り利用回数の情報を返す
- */
-export async function getRemainingUsage(userId: string): Promise<{
-  plan: SubscriptionPlan;
+/** ES添削の利用制限チェック */
+export async function checkEsReviewLimit(userId: string): Promise<UsageLimitResult> {
+  const sub = await getUserSubscription(userId);
+  const limit = getEsReviewLimit(sub.plan);
+  const used = await getMonthlyEsReviewCount(userId);
+
+  if (limit === null) {
+    return { allowed: true, plan: sub.plan, used, limit };
+  }
+  return { allowed: used < limit, plan: sub.plan, used, limit };
+}
+
+// ============================================================
+// 機能別残り利用回数
+// ============================================================
+
+export interface FeatureUsage {
   used: number;
   limit: number | null;
   remaining: number | null;
-}> {
-  const sub = await getUserSubscription(userId);
-  const used = await getMonthlyUsageCount(userId);
-  const limit = getPlanLimit(sub.plan);
+}
 
+export interface FeatureUsageByFeature {
+  plan: SubscriptionPlan;
+  mockInterview: FeatureUsage;
+  esReview: FeatureUsage;
+}
+
+function buildFeatureUsage(used: number, limit: number | null): FeatureUsage {
   if (limit === null) {
-    return { plan: sub.plan, used, limit: null, remaining: null };
+    return { used, limit: null, remaining: null };
   }
+  return { used, limit, remaining: Math.max(0, limit - used) };
+}
+
+/** 機能別の残り利用回数を返す */
+export async function getRemainingUsageByFeature(userId: string): Promise<FeatureUsageByFeature> {
+  const sub = await getUserSubscription(userId);
+
+  const [mockCount, esCount] = await Promise.all([
+    getMonthlyMockInterviewCount(userId),
+    getMonthlyEsReviewCount(userId),
+  ]);
 
   return {
     plan: sub.plan,
-    used,
-    limit,
-    remaining: Math.max(0, limit - used),
+    mockInterview: buildFeatureUsage(mockCount, getMockInterviewLimit(sub.plan)),
+    esReview: buildFeatureUsage(esCount, getEsReviewLimit(sub.plan)),
   };
 }

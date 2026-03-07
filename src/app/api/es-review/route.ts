@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { reportApiError } from "@/lib/error-reporting";
-import Anthropic from "@anthropic-ai/sdk";
-import { checkUsageLimit, getModelForPlan } from "@/lib/subscription";
-import { PLANS } from "@/lib/stripe/config";
+import { genAI, MODELS } from "@/lib/gemini";
+import { getUserSubscription, getModelForPlan } from "@/lib/subscription";
 import { PERSONALITY_DATA, isValidPersonalityType } from "@/lib/personality/types";
 import type { PersonalityType } from "@/lib/personality/types";
-import type { SubscriptionPlan } from "@/types/database";
 import type { ESFeedback, ESReviewRequest } from "@/types/es-review";
-import { unauthorized, badRequest, forbidden, serverError } from "@/lib/api/error-response";
+import { unauthorized, serverError } from "@/lib/api/error-response";
 
 // ============================================================
 // 定数
@@ -42,10 +40,17 @@ function buildSystemPrompt(): string {
 回答は必ず指定されたJSON形式のみで出力してください。JSON以外のテキストは一切含めないでください。`;
 }
 
+interface InterviewHistoryItem {
+  question: string;
+  answer: string;
+  score?: number;
+}
+
 function buildUserPrompt(
   question: string,
   answer: string,
-  personalityType: string | null
+  personalityType: string | null,
+  interviewHistory?: InterviewHistoryItem[]
 ): string {
   let personalitySection = "";
   if (personalityType && isValidPersonalityType(personalityType)) {
@@ -64,6 +69,25 @@ function buildUserPrompt(
 - このタイプが陥りやすいES作成の落とし穴と対策`;
   }
 
+  let interviewSection = "";
+  if (interviewHistory && interviewHistory.length > 0) {
+    const historyText = interviewHistory
+      .map((item, i) => `  Q${i + 1}: ${item.question}\n  A${i + 1}: ${item.answer}`)
+      .join("\n\n");
+    interviewSection = `
+
+【過去の模擬面接での受け答え】
+この候補者は過去の模擬面接で以下のような受け答えをしています。ES添削時にこれらの内容も踏まえて、より一貫性のある改善提案を行ってください。
+例えば、面接で具体的なエピソードを話していた場合、それをESに反映するよう提案できます。
+
+${historyText}
+
+以下の観点もフィードバックに含めてください:
+- 面接での受け答えとESの内容の一貫性
+- 面接で話した具体的なエピソードをESに活かせる箇所の提案
+- 面接での強み・弱みを踏まえたES改善アドバイス`;
+  }
+
   return `以下のESの設問と回答を添削してください。
 
 【ESの設問】
@@ -76,6 +100,7 @@ ${question}
 ${answer}
 </user_answer>
 ${personalitySection}
+${interviewSection}
 
 【評価基準】
 1. 構成（structure）: STAR法に基づく論理的な構成になっているか。結論→根拠→具体例→まとめの流れがあるか。
@@ -117,7 +142,7 @@ ${personalitySection}
       "reason": "改善理由"
     }
   ],
-  "rewritten_answer": "AIによる書き直し例（元の文章の良い部分を活かしつつ、改善点を反映した完全な回答。${answer.length > 400 ? "400文字以内に収める" : "元の文字数と同程度"}）"${personalityType ? ',\n  "personality_advice": "パーソナリティタイプに基づくES作成アドバイス（100-200文字程度）"' : ""}
+  "rewritten_answer": "AIによる書き直し例（元の文章の良い部分を活かしつつ、改善点を反映した完全な回答。${answer.length > 400 ? "400文字以内に収める" : "元の文字数と同程度"}）"${personalityType ? ',\n  "personality_advice": "パーソナリティタイプに基づくES作成アドバイス（100-200文字程度）"' : ""}${interviewHistory && interviewHistory.length > 0 ? ',\n  "interview_based_advice": "過去の面接での受け答えを踏まえたES改善アドバイス（150-300文字程度。面接で話した具体的なエピソードや表現をESに活かす提案を含む）"' : ""}
 }`;
 }
 
@@ -125,30 +150,24 @@ ${personalitySection}
 // Claude API 呼び出し（リトライ付き）
 // ============================================================
 
-async function callClaudeWithRetry(
-  anthropic: Anthropic,
+async function callGeminiWithRetry(
   systemPrompt: string,
   userPrompt: string,
-  modelName: string
 ): Promise<ESFeedback> {
   let lastError: Error | null = null;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const message = await anthropic.messages.create({
-        model: modelName,
-        max_tokens: 4096,
-        messages: [
-          {
-            role: "user",
-            content: userPrompt,
-          },
-        ],
-        system: systemPrompt,
+      const model = genAI.getGenerativeModel({
+        model: MODELS.pro,
+        systemInstruction: systemPrompt,
+        generationConfig: {
+          responseMimeType: "application/json",
+        },
       });
 
-      const responseText =
-        message.content[0].type === "text" ? message.content[0].text : "";
+      const result = await model.generateContent(userPrompt);
+      const responseText = result.response.text();
 
       // JSON を抽出（コードブロックやテキスト囲みに対応）
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
@@ -193,7 +212,7 @@ async function callClaudeWithRetry(
     }
   }
 
-  throw lastError || new Error("Claude API の呼び出しに失敗しました");
+  throw lastError || new Error("Gemini API の呼び出しに失敗しました");
 }
 
 // ============================================================
@@ -242,10 +261,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
+    if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
-        { error: "ANTHROPIC_API_KEY not configured" },
+        { error: "GEMINI_API_KEY not configured" },
         { status: 500 }
       );
     }
@@ -259,18 +277,13 @@ export async function POST(request: Request) {
       return unauthorized();
     }
 
-    // サブスクリプション利用制限チェック
-    const usageResult = await checkUsageLimit(user.id);
-    if (!usageResult.allowed) {
-      const planName =
-        usageResult.plan === "free"
-          ? "無料"
-          : PLANS[usageResult.plan as Exclude<SubscriptionPlan, "enterprise">]?.name ?? usageResult.plan;
-      const limitCount = usageResult.limit ?? 0;
+    // Premiumプラン限定チェック
+    const subscription = await getUserSubscription(user.id);
+    if (subscription.plan !== "premium" && subscription.plan !== "enterprise") {
       return NextResponse.json(
         {
-          error: `${planName}プランの月間利用上限（${limitCount}回）に達しました。上位プランにアップグレードすると、より多くの添削をご利用いただけます。`,
-          code: "USAGE_LIMIT_EXCEEDED",
+          error: "ES添削はPremiumプラン限定の機能です。アップグレードしてご利用ください。",
+          code: "PREMIUM_REQUIRED",
           upgrade_url: "/pricing",
         },
         { status: 403 }
@@ -278,7 +291,7 @@ export async function POST(request: Request) {
     }
 
     // プランに応じた AI モデルを決定
-    const modelName = getModelForPlan(usageResult.plan);
+    const modelName = getModelForPlan(subscription.plan);
 
     // ES添削レコードを作成
     // as never: Supabase 生成型が未定義のため型アサーションが必要
@@ -310,17 +323,45 @@ export async function POST(request: Request) {
     const personalityType =
       (profileData as { personality_type?: string | null } | null)?.personality_type ?? null;
 
+    // 過去の模擬面接の受け答えを取得（直近5件）
+    let interviewHistory: InterviewHistoryItem[] = [];
+    try {
+      const { data: mockInterviews } = await supabase
+        .from("mock_interviews")
+        .select("messages")
+        .eq("user_id", user.id)
+        .eq("status", "completed")
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (mockInterviews && mockInterviews.length > 0) {
+        for (const interview of mockInterviews) {
+          const messages = interview.messages as Array<{ role: string; content: string }> | null;
+          if (!messages) continue;
+          for (let i = 0; i < messages.length - 1; i++) {
+            if (messages[i].role === "interviewer" && messages[i + 1]?.role === "user") {
+              interviewHistory.push({
+                question: messages[i].content,
+                answer: messages[i + 1].content,
+              });
+            }
+          }
+        }
+        // 最大10ペアに制限（プロンプトサイズ管理）
+        interviewHistory = interviewHistory.slice(0, 10);
+      }
+    } catch {
+      // 面接履歴取得失敗はES添削をブロックしない
+    }
+
     // プロンプト生成
     const systemPrompt = buildSystemPrompt();
-    const userPrompt = buildUserPrompt(question, answer, personalityType);
+    const userPrompt = buildUserPrompt(question, answer, personalityType, interviewHistory);
 
-    // Claude API 呼び出し
-    const anthropic = new Anthropic({ apiKey });
-    const feedback = await callClaudeWithRetry(
-      anthropic,
+    // Gemini API 呼び出し
+    const feedback = await callGeminiWithRetry(
       systemPrompt,
       userPrompt,
-      modelName
     );
 
     // フィードバックをDBに保存

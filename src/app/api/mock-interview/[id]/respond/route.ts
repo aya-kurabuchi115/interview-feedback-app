@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { genAI } from "@/lib/gemini";
 import type {
   Database,
   Json,
@@ -10,20 +10,14 @@ import type {
   MockInterviewMessage,
 } from "@/types/database";
 import { getUserSubscription, getModelForPlan } from "@/lib/subscription";
-import { unauthorized, badRequest, notFound, serverError } from "@/lib/api/error-response";
+import { unauthorized } from "@/lib/api/error-response";
 import { reportApiError } from "@/lib/error-reporting";
+
 const MAX_ANSWER_LENGTH = 5000;
-
-/** 質問数の上限（この範囲内でAIが完了を判断） */
-const MIN_QUESTIONS = 8;
-const MAX_QUESTIONS = 12;
-
-// ============================================================
-// 型定義
-// ============================================================
 
 interface RespondRequest {
   answer: string;
+  forceEnd?: boolean;
 }
 
 interface MockInterviewRow {
@@ -40,10 +34,6 @@ interface MockInterviewRow {
   total_questions: number;
 }
 
-// ============================================================
-// システムプロンプト
-// ============================================================
-
 function buildInterviewerSystemPrompt(params: {
   category: MockInterviewCategory;
   round: MockInterviewRound;
@@ -52,6 +42,7 @@ function buildInterviewerSystemPrompt(params: {
   industry: string | null;
   totalQuestions: number;
   isNearEnd: boolean;
+  candidateName: string | null;
 }): string {
   const categoryLabels: Record<MockInterviewCategory, string> = {
     general: "人物面接（総合）",
@@ -94,6 +85,9 @@ function buildInterviewerSystemPrompt(params: {
 
 ${companyContext}
 
+【候補者の名前】
+${params.candidateName ? `候補者の名前は「${params.candidateName}」さんです。面接中は「${params.candidateName}さん」と呼んでください。` : "候補者の名前は不明です。「あなた」と呼んでください。「〇〇さん」のようなプレースホルダーは絶対に使わないでください。"}
+
 【あなたの振る舞い】
 - 常に面接官として一人称は「私」を使い、丁寧語で話してください
 - 1回のターンで1つの質問のみをしてください（複数の質問を同時にしないでください）
@@ -111,10 +105,6 @@ ${difficultyInstructions[params.difficulty]}
 ${endingInstruction}`;
 }
 
-// ============================================================
-// POST ハンドラ
-// ============================================================
-
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -131,7 +121,6 @@ export async function POST(
 
     const body = (await request.json()) as RespondRequest;
 
-    // バリデーション
     const answer = body.answer?.trim();
     if (!answer) {
       return NextResponse.json(
@@ -146,16 +135,13 @@ export async function POST(
       );
     }
 
-    // API キーチェック
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
+    if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
-        { error: "ANTHROPIC_API_KEY not configured" },
+        { error: "GEMINI_API_KEY not configured" },
         { status: 500 }
       );
     }
 
-    // 認証チェック
     const supabase = await createClient();
     const {
       data: { user },
@@ -164,11 +150,9 @@ export async function POST(
       return unauthorized();
     }
 
-    // プランに応じた AI モデルを決定
     const subscription = await getUserSubscription(user.id);
     const modelName = getModelForPlan(subscription.plan);
 
-    // 面接セッションを取得（所有権チェック込み: Defence-in-Depth）
     const { data: mockData, error: fetchError } = await supabase
       .from("mock_interviews")
       .select("*")
@@ -185,7 +169,6 @@ export async function POST(
 
     const mockInterview = mockData as unknown as MockInterviewRow;
 
-    // ステータスチェック
     if (mockInterview.status !== "in_progress") {
       return NextResponse.json(
         { error: "この面接は既に終了しています" },
@@ -193,24 +176,34 @@ export async function POST(
       );
     }
 
-    // メッセージ配列を取得
     const messages: MockInterviewMessage[] = Array.isArray(mockInterview.messages)
       ? mockInterview.messages
       : [];
 
-    // ユーザーの回答を追加
     messages.push({
       role: "user",
       content: answer,
       timestamp: new Date().toISOString(),
     });
 
-    // 質問数カウント（面接官のメッセージ数）
     const questionCount = messages.filter((m) => m.role === "interviewer").length;
-    const isNearEnd = questionCount >= MIN_QUESTIONS;
-    const isForceEnd = questionCount >= MAX_QUESTIONS;
+    // duration_minutes フィールドを質問数上限として使用
+    const maxQuestions = mockInterview.duration_minutes || 5;
+    const minQuestions = Math.max(1, maxQuestions - 2);
+    const isNearEnd = questionCount >= minQuestions;
+    const isForceEnd = questionCount >= maxQuestions;
 
-    // Claude API に会話履歴を送信
+    // プロフィールから候補者の名前を取得
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("user_id", user.id)
+      .single();
+
+    const displayName =
+      (profileData as { display_name?: string | null } | null)?.display_name ?? null;
+    const candidateName = displayName ? displayName.split(" ")[0] : null;
+
     const systemPrompt = buildInterviewerSystemPrompt({
       category: mockInterview.category as MockInterviewCategory,
       round: mockInterview.round as MockInterviewRound,
@@ -219,47 +212,37 @@ export async function POST(
       industry: mockInterview.industry,
       totalQuestions: questionCount,
       isNearEnd: isNearEnd || isForceEnd,
+      candidateName,
     });
 
-    // 会話履歴を Anthropic メッセージ形式に変換
-    const anthropicMessages: { role: "user" | "assistant"; content: string }[] =
-      [];
+    // Gemini 会話履歴を構築
+    const geminiHistory: { role: "user" | "model"; parts: { text: string }[] }[] = [];
 
-    // 最初のシステムメッセージ（面接開始指示）
-    // その後は交互に assistant (面接官) / user (候補者) のメッセージ
-    for (let i = 0; i < messages.length; i++) {
-      const msg = messages[i];
+    for (const msg of messages) {
       if (msg.role === "interviewer") {
-        anthropicMessages.push({
-          role: "assistant",
-          content: msg.content,
-        });
+        geminiHistory.push({ role: "model", parts: [{ text: msg.content }] });
       } else {
-        anthropicMessages.push({
-          role: "user",
-          content: `<candidate_answer>${msg.content}</candidate_answer>`,
-        });
+        geminiHistory.push({ role: "user", parts: [{ text: `<candidate_answer>${msg.content}</candidate_answer>` }] });
       }
     }
 
-    // 最初のメッセージが assistant の場合、先頭に user メッセージを追加
-    if (anthropicMessages.length > 0 && anthropicMessages[0].role === "assistant") {
-      anthropicMessages.unshift({
-        role: "user",
-        content: "面接を開始してください。",
-      });
+    // Gemini では最初が model の場合、先頭に user メッセージを追加
+    if (geminiHistory.length > 0 && geminiHistory[0].role === "model") {
+      geminiHistory.unshift({ role: "user", parts: [{ text: "面接を開始してください。" }] });
     }
 
-    const anthropic = new Anthropic({ apiKey });
-    const response = await anthropic.messages.create({
+    // 最後のメッセージを取り出して sendMessage に使う
+    const lastMessage = geminiHistory.pop();
+
+    const model = genAI.getGenerativeModel({
       model: modelName,
-      max_tokens: 512,
-      system: systemPrompt,
-      messages: anthropicMessages,
+      systemInstruction: systemPrompt,
     });
 
-    let nextQuestion =
-      response.content[0].type === "text" ? response.content[0].text : "";
+    const chat = model.startChat({ history: geminiHistory });
+    const result = await chat.sendMessage(lastMessage?.parts[0].text || "");
+
+    let nextQuestion = result.response.text();
 
     if (!nextQuestion) {
       return NextResponse.json(
@@ -268,20 +251,16 @@ export async function POST(
       );
     }
 
-    // 完了判定
     const hasCompleteTag = nextQuestion.includes("[INTERVIEW_COMPLETE]");
-    const isComplete = hasCompleteTag || isForceEnd;
+    const isComplete = hasCompleteTag || isForceEnd || !!body.forceEnd;
 
-    // タグを除去
     nextQuestion = nextQuestion.replace(/\[INTERVIEW_COMPLETE\]/g, "").trim();
 
-    // 強制終了時に面接完了メッセージを追加
     if (isForceEnd && !hasCompleteTag) {
       nextQuestion +=
         "\n\n本日の面接は以上です。お忙しい中お時間をいただき、ありがとうございました。";
     }
 
-    // 面接官の応答をメッセージに追加
     messages.push({
       role: "interviewer",
       content: nextQuestion,
@@ -292,7 +271,6 @@ export async function POST(
       (m) => m.role === "interviewer"
     ).length;
 
-    // DB を更新
     type MockInterviewUpdate = Database["public"]["Tables"]["mock_interviews"]["Update"];
 
     const updatePayload: MockInterviewUpdate = {
@@ -321,7 +299,7 @@ export async function POST(
       question: nextQuestion,
       isComplete,
       questionNumber: newQuestionCount,
-      totalQuestions: MAX_QUESTIONS,
+      totalQuestions: maxQuestions,
     });
   } catch (error) {
     const errorId = reportApiError(error, {

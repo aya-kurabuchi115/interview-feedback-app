@@ -1,28 +1,34 @@
 import type { SubscriptionPlan } from "@/types/database";
 
 // ============================================================
-// プラン別の月間利用上限
+// 機能別の月間利用上限
 // ============================================================
 
-/** プラン別の月間利用上限（null = 無制限） */
-export const PLAN_MONTHLY_LIMITS: Record<Exclude<SubscriptionPlan, "enterprise">, number | null> = {
-  free: 3,
+type PlanLimits = Record<Exclude<SubscriptionPlan, "enterprise">, number | null>;
+
+/** 模擬面接の月間利用上限（null = 無制限, 0 = 利用不可） */
+export const MOCK_INTERVIEW_LIMITS: PlanLimits = {
+  free: 1,
   pro: 30,
   premium: null,
 };
 
-/** 無料プランの月間利用上限（後方互換用） */
-export const FREE_MONTHLY_LIMIT = PLAN_MONTHLY_LIMITS.free as number;
+/** ES添削の月間利用上限（0 = 利用不可） */
+export const ES_REVIEW_LIMITS: PlanLimits = {
+  free: 0,
+  pro: 0,
+  premium: 30,
+};
 
 // ============================================================
 // プラン別の AI モデル
 // ============================================================
 
-/** プラン別に使用する Claude モデル */
+/** プラン別に使用する Gemini モデル */
 export const PLAN_MODELS: Record<Exclude<SubscriptionPlan, "enterprise">, string> = {
-  free: "claude-haiku-4-5-20251001",
-  pro: "claude-sonnet-4-6",
-  premium: "claude-sonnet-4-6",
+  free: "gemini-2.5-flash",
+  pro: "gemini-2.5-pro",
+  premium: "gemini-2.5-pro",
 };
 
 // ============================================================
@@ -36,7 +42,6 @@ export interface PlanConfig {
   stripePriceId: string | null;
   features: string[];
   badge: string | null;
-  monthlyLimit: number | null;
 }
 
 export const PLANS: Record<Exclude<SubscriptionPlan, "enterprise">, PlanConfig> = {
@@ -46,12 +51,11 @@ export const PLANS: Record<Exclude<SubscriptionPlan, "enterprise">, PlanConfig> 
     priceMonthly: 0,
     stripePriceId: null,
     features: [
-      "月3回まで面接分析",
+      "模擬面接 月1回",
       "基本的なAIフィードバック",
       "スコア表示",
     ],
     badge: null,
-    monthlyLimit: PLAN_MONTHLY_LIMITS.free,
   },
   pro: {
     name: "Pro プラン",
@@ -59,14 +63,13 @@ export const PLANS: Record<Exclude<SubscriptionPlan, "enterprise">, PlanConfig> 
     priceMonthly: 980,
     stripePriceId: process.env.STRIPE_PRO_PRICE_ID ?? null,
     features: [
-      "月30回まで面接分析",
+      "模擬面接 月30回",
       "詳細なAIフィードバック",
       "スコア表示",
       "成長トラッキング",
       "パーソナライズ分析",
     ],
     badge: "おすすめ",
-    monthlyLimit: PLAN_MONTHLY_LIMITS.pro,
   },
   premium: {
     name: "Premium プラン",
@@ -74,16 +77,16 @@ export const PLANS: Record<Exclude<SubscriptionPlan, "enterprise">, PlanConfig> 
     priceMonthly: 1980,
     stripePriceId: process.env.STRIPE_PREMIUM_PRICE_ID ?? null,
     features: [
-      "無制限の面接分析",
+      "模擬面接 無制限",
+      "AI質問集で面接対策",
+      "面接履歴を活用したES添削 月30回",
       "詳細なAIフィードバック",
       "スコア表示",
       "成長トラッキング",
       "パーソナライズ分析",
-      "AI 模擬面接（無制限）",
       "優先処理",
     ],
     badge: "すべての機能",
-    monthlyLimit: PLAN_MONTHLY_LIMITS.premium,
   },
 };
 

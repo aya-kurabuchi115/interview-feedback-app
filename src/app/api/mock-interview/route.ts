@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { genAI } from "@/lib/gemini";
 import type {
   MockInterviewCategory,
   MockInterviewRound,
@@ -8,31 +8,24 @@ import type {
   MockInterviewMessage,
   SubscriptionPlan,
 } from "@/types/database";
-import { checkUsageLimit, getModelForPlan } from "@/lib/subscription";
+import { checkMockInterviewLimit, getModelForPlan } from "@/lib/subscription";
 import { PLANS } from "@/lib/stripe/config";
-import { unauthorized, badRequest, forbidden, serverError } from "@/lib/api/error-response";
+import { unauthorized, badRequest } from "@/lib/api/error-response";
 import { reportApiError } from "@/lib/error-reporting";
+
 const VALID_CATEGORIES: MockInterviewCategory[] = ["general", "behavioral", "technical", "case"];
 const VALID_ROUNDS: MockInterviewRound[] = ["first", "second", "third", "final"];
 const VALID_DIFFICULTIES: MockInterviewDifficulty[] = ["easy", "normal", "hard"];
-const VALID_DURATIONS = [10, 15, 20, 30];
-
-// ============================================================
-// 型定義
-// ============================================================
+const VALID_QUESTION_COUNTS = [3, 5, 8, 12];
 
 interface CreateMockInterviewRequest {
   company_name?: string | null;
   industry?: string | null;
   category?: MockInterviewCategory;
   round?: MockInterviewRound;
-  duration_minutes?: number;
+  max_questions?: number;
   difficulty?: MockInterviewDifficulty;
 }
-
-// ============================================================
-// システムプロンプト
-// ============================================================
 
 function buildInterviewerSystemPrompt(params: {
   category: MockInterviewCategory;
@@ -40,6 +33,7 @@ function buildInterviewerSystemPrompt(params: {
   difficulty: MockInterviewDifficulty;
   companyName: string | null;
   industry: string | null;
+  candidateName: string | null;
 }): string {
   const categoryLabels: Record<MockInterviewCategory, string> = {
     general: "人物面接（総合）",
@@ -69,7 +63,7 @@ function buildInterviewerSystemPrompt(params: {
   };
 
   const companyContext = params.companyName
-    ? `あなたは「${params.companyName}」${params.industry ? `（${params.industry}業界）` : ""}の面接官として振る舞ってください。この企業に関連した質問を適宜含めてください。`
+    ? `あなたは「${params.companyName}」${params.industry ? `（${params.industry}業界）` : ""}の面接官として振る舞ってください。AIがその企業の事業内容や業界特性をもとに、企業に関連した質問を適宜含めてください。`
     : params.industry
       ? `あなたは${params.industry}業界の企業の面接官として振る舞ってください。業界に関連した質問を適宜含めてください。`
       : "あなたは日本企業の面接官として振る舞ってください。";
@@ -77,6 +71,9 @@ function buildInterviewerSystemPrompt(params: {
   return `あなたはプロの面接官です。日本の就職活動における${roundLabels[params.round]}（${categoryLabels[params.category]}）を実施してください。
 
 ${companyContext}
+
+【候補者の名前】
+${params.candidateName ? `候補者の名前は「${params.candidateName}」さんです。面接中は「${params.candidateName}さん」と呼んでください。` : "候補者の名前は不明です。「あなた」と呼んでください。「〇〇さん」のようなプレースホルダーは絶対に使わないでください。"}
 
 【あなたの振る舞い】
 - 常に面接官として一人称は「私」を使い、丁寧語で話してください
@@ -100,19 +97,16 @@ ${difficultyInstructions[params.difficulty]}
 - 1つの質問は200文字以内に収めてください`;
 }
 
-// ============================================================
-// POST ハンドラ
-// ============================================================
+export { buildInterviewerSystemPrompt };
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as CreateMockInterviewRequest;
 
-    // バリデーション
     const category = body.category ?? "general";
     const round = body.round ?? "first";
     const difficulty = body.difficulty ?? "normal";
-    const durationMinutes = body.duration_minutes ?? 15;
+    const maxQuestions = body.max_questions ?? 5;
 
     if (!VALID_CATEGORIES.includes(category)) {
       return badRequest("無効な面接カテゴリです");
@@ -123,8 +117,8 @@ export async function POST(request: Request) {
     if (!VALID_DIFFICULTIES.includes(difficulty)) {
       return badRequest("無効な難易度です");
     }
-    if (!VALID_DURATIONS.includes(durationMinutes)) {
-      return badRequest("無効な面接時間です");
+    if (!VALID_QUESTION_COUNTS.includes(maxQuestions)) {
+      return badRequest("無効な質問数です");
     }
 
     const companyName = body.company_name?.trim() || null;
@@ -134,16 +128,13 @@ export async function POST(request: Request) {
 
     const industry = body.industry?.trim() || null;
 
-    // API キーチェック
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
+    if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
-        { error: "ANTHROPIC_API_KEY not configured" },
+        { error: "GEMINI_API_KEY not configured" },
         { status: 500 }
       );
     }
 
-    // 認証チェック
     const supabase = await createClient();
     const {
       data: { user },
@@ -152,8 +143,7 @@ export async function POST(request: Request) {
       return unauthorized();
     }
 
-    // サブスクリプション利用制限チェック
-    const usageResult = await checkUsageLimit(user.id);
+    const usageResult = await checkMockInterviewLimit(user.id);
     if (!usageResult.allowed) {
       const planName = usageResult.plan === "free" ? "無料" : PLANS[usageResult.plan as Exclude<SubscriptionPlan, "enterprise">]?.name ?? usageResult.plan;
       const limitCount = usageResult.limit ?? 0;
@@ -167,35 +157,39 @@ export async function POST(request: Request) {
       );
     }
 
-    // プランに応じた AI モデルを決定
     const modelName = getModelForPlan(usageResult.plan);
 
-    // システムプロンプト生成
+    // プロフィールから候補者の名前を取得
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("user_id", user.id)
+      .single();
+
+    const displayName =
+      (profileData as { display_name?: string | null } | null)?.display_name ?? null;
+    const candidateName = displayName ? displayName.split(" ")[0] : null;
+
     const systemPrompt = buildInterviewerSystemPrompt({
       category,
       round,
       difficulty,
       companyName,
       industry,
+      candidateName,
     });
 
-    // 最初の面接官の質問を Claude API で生成
-    const anthropic = new Anthropic({ apiKey });
-    const message = await anthropic.messages.create({
+    // Gemini API で最初の質問を生成
+    const model = genAI.getGenerativeModel({
       model: modelName,
-      max_tokens: 512,
-      system: systemPrompt,
-      messages: [
-        {
-          role: "user",
-          content:
-            "面接を開始してください。最初の挨拶と最初の質問をお願いします。",
-        },
-      ],
+      systemInstruction: systemPrompt,
     });
 
-    const firstQuestion =
-      message.content[0].type === "text" ? message.content[0].text : "";
+    const result = await model.generateContent(
+      "面接を開始してください。最初の挨拶と最初の質問をお願いします。"
+    );
+
+    const firstQuestion = result.response.text();
 
     if (!firstQuestion) {
       return NextResponse.json(
@@ -204,7 +198,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // メッセージ配列を構築
     const messages: MockInterviewMessage[] = [
       {
         role: "interviewer",
@@ -213,7 +206,6 @@ export async function POST(request: Request) {
       },
     ];
 
-    // mock_interviews レコードを作成
     const { data: mockInterview, error: insertError } = await supabase
       .from("mock_interviews")
       .insert({
@@ -222,7 +214,7 @@ export async function POST(request: Request) {
         industry,
         category,
         round,
-        duration_minutes: durationMinutes,
+        duration_minutes: maxQuestions,
         difficulty,
         messages: JSON.parse(JSON.stringify(messages)),
         status: "in_progress",
@@ -239,10 +231,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = mockInterview as { id: string };
+    const inserted = mockInterview as { id: string };
 
     return NextResponse.json({
-      id: result.id,
+      id: inserted.id,
       firstQuestion,
     });
   } catch (error) {

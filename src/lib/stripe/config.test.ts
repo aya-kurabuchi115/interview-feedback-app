@@ -1,32 +1,46 @@
 import { describe, it, expect } from "vitest";
-import { PLAN_MONTHLY_LIMITS, PLAN_MODELS, PLANS, getBaseUrl } from "./config";
+import { MOCK_INTERVIEW_LIMITS, ES_REVIEW_LIMITS, PLAN_MODELS, PLANS, getBaseUrl } from "./config";
 
 describe("stripe/config", () => {
-  describe("PLAN_MONTHLY_LIMITS", () => {
-    it("無料プランは3回", () => {
-      expect(PLAN_MONTHLY_LIMITS.free).toBe(3);
+  describe("MOCK_INTERVIEW_LIMITS", () => {
+    it("無料プランは1回", () => {
+      expect(MOCK_INTERVIEW_LIMITS.free).toBe(1);
     });
 
     it("Pro プランは30回", () => {
-      expect(PLAN_MONTHLY_LIMITS.pro).toBe(30);
+      expect(MOCK_INTERVIEW_LIMITS.pro).toBe(30);
     });
 
     it("Premium プランは無制限(null)", () => {
-      expect(PLAN_MONTHLY_LIMITS.premium).toBeNull();
+      expect(MOCK_INTERVIEW_LIMITS.premium).toBeNull();
+    });
+  });
+
+  describe("ES_REVIEW_LIMITS", () => {
+    it("無料プランは利用不可(0)", () => {
+      expect(ES_REVIEW_LIMITS.free).toBe(0);
+    });
+
+    it("Pro プランは利用不可(0)", () => {
+      expect(ES_REVIEW_LIMITS.pro).toBe(0);
+    });
+
+    it("Premium プランは30回", () => {
+      expect(ES_REVIEW_LIMITS.premium).toBe(30);
     });
   });
 
   describe("PLAN_MODELS", () => {
-    it("無料プランは Haiku モデル", () => {
-      expect(PLAN_MODELS.free).toContain("haiku");
+    it("無料プランは flash モデル", () => {
+      expect(PLAN_MODELS.free).toContain("flash");
     });
 
-    it("Pro プランは Sonnet モデル", () => {
-      expect(PLAN_MODELS.pro).toContain("sonnet");
+    it("Pro プランは pro モデル", () => {
+      expect(PLAN_MODELS.pro).toContain("pro");
     });
 
-    it("Premium プランは Sonnet モデル", () => {
-      expect(PLAN_MODELS.premium).toContain("sonnet");
+    it("Premium プランは pro モデル", () => {
+      expect(PLAN_MODELS.premium).toContain("pro");
     });
   });
 

@@ -97,7 +97,7 @@ export async function PUT(request: Request) {
       if (error) {
         console.error("Onboarding skip error:", JSON.stringify(error));
         return NextResponse.json(
-          { error: "サーバーとの通信に失敗しました。時間を置いて再度お試しください。", detail: error.message },
+          { error: "サーバーとの通信に失敗しました。時間を置いて再度お試しください。" },
           { status: 500 }
         );
       }
@@ -156,7 +156,7 @@ export async function PUT(request: Request) {
     if (error) {
       console.error("Onboarding upsert error:", JSON.stringify(error));
       return NextResponse.json(
-        { error: "サーバーとの通信に失敗しました。時間を置いて再度お試しください。", detail: error.message },
+        { error: "サーバーとの通信に失敗しました。時間を置いて再度お試しください。" },
         { status: 500 }
       );
     }
