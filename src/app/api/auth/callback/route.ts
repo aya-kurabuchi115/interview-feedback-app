@@ -10,9 +10,14 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const plan = searchParams.get("plan");
   const nextParam = searchParams.get("next") ?? "/onboarding";
   // Open Redirect 防止: 相対パスのみ許可、プロトコル相対URL(//)を拒否
-  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/onboarding";
+  let next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/onboarding";
+  // プランパラメータをオンボーディングに引き継ぐ
+  if (plan && ["free", "pro", "premium"].includes(plan) && next === "/onboarding") {
+    next = `/onboarding?plan=${plan}`;
+  }
 
   const redirectBase = process.env.NEXT_PUBLIC_APP_URL || origin;
 

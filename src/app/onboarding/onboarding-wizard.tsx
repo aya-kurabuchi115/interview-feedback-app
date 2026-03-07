@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, CheckCircle, ArrowRight, ArrowLeft, X } from "lucide-react";
+import { Loader2, CheckCircle, ArrowRight, ArrowLeft, X, Check } from "lucide-react";
 
 // ============================================================
 // 選択肢定義（プロフィールページと同じ定数）
@@ -50,13 +50,65 @@ const JOB_HUNTING_STATUSES = [
   { value: "other", label: "その他" },
 ] as const;
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
+
+const C = {
+  navy: "#1E3A5F",
+  orange: "#F97316",
+};
+
+const PLAN_OPTIONS: {
+  key: string;
+  name: string;
+  description: string;
+  price: string;
+  badge?: string;
+  features: { text: string; ok: boolean }[];
+}[] = [
+  {
+    key: "free",
+    name: "無料プラン",
+    description: "まずは試してみたい方へ",
+    price: "¥0",
+    features: [
+      { text: "模擬面接 月1回", ok: true },
+      { text: "AIフィードバック", ok: true },
+      { text: "スコア表示", ok: true },
+      { text: "ES添削・質問集", ok: false },
+    ],
+  },
+  {
+    key: "pro",
+    name: "Pro プラン",
+    description: "本気で準備したい方へ",
+    price: "¥980",
+    badge: "おすすめ",
+    features: [
+      { text: "模擬面接 月5回", ok: true },
+      { text: "詳細なAIフィードバック", ok: true },
+      { text: "成長トラッキング", ok: true },
+      { text: "ES添削・質問集", ok: false },
+    ],
+  },
+  {
+    key: "premium",
+    name: "Premium プラン",
+    description: "万全の対策で内定を掴みたい方へ",
+    price: "¥1,980",
+    features: [
+      { text: "模擬面接 月30回", ok: true },
+      { text: "ES添削 月30回", ok: true },
+      { text: "AI質問集で面接対策", ok: true },
+      { text: "高精度AIモデル", ok: true },
+    ],
+  },
+];
 
 // ============================================================
 // コンポーネント
 // ============================================================
 
-export function OnboardingWizard() {
+export function OnboardingWizard({ initialPlan }: { initialPlan?: string }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -72,6 +124,9 @@ export function OnboardingWizard() {
   const [targetIndustry, setTargetIndustry] = useState<string[]>([]);
   const [targetJobType, setTargetJobType] = useState<string[]>([]);
   const [jobHuntingStatus, setJobHuntingStatus] = useState("not_started");
+
+  // ステップ3: プラン選択
+  const [selectedPlan, setSelectedPlan] = useState(initialPlan || "free");
 
   // 複数選択トグル
   const toggleSelection = (
@@ -117,7 +172,25 @@ export function OnboardingWizard() {
         throw new Error(data.error || "保存に失敗しました");
       }
 
-      setCurrentStep(3);
+      // 有料プランが選択されている場合は Stripe Checkout に遷移
+      if (selectedPlan !== "free") {
+        const checkoutRes = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan: selectedPlan }),
+        });
+
+        if (checkoutRes.ok) {
+          const { url } = await checkoutRes.json();
+          if (url) {
+            window.location.href = url;
+            return;
+          }
+        }
+        // Stripe が失敗しても完了画面へ（後からプラン変更可能）
+      }
+
+      setCurrentStep(4);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "保存に失敗しました";
@@ -142,6 +215,9 @@ export function OnboardingWizard() {
       setError("");
       setCurrentStep(2);
     } else if (currentStep === 2) {
+      setError("");
+      setCurrentStep(3);
+    } else if (currentStep === 3) {
       saveOnboarding(false);
     }
   };
@@ -156,7 +232,14 @@ export function OnboardingWizard() {
 
   // 「スキップ」ボタン
   const handleSkip = () => {
-    saveOnboarding(true);
+    if (currentStep < 3) {
+      // ステップ1,2のスキップ → ステップ3（プラン選択）へ
+      setCurrentStep(3);
+    } else {
+      // ステップ3のスキップ → 無料プランで完了
+      setSelectedPlan("free");
+      saveOnboarding(true);
+    }
   };
 
   return (
@@ -368,8 +451,79 @@ export function OnboardingWizard() {
         </Card>
       )}
 
-      {/* ステップ3: 完了 */}
+      {/* ステップ3: プラン選択 */}
       {currentStep === 3 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>プランを選択</CardTitle>
+            <CardDescription>
+              あなたに合ったプランを選んでください。後からいつでも変更できます。
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {PLAN_OPTIONS.map((plan) => {
+                const isSelected = selectedPlan === plan.key;
+                return (
+                  <button
+                    key={plan.key}
+                    type="button"
+                    onClick={() => setSelectedPlan(plan.key)}
+                    className={`relative flex flex-col rounded-xl border-2 p-4 text-left transition-all ${
+                      isSelected
+                        ? "border-[var(--brand-navy,#1E3A5F)] shadow-md"
+                        : "border-border hover:border-muted-foreground/30"
+                    }`}
+                  >
+                    {plan.badge && (
+                      <span
+                        className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full px-3 py-0.5 text-xs font-semibold text-white"
+                        style={{ backgroundColor: C.orange }}
+                      >
+                        {plan.badge}
+                      </span>
+                    )}
+                    {isSelected && (
+                      <div
+                        className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full text-white"
+                        style={{ backgroundColor: C.navy }}
+                      >
+                        <Check className="h-4 w-4" />
+                      </div>
+                    )}
+                    <h4 className="font-bold">{plan.name}</h4>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{plan.description}</p>
+                    <div className="mt-3">
+                      <span className="text-2xl font-bold">{plan.price}</span>
+                      <span className="text-xs text-muted-foreground">/月（税込）</span>
+                    </div>
+                    <ul className="mt-3 space-y-1.5">
+                      {plan.features.map((f) => (
+                        <li key={f.text} className="flex items-center gap-2 text-xs">
+                          {f.ok ? (
+                            <Check className="h-3.5 w-3.5 shrink-0" style={{ color: C.navy }} />
+                          ) : (
+                            <X className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+                          )}
+                          <span className={f.ok ? "" : "text-muted-foreground/70"}>{f.text}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </button>
+                );
+              })}
+            </div>
+            {selectedPlan !== "free" && (
+              <p className="mt-4 text-center text-xs text-muted-foreground">
+                有料プランは完了後に決済画面に進みます。
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ステップ4: 完了 */}
+      {currentStep === 4 && (
         <Card>
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
@@ -402,7 +556,7 @@ export function OnboardingWizard() {
       )}
 
       {/* ナビゲーションボタン */}
-      {currentStep < 3 && (
+      {currentStep < 4 && (
         <div className="flex items-center justify-between">
           <div>
             {currentStep > 1 && (
@@ -417,22 +571,21 @@ export function OnboardingWizard() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              onClick={handleSkip}
-              disabled={saving}
-            >
-              {saving && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              スキップ
-            </Button>
+            {currentStep < 3 && (
+              <Button
+                variant="ghost"
+                onClick={handleSkip}
+                disabled={saving}
+              >
+                スキップ
+              </Button>
+            )}
             <Button onClick={handleNext} disabled={saving}>
               {saving && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {currentStep === 2 ? "完了" : "次へ"}
-              {!saving && currentStep < 2 && (
+              {currentStep === 3 ? (selectedPlan === "free" ? "無料で始める" : "決済に進む") : "次へ"}
+              {!saving && currentStep < 3 && (
                 <ArrowRight className="ml-2 h-4 w-4" />
               )}
             </Button>

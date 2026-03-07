@@ -21,7 +21,11 @@ const OnboardingWizard = dynamic(
  * - 未認証ユーザーは /login にリダイレクト
  * - 既にオンボーディング完了済みのユーザーは /dashboard にリダイレクト
  */
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -43,9 +47,14 @@ export default async function OnboardingPage() {
     redirect("/dashboard");
   }
 
+  const params = await searchParams;
+  const initialPlan = params.plan && ["free", "pro", "premium"].includes(params.plan)
+    ? params.plan
+    : undefined;
+
   return (
     <div className="container mx-auto max-w-2xl px-4 py-8">
-      <OnboardingWizard />
+      <OnboardingWizard initialPlan={initialPlan} />
     </div>
   );
 }

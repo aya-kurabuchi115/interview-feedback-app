@@ -649,7 +649,7 @@ export default function Home() {
                 ))}
               </ul>
               <Link
-                href="/signup"
+                href="/signup?plan=free"
                 className="mt-6 block rounded-lg border-2 px-6 py-3 text-center font-semibold transition-colors hover:bg-muted"
                 style={{ borderColor: C.navy, color: C.navy }}
               >
@@ -701,7 +701,7 @@ export default function Home() {
                 ))}
               </ul>
               <Link
-                href="/pricing"
+                href="/signup?plan=pro"
                 className="mt-6 flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-center font-semibold text-white transition-colors hover:opacity-90"
                 style={{ backgroundColor: C.navy }}
               >
@@ -737,7 +737,7 @@ export default function Home() {
                 ))}
               </ul>
               <Link
-                href="/pricing"
+                href="/signup?plan=premium"
                 className="mt-6 flex items-center justify-center gap-2 rounded-lg border-2 px-6 py-3 text-center font-semibold transition-colors hover:bg-muted"
                 style={{ borderColor: C.navy, color: C.navy }}
               >
