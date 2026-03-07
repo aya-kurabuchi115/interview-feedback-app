@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getUserSubscription, getRemainingUsage } from "@/lib/subscription";
-import { unauthorized, serverError } from "@/lib/api/error-response";
+import { getUserSubscription, getRemainingUsageByFeature } from "@/lib/subscription";
+import { unauthorized } from "@/lib/api/error-response";
 import { reportApiError } from "@/lib/error-reporting";
 import { CACHE_PRIVATE_SHORT } from "@/lib/api/cache-headers";
 
@@ -16,7 +16,7 @@ export async function GET() {
     }
 
     const subscription = await getUserSubscription(user.id);
-    const usage = await getRemainingUsage(user.id);
+    const usage = await getRemainingUsageByFeature(user.id);
 
     return NextResponse.json(
       { subscription, usage },

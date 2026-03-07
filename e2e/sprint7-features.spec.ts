@@ -173,13 +173,6 @@ test.describe("API エラーハンドリング", () => {
     });
     expect([401, 403]).toContain(mockRes.status());
 
-    // analyze API（interview_id を渡して認証エラーを確認）
-    const analyzeRes = await request.post("/api/analyze", {
-      data: { interview_id: "00000000-0000-0000-0000-000000000000" },
-    });
-    // ANTHROPIC_API_KEY がない場合は 500、ある場合は 401
-    expect([401, 500]).toContain(analyzeRes.status());
-
     // profile API
     const profileRes = await request.get("/api/profile");
     expect([401, 403]).toContain(profileRes.status());

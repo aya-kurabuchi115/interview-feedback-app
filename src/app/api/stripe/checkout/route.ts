@@ -45,11 +45,18 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        { error: "Stripe が設定されていません。管理者にお問い合わせください。" },
+        { status: 500 }
+      );
+    }
+
     const stripe = getStripe();
     const priceId = PLANS[targetPlan].stripePriceId;
     if (!priceId) {
       return NextResponse.json(
-        { error: "Stripe Price ID が設定されていません" },
+        { error: `${targetPlan === "pro" ? "STRIPE_PRO_PRICE_ID" : "STRIPE_PREMIUM_PRICE_ID"} が設定されていません` },
         { status: 500 }
       );
     }

@@ -18,11 +18,11 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 const mockGetUserSubscription = vi.fn();
-const mockGetRemainingUsage = vi.fn();
+const mockGetRemainingUsageByFeature = vi.fn();
 
 vi.mock("@/lib/subscription", () => ({
   getUserSubscription: (...args: unknown[]) => mockGetUserSubscription(...args),
-  getRemainingUsage: (...args: unknown[]) => mockGetRemainingUsage(...args),
+  getRemainingUsageByFeature: (...args: unknown[]) => mockGetRemainingUsageByFeature(...args),
 }));
 
 import { GET } from "./route";
@@ -67,13 +67,12 @@ describe("GET /api/subscription", () => {
 
       const usage = {
         plan: "free",
-        used: 1,
-        limit: 3,
-        remaining: 2,
+        mockInterview: { used: 1, limit: 3, remaining: 2 },
+        esReview: { used: 0, limit: 1, remaining: 1 },
       };
 
       mockGetUserSubscription.mockResolvedValue(subscription);
-      mockGetRemainingUsage.mockResolvedValue(usage);
+      mockGetRemainingUsageByFeature.mockResolvedValue(usage);
 
       const res = await GET();
       expect(res.status).toBe(200);
@@ -92,11 +91,10 @@ describe("GET /api/subscription", () => {
         cancelAt: null,
         canceledAt: null,
       });
-      mockGetRemainingUsage.mockResolvedValue({
+      mockGetRemainingUsageByFeature.mockResolvedValue({
         plan: "free",
-        used: 0,
-        limit: 3,
-        remaining: 3,
+        mockInterview: { used: 0, limit: 3, remaining: 3 },
+        esReview: { used: 0, limit: 1, remaining: 1 },
       });
 
       const res = await GET();

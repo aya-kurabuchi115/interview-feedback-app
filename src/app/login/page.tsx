@@ -39,7 +39,6 @@ function getSafeRedirectPath(redirect: string | null): string | null {
   // 許可される遷移先のプレフィックス（保護されたルートのみ）
   const allowedPrefixes = [
     "/dashboard",
-    "/interview",
     "/mock-interview",
     "/profile",
     "/es-review",

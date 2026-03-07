@@ -19,7 +19,7 @@ export default function Error({
 
   useEffect(() => {
     const id = reportClientError(error, {
-      featureArea: "interview",
+      featureArea: "auth",
       componentName: "GlobalErrorBoundary",
     });
     setErrorId(id);

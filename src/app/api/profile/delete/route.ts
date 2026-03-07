@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { unauthorized, badRequest, serverError } from "@/lib/api/error-response";
 import { reportApiError } from "@/lib/error-reporting";
+import { getStripe } from "@/lib/stripe/server";
 
 export async function POST(request: Request) {
   try {
@@ -23,9 +24,13 @@ export async function POST(request: Request) {
       return badRequest("パスワードを入力してください");
     }
 
+    if (!user.email) {
+      return badRequest("メールアドレスが設定されていません");
+    }
+
     // パスワード検証: 現在のメールアドレスで再ログインを試みる
     const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: user.email!,
+      email: user.email,
       password,
     });
 
@@ -47,6 +52,23 @@ export async function POST(request: Request) {
     }
 
     const adminClient = createAdminClient(supabaseUrl, serviceRoleKey);
+
+    // Stripe サブスクリプションのキャンセル（有料プランの場合）
+    try {
+      const { data: subscription } = await adminClient
+        .from("subscriptions")
+        .select("stripe_subscription_id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (subscription?.stripe_subscription_id) {
+        const stripe = getStripe();
+        await stripe.subscriptions.cancel(subscription.stripe_subscription_id);
+      }
+    } catch {
+      // Stripe キャンセル失敗はユーザー削除をブロックしない
+      console.error("Failed to cancel Stripe subscription for user:", user.id);
+    }
 
     // ユーザー削除（CASCADE で関連データも削除）
     const { error: deleteError } = await adminClient.auth.admin.deleteUser(

@@ -22,8 +22,8 @@ function buildCsp(): string {
     "img-src 'self' data: blob:",
     // フォント: 自サイトのみ（next/font でセルフホスティング）
     "font-src 'self'",
-    // 接続先: 自サイト + Supabase + Sentry + AssemblyAI
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://api.assemblyai.com",
+    // 接続先: 自サイト + Supabase + Sentry
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io",
     // フレーム: Stripe Checkout 用
     "frame-src 'self' https://js.stripe.com",
     // メディア: 自サイト + blob（録音データ）
@@ -208,7 +208,6 @@ const ONBOARDING_BYPASS_PREFIXES = [
   "/api/",
   "/auth/",
   "/legal/",
-  "/share/",
   "/_next/",
   "/login",
   "/signup",
@@ -217,11 +216,11 @@ const ONBOARDING_BYPASS_PREFIXES = [
   "/personality",
   "/questions",
   "/help",
+  "/lp-preview",
 ];
 
 const ONBOARDING_REQUIRED_PREFIXES = [
   "/dashboard",
-  "/interview",
   "/mock-interview",
   "/es-review",
   "/profile",

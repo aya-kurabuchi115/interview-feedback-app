@@ -8,14 +8,14 @@ import { CACHE_PRIVATE_MEDIUM } from "@/lib/api/cache-headers";
 
 type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
 
-/** バリデーション: 表示名は1~30文字 */
+/** バリデーション: 表示名は1~30文字（苗字 名前の結合値） */
 function validateDisplayName(name: unknown): { value: string | null; error?: string } {
   if (typeof name !== "string" || name.trim().length === 0) {
-    return { value: null, error: "フルネームを入力してください（1〜30文字）" };
+    return { value: null, error: "苗字と名前を入力してください" };
   }
   const trimmed = name.trim();
   if (trimmed.length > 30) {
-    return { value: null, error: "フルネームは30文字以内で入力してください" };
+    return { value: null, error: "名前は30文字以内で入力してください" };
   }
   return { value: trimmed };
 }
@@ -166,6 +166,7 @@ export async function PUT(request: Request) {
 
     const universityResult = validateText(body.university, "大学名", 100);
     if (universityResult.error) errors.push(universityResult.error);
+    if (!universityResult.value) errors.push("大学名を入力してください");
 
     const facultyResult = validateText(body.faculty, "学部・学科", 100);
     if (facultyResult.error) errors.push(facultyResult.error);
@@ -177,7 +178,7 @@ export async function PUT(request: Request) {
     const jobHuntingStatus = validateJobHuntingStatus(body.job_hunting_status);
     const preferredWorkLocation = validateArray(
       body.preferred_work_location,
-      11
+      10
     );
 
     // personality_type が送られてきた場合のみバリデーション＆セット

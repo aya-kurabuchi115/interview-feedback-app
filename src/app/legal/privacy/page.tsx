@@ -145,7 +145,7 @@ export default function PrivacyPolicyPage() {
           <ul className="list-disc space-y-1 pl-5">
             <li>
               <span className="font-medium">音声文字起こし:</span>{" "}
-              面接音声ファイルを AssemblyAI API に送信し、テキストに変換するため
+              面接音声ファイルを Google Gemini API に送信し、テキストに変換するため
             </li>
             <li>
               <span className="font-medium">AI フィードバックの生成:</span>{" "}
@@ -182,17 +182,17 @@ export default function PrivacyPolicyPage() {
           </p>
 
           <h3 className="mt-4 text-base font-medium">
-            5-1. AssemblyAI（音声文字起こし）
+            5-1. Google Gemini API（音声文字起こし）
           </h3>
           <p>
-            面接練習の音声ファイルを AssemblyAI, Inc. が提供する API に送信し、テキストへの文字起こし処理を行います。送信されるデータには音声ファイルが含まれます。AssemblyAI は処理完了後にデータを削除します。AssemblyAI のプライバシーポリシーについては{" "}
+            面接練習の音声ファイルを Google LLC が提供する Gemini API に送信し、テキストへの文字起こし処理を行います。送信されるデータには音声ファイルが含まれます。Google は API 経由で送信されたデータを処理完了後に削除します。Google のプライバシーポリシーについては{" "}
             <a
-              href="https://www.assemblyai.com/privacy-policy"
+              href="https://policies.google.com/privacy"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary underline underline-offset-4"
             >
-              AssemblyAI Privacy Policy
+              Google Privacy Policy
             </a>{" "}
             をご確認ください。
           </p>
@@ -285,7 +285,7 @@ export default function PrivacyPolicyPage() {
             </li>
             <li>
               <span className="font-medium">処理フロー:</span>{" "}
-              アップロードされた音声ファイルは AssemblyAI API に送信され、文字起こし完了後にサーバーから削除されます
+              アップロードされた音声ファイルは Google Gemini API に送信され、文字起こし完了後にサーバーから削除されます
             </li>
             <li>
               <span className="font-medium">保存:</span>{" "}
@@ -293,7 +293,7 @@ export default function PrivacyPolicyPage() {
             </li>
             <li>
               <span className="font-medium">第三者提供:</span>{" "}
-              音声データは文字起こし処理を行う AssemblyAI 以外の第三者には提供しません
+              音声データは文字起こし処理を行う Google Gemini API 以外の第三者には提供しません
             </li>
             <li>
               <span className="font-medium">AI トレーニング:</span>{" "}
