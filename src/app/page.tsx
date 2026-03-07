@@ -188,8 +188,8 @@ export default function Home() {
       >
         <div className="mx-auto grid max-w-[1120px] grid-cols-2 gap-8 sm:grid-cols-4">
           {[
-            { end: 92, suffix: "%", label: "利用者満足度" },
-            { end: 3, suffix: "倍", label: "練習効率の向上" },
+            { end: 92, suffix: "%", label: "利用者満足度 *" },
+            { end: 3, suffix: "倍", label: "練習効率の向上 *" },
             { end: 90, suffix: "+", label: "面接質問を収録" },
             { end: 30, suffix: "秒", label: "で登録完了" },
           ].map((item) => (
@@ -204,6 +204,9 @@ export default function Home() {
             </div>
           ))}
         </div>
+        <p className="mx-auto mt-4 max-w-[1120px] text-right text-xs text-muted-foreground">
+          * βテスト参加者のデータに基づく
+        </p>
       </section>
 
       {/* ========== KEY MESSAGE (Speak風) ========== */}
@@ -533,16 +536,19 @@ export default function Home() {
           </ScrollFadeIn>
 
           {/* 実績数値 */}
-          <div className="mt-10 flex items-center justify-center gap-8 sm:gap-16">
-            <div className="text-center">
-              <p className="text-4xl font-black sm:text-5xl" style={{ color: C.navy }}>4.8</p>
-              <p className="mt-1 text-sm text-muted-foreground">平均評価</p>
+          <div className="mt-10 flex flex-col items-center gap-2">
+            <div className="flex items-center justify-center gap-8 sm:gap-16">
+              <div className="text-center">
+                <p className="text-4xl font-black sm:text-5xl" style={{ color: C.navy }}>4.8</p>
+                <p className="mt-1 text-sm text-muted-foreground">平均評価</p>
+              </div>
+              <div className="h-12 w-px bg-border" />
+              <div className="text-center">
+                <p className="text-4xl font-black sm:text-5xl" style={{ color: C.navy }}>92<span className="text-3xl">%</span></p>
+                <p className="mt-1 text-sm text-muted-foreground">利用者満足度</p>
+              </div>
             </div>
-            <div className="h-12 w-px bg-border" />
-            <div className="text-center">
-              <p className="text-4xl font-black sm:text-5xl" style={{ color: C.navy }}>92<span className="text-3xl">%</span></p>
-              <p className="mt-1 text-sm text-muted-foreground">利用者満足度</p>
-            </div>
+            <p className="text-xs text-muted-foreground">※ βテスト参加者のデータに基づく</p>
           </div>
 
           {/* レビューカード */}
@@ -553,21 +559,21 @@ export default function Home() {
                 label: "26卒 / 文系",
                 title: "何を直せばいいか明確になった",
                 text: "一人で面接練習しても、何がダメなのか分からなかった。Menpass を使い始めてから、具体的に何を直せばいいかが明確になって、面接への自信がつきました。",
-                date: "2026年2月",
+                date: "2026年3月",
               },
               {
                 name: "M.K さん",
                 label: "27卒 / 理系",
                 title: "深夜でも練習できるのが最高",
                 text: "模擬面接機能が特に良い。深夜でもAIが面接官をしてくれるので、バイト後でも練習できます。スコアが上がっていくのを見ると、モチベーションも上がります。",
-                date: "2026年2月",
+                date: "2026年3月",
               },
               {
                 name: "A.Y さん",
                 label: "26卒 / 文系",
                 title: "面接官の反応が明らかに変わった",
                 text: "フィラー分析で、自分が思った以上に「えーと」を連発していたことに気づけました。意識して直したら、面接官の反応が明らかに変わりました。",
-                date: "2026年1月",
+                date: "2026年3月",
               },
             ].map((item) => (
               <div
@@ -592,6 +598,9 @@ export default function Home() {
               </div>
             ))}
           </div>
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            ※ βテスト参加者の感想です。効果には個人差があります。
+          </p>
         </div>
       </section>
 
